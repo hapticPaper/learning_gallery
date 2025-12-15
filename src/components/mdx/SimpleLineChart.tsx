@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import {
   CartesianGrid,
   Line,
@@ -32,21 +31,6 @@ export function SimpleLineChart({
   height?: number;
   className?: string;
 }) {
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
-
-  if (!mounted) {
-    return (
-      <div
-        className={cn(
-          "not-prose my-6 w-full overflow-hidden rounded-xl border border-zinc-200 bg-white p-3 shadow-sm dark:border-zinc-800 dark:bg-zinc-950",
-          className,
-        )}
-        style={{ height }}
-      />
-    );
-  }
-
   return (
     <div
       className={cn(

@@ -2,7 +2,6 @@
 
 import "reactflow/dist/style.css";
 
-import { useEffect, useState } from "react";
 import { Background, Controls, MiniMap, ReactFlow, type Edge, type Node } from "reactflow";
 
 import { cn } from "@/lib/cn";
@@ -16,9 +15,6 @@ export function FlowDiagram({
   edges: Edge[];
   className?: string;
 }) {
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
-
   return (
     <div
       className={cn(
@@ -26,13 +22,11 @@ export function FlowDiagram({
         className,
       )}
     >
-      {mounted ? (
-        <ReactFlow nodes={nodes} edges={edges} fitView>
-          <Background />
-          <Controls />
-          <MiniMap pannable zoomable />
-        </ReactFlow>
-      ) : null}
+      <ReactFlow nodes={nodes} edges={edges} fitView>
+        <Background />
+        <Controls />
+        <MiniMap pannable zoomable />
+      </ReactFlow>
     </div>
   );
 }
