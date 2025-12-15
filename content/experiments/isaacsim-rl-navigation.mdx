@@ -1,0 +1,67 @@
+---
+title: "Isaac Sim: RL navigation in a toy warehouse"
+date: "2025-12-15"
+summary: "A small, end-to-end writeup showing how to mix narrative, code, video, charts, and a React diagram in one experiment page."
+tags:
+  - isaacsim
+  - robotics
+  - reinforcement-learning
+---
+
+This page exists as a reference template for new experiments.
+
+<Callout type="note" title="How this site works">
+  Each experiment is a single MDX file in <code>content/experiments</code>. You can use normal markdown plus React components like <code>&lt;VideoEmbed /&gt;</code>, <code>&lt;SimpleLineChart /&gt;</code>, and <code>&lt;FlowDiagram /&gt;</code>.
+</Callout>
+
+## Video
+
+Use a YouTube link (the component converts it into an embed).
+
+<VideoEmbed src="https://www.youtube.com/watch?v=dQw4w9WgXcQ" title="Demo clip" />
+
+## Chart
+
+<SimpleLineChart
+  xKey="step"
+  lines={[{ key: "reward", label: "Reward", color: "#22c55e" }, { key: "loss", label: "Loss", color: "#0ea5e9" }]}
+  data={[
+    { step: 0, reward: 0.1, loss: 1.2 },
+    { step: 1, reward: 0.2, loss: 1.05 },
+    { step: 2, reward: 0.25, loss: 0.92 },
+    { step: 3, reward: 0.31, loss: 0.81 },
+    { step: 4, reward: 0.38, loss: 0.74 },
+    { step: 5, reward: 0.45, loss: 0.68 },
+  ]}
+/>
+
+## Diagram (React Flow)
+
+<FlowDiagram
+  nodes={[
+    { id: "sim", position: { x: 0, y: 120 }, data: { label: "Isaac Sim" }, type: "input" },
+    { id: "obs", position: { x: 220, y: 40 }, data: { label: "Observations" } },
+    { id: "policy", position: { x: 220, y: 200 }, data: { label: "Policy" } },
+    { id: "act", position: { x: 460, y: 120 }, data: { label: "Actions" }, type: "output" },
+  ]}
+  edges={[
+    { id: "sim-obs", source: "sim", target: "obs" },
+    { id: "obs-policy", source: "obs", target: "policy" },
+    { id: "policy-act", source: "policy", target: "act" },
+    { id: "act-sim", source: "act", target: "sim" },
+  ]}
+/>
+
+## Code snippet
+
+```python
+def compute_reward(progress: float, collision: bool) -> float:
+    reward = progress
+    if collision:
+        reward -= 1.0
+    return reward
+```
+
+<Callout type="tip" title="Local videos">
+  Put files in <code>public/videos</code> and reference them as <code>/videos/&lt;name&gt;.mp4</code> in a <code>&lt;VideoEmbed /&gt;</code>.
+</Callout>

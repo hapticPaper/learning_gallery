@@ -1,0 +1,42 @@
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+}
+
+.prose :where(code):not(:where(pre code)) {
+  @apply rounded bg-zinc-100 px-1 py-0.5 font-mono text-[0.9em] text-zinc-900 dark:bg-zinc-900 dark:text-zinc-100;
+}
+
+.prose :where(pre) {
+  @apply overflow-x-auto rounded-lg border border-zinc-200 bg-zinc-950 text-zinc-50 dark:border-zinc-800;
+}
+
+.prose :where(pre code) {
+  @apply bg-transparent p-0 text-inherit;
+}
+
+.prose :where(a) {
+  @apply underline decoration-zinc-400 underline-offset-4 hover:decoration-zinc-950 dark:hover:decoration-zinc-50;
+}
