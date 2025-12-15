@@ -1,0 +1,3 @@
+beta:
+  proactive:
+    - playbook: ".charlie/playbooks/security_audit.md"
