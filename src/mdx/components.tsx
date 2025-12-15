@@ -1,30 +1,10 @@
-import dynamic from "next/dynamic";
 import Link from "next/link";
 import type { ComponentPropsWithoutRef } from "react";
 
 import { Callout } from "@/components/mdx/Callout";
+import { FlowDiagram } from "@/components/mdx/FlowDiagram";
+import { SimpleLineChart } from "@/components/mdx/SimpleLineChart";
 import { VideoEmbed } from "@/components/mdx/VideoEmbed";
-
-const FlowDiagram = dynamic(
-  () => import("@/components/mdx/FlowDiagram").then((mod) => mod.FlowDiagram),
-  {
-    ssr: false,
-    loading: () => (
-      <div className="not-prose my-6 h-[420px] w-full rounded-xl border border-zinc-200 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-950" />
-    ),
-  },
-);
-
-const SimpleLineChart = dynamic(
-  () =>
-    import("@/components/mdx/SimpleLineChart").then((mod) => mod.SimpleLineChart),
-  {
-    ssr: false,
-    loading: () => (
-      <div className="not-prose my-6 h-[320px] w-full rounded-xl border border-zinc-200 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-950" />
-    ),
-  },
-);
 
 export const mdxComponents = {
   a: MdxLink,
