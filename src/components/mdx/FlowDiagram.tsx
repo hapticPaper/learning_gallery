@@ -23,7 +23,13 @@ export function FlowDiagram({
         className,
       )}
     >
-      <ClientOnly>
+      <ClientOnly
+        fallback={
+          <div className="flex h-full items-center justify-center text-xs text-zinc-500">
+            Loading diagram…
+          </div>
+        }
+      >
         <ReactFlow nodes={nodes} edges={edges} fitView>
           <Background />
           <Controls />

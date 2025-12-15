@@ -40,7 +40,13 @@ export function SimpleLineChart({
       )}
       style={{ height }}
     >
-      <ClientOnly>
+      <ClientOnly
+        fallback={
+          <div className="flex h-full items-center justify-center text-xs text-zinc-500">
+            Loading chart…
+          </div>
+        }
+      >
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={data} margin={{ top: 12, right: 12, bottom: 12, left: 12 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="rgba(161, 161, 170, 0.35)" />
