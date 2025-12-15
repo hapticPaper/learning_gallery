@@ -1,0 +1,43 @@
+---
+title: "Isaac Sim: grid-aware quadruped navigation"
+date: "2025-12-15"
+summary: "Spot-like robots follow RL footprints across a warehouse grid; includes a local capture from the run."
+tags:
+  - isaacsim
+  - robotics
+  - reinforcement-learning
+  - navigation
+---
+
+A quick visual pass on a warehouse-style grid where quadrupeds and manipulators navigate toward goal patches while leaving red and blue activation footprints. The pattern makes it easy to see which behaviors the policy is reinforcing and how evenly agents cover the floor.
+
+![Quadrupeds stepping across a grid with red and blue footprint markers](/images/isaacsim-grid-navigation.png)
+
+<Callout type="note" title="Image placement">
+  Save the provided screenshot at <code>public/images/isaacsim-grid-navigation.png</code> to render the hero image.
+</Callout>
+
+## Local run video
+
+<VideoEmbed src="/videos/Screen%20Recording%202025-12-15%20174554.mp4" title="Warehouse navigation capture" />
+
+## What to watch for
+
+- Agents choose adjacent goal tiles rather than cutting diagonally, matching the grid-aligned reward.
+- Blue footprints mark a higher-confidence route; red shows exploration and slip recovery near obstacles.
+- The manipulator hesitates at corners, hinting at a small perception delay in the depth stream.
+- Policy stays stable under camera jitter, suggesting the observation normalization is working.
+
+## Reward sketch
+
+```python
+def grid_reward(progress: float, collision: bool, goal_bonus: float) -> float:
+    reward = progress + goal_bonus
+    if collision:
+        reward -= 1.0
+    return reward
+```
+
+<Callout type="tip" title="Reproduce this scene">
+  Load the grid map, enable domain randomization on friction, and log the footprint heatmap alongside RGB. The heatmap is the quickest sanity check before pushing a longer rollout.
+</Callout>
