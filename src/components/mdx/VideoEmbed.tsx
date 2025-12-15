@@ -48,9 +48,19 @@ export function VideoEmbed({
       )}
       controls
       playsInline
-      src={src}
+      src={withBasePath(src)}
     />
   );
+}
+
+function withBasePath(src: string): string {
+  if (!src.startsWith("/")) return src;
+
+  const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
+  if (!basePath) return src;
+
+  if (src === basePath || src.startsWith(`${basePath}/`)) return src;
+  return `${basePath}${src}`;
 }
 
 function inferKind(src: string): VideoKind {
