@@ -15,9 +15,9 @@ export async function generateStaticParams() {
 export async function generateMetadata({
   params,
 }: {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
-  const { slug } = params;
+  const { slug } = await params;
   const experiment = await getExperiment(slug);
   return {
     title: experiment.meta.title,
@@ -28,9 +28,9 @@ export async function generateMetadata({
 export default async function ExperimentPage({
   params,
 }: {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }) {
-  const { slug } = params;
+  const { slug } = await params;
 
   try {
     const experiment = await getExperiment(slug);
