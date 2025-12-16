@@ -32,7 +32,7 @@ export default function RootLayout({
 }: Readonly<{
   children: ReactNode;
 }>) {
-  const isValidGtmId = /^GTM-[A-Za-z0-9]+$/.test(gtmId);
+  const isValidGtmId = /^GTM-[A-Za-z0-9_-]+$/.test(gtmId);
   const shouldLoadGtm = process.env.NODE_ENV === "production" && isValidGtmId;
 
   return (
