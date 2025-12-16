@@ -1,23 +1,17 @@
 import type { Metadata } from "next";
 
 import { NewsCard } from "@/components/NewsCard";
-import { formatDaysAgo, getDaysSince, getLatestCharlieChangelogEntry } from "@/lib/charlieChangelog";
+import { RECENT_CHANGELOG_WINDOW_DAYS } from "@/lib/charlieChangelog";
+import { getCharlieChangelogSnapshot } from "@/lib/charlieChangelogSnapshot";
 import { getAllNews } from "@/lib/news";
-
-const RECENT_CHANGELOG_WINDOW_DAYS = 15;
 
 export const metadata: Metadata = {
   title: "News",
 };
 
 export default async function NewsPage() {
-  const [news, latestChangelogEntry] = await Promise.all([
-    getAllNews(),
-    getLatestCharlieChangelogEntry(),
-  ]);
-  const changelogDaysSince = latestChangelogEntry ? getDaysSince(latestChangelogEntry.date) : null;
-  const hasRecentChangelog =
-    changelogDaysSince !== null && changelogDaysSince < RECENT_CHANGELOG_WINDOW_DAYS;
+  const news = await getAllNews();
+  const { latestEntry: latestChangelogEntry, hasRecentChangelog } = getCharlieChangelogSnapshot();
 
   return (
     <div className="space-y-6">
@@ -48,7 +42,7 @@ export default async function NewsPage() {
               </a>
 
               <p className="text-sm text-zinc-600 dark:text-zinc-300">
-                {latestChangelogEntry.dateText} ({formatDaysAgo(changelogDaysSince)})
+                {latestChangelogEntry.dateText}
               </p>
             </>
           ) : (
@@ -61,6 +55,12 @@ export default async function NewsPage() {
               {!latestChangelogEntry ? (
                 <p className="text-sm text-zinc-600 dark:text-zinc-300">
                   (Couldn&#39;t load the Charlie Labs changelog right now.)
+                </p>
+              ) : null}
+
+              {latestChangelogEntry && !hasRecentChangelog ? (
+                <p className="text-sm text-zinc-600 dark:text-zinc-300">
+                  (No Charlie Labs changelog updates in the last {RECENT_CHANGELOG_WINDOW_DAYS} days.)
                 </p>
               ) : null}
 

@@ -9,7 +9,8 @@
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
     "news:fetch": "bun run src/scripts/fetch-news.ts",
-    "models:fetch": "bun run src/scripts/fetch-models.ts"
+    "models:fetch": "bun run src/scripts/fetch-models.ts",
+    "changelog:fetch": "bun run src/scripts/fetch-charlie-changelog.ts"
   },
   "dependencies": {
     "@next/third-parties": "^16.0.10",
