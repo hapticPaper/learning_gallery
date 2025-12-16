@@ -1,6 +1,8 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 
+import matter from "gray-matter";
+
 type HfModelEntry = {
   modelId: string;
   lastModified: string;
@@ -37,6 +39,10 @@ const THUMBNAILS_DIR = path.join(process.cwd(), "public", "models", "thumbnails"
 
 const SOURCE_URL = "https://huggingface.co/models?sort=modified";
 const DAILY_LIMIT = 3;
+const CANDIDATE_MULTIPLIER = 8;
+
+// Grab enough recently-modified models to find 3 high-signal candidates without having to
+// crawl deeply into the feed.
 const API_FETCH_LIMIT = 120;
 
 async function main() {
@@ -51,10 +57,44 @@ async function main() {
   }
 
   const resolved = await Promise.all(candidates.map(async (model) => resolveModel(model)));
-  const nextModels = resolved.filter((item): item is ResolvedModel => Boolean(item));
+  const resolvedModels = resolved.filter((item): item is ResolvedModel => Boolean(item));
+  const nextModels = pickTopModels(resolvedModels, DAILY_LIMIT);
   const created = await writeModels(nextModels);
 
   console.log(`Created ${created} model item(s).`);
+}
+
+function pickTopModels(models: ResolvedModel[], limit: number): ResolvedModel[] {
+  const picked: ResolvedModel[] = [];
+  const seenFamilies = new Set<string>();
+
+  for (const model of models) {
+    if (picked.length >= limit) break;
+    const family = getFamilyKeyFromModelId(model.modelId);
+    if (seenFamilies.has(family)) continue;
+    seenFamilies.add(family);
+    picked.push(model);
+  }
+
+  if (picked.length < limit) {
+    for (const model of models) {
+      if (picked.length >= limit) break;
+      if (picked.some((item) => item.modelId === model.modelId)) continue;
+      picked.push(model);
+    }
+  }
+
+  return picked.slice(0, limit);
+}
+
+function getFamilyKeyFromModelId(modelId: string): string {
+  const [owner, rawName] = modelId.split("/");
+  const name = rawName ?? modelId;
+
+  const trimmed = name.replace(/-(Dev|dev|Edit|edit|Preview|preview|Experimental|experimental)$/, "");
+  const gensyn = trimmed.split(/-Gensyn-Swarm-?/)[0];
+
+  return owner ? `${owner}/${gensyn}` : gensyn;
 }
 
 async function getDailyCandidates({ existingModelIds }: { existingModelIds: Set<string> }): Promise<ModelDraft[]> {
@@ -73,9 +113,10 @@ async function getDailyCandidates({ existingModelIds }: { existingModelIds: Set<
 
   const picked: ModelDraft[] = [];
   const familyCounts = new Map<string, number>();
+  const targetCount = DAILY_LIMIT * CANDIDATE_MULTIPLIER;
 
   for (const candidate of candidates) {
-    if (picked.length >= DAILY_LIMIT) break;
+    if (picked.length >= targetCount) break;
 
     const familyKey = getFamilyKey(candidate);
     const count = familyCounts.get(familyKey) ?? 0;
@@ -97,10 +138,10 @@ async function getDailyCandidates({ existingModelIds }: { existingModelIds: Set<
     });
   }
 
-  // If the feed is dominated by one model family, allow duplicates rather than producing nothing.
-  if (picked.length < DAILY_LIMIT) {
+  // If the feed is dominated by one model family, allow duplicates to pad the candidate list.
+  if (picked.length < targetCount) {
     for (const candidate of candidates) {
-      if (picked.length >= DAILY_LIMIT) break;
+      if (picked.length >= targetCount) break;
       if (picked.some((item) => item.modelId === candidate.modelId)) continue;
 
       picked.push({
@@ -114,7 +155,7 @@ async function getDailyCandidates({ existingModelIds }: { existingModelIds: Set<
     }
   }
 
-  return picked.slice(0, DAILY_LIMIT);
+  return picked.slice(0, targetCount);
 }
 
 function isInterestingCandidate(candidate: HfModelEntry): boolean {
@@ -122,6 +163,12 @@ function isInterestingCandidate(candidate: HfModelEntry): boolean {
   const downloads = candidate.downloads ?? 0;
   const pipelineTag = candidate.pipeline_tag ?? null;
   const tags = candidate.tags ?? [];
+
+  const idLower = candidate.modelId.toLowerCase();
+  const isTestModel = /(^|[\W_])test([\W_]|$)/.test(idLower);
+  if (isTestModel && likes < 50 && downloads < 100_000) {
+    return false;
+  }
 
   const isSwarmDerivative = tags.some((tag) =>
     tag === "gensyn" || tag === "genrl-swarm" || tag === "rl-swarm" || tag === "grpo",
@@ -136,10 +183,13 @@ function isInterestingCandidate(candidate: HfModelEntry): boolean {
   }
 
   const hasPipeline = Boolean(pipelineTag);
-  const hasSignal = likes >= 2 || downloads >= 50;
   const hasNonRegionalTag = tags.some((tag) => !tag.startsWith("region:"));
 
-  return (hasPipeline || hasSignal) && hasNonRegionalTag;
+  const qualifies = hasPipeline
+    ? likes >= 1 || downloads >= 200
+    : likes >= 5 || downloads >= 2_000;
+
+  return qualifies && hasNonRegionalTag;
 }
 
 function scoreCandidate(candidate: HfModelEntry): number {
@@ -183,6 +233,14 @@ async function resolveModel(model: ModelDraft): Promise<ResolvedModel | undefine
     card?.summary && (isGenericHfDescription(normalizedDescription) || !isGenericHfDescription(card.summary))
       ? card.summary
       : normalizedDescription;
+
+  if (isGenericHfDescription(seedText) && !model.pipelineTag && model.likes < 5 && model.downloads < 10_000) {
+    return undefined;
+  }
+
+  if (isBoilerplateModelCard(seedText) && model.likes < 10 && model.downloads < 10_000) {
+    return undefined;
+  }
 
   const summary = buildSummary({
     description: seedText,
@@ -319,6 +377,15 @@ function isGenericHfDescription(value: string): boolean {
   return /journey to advance and democratize artificial intelligence/i.test(value);
 }
 
+function isBoilerplateModelCard(value: string): boolean {
+  const normalized = value.toLowerCase();
+  return (
+    normalized.includes("this is the model card") ||
+    normalized.includes("automatically generated") ||
+    normalized.includes("more information needed")
+  );
+}
+
 function buildSummary({
   description,
   pipelineTag,
@@ -362,27 +429,16 @@ async function listExistingModelIds(): Promise<Set<string>> {
 
   for (const fileName of mdxFiles) {
     const raw = await fs.readFile(path.join(CONTENT_DIR, fileName), "utf8").catch(() => "");
-    const match = raw.match(/^modelId:\s*(.+)\s*$/m);
-    const value = match?.[1]?.trim();
-    if (!value) continue;
+    if (!raw) continue;
 
-    const normalized = normalizeFrontmatterString(value);
-    if (normalized) modelIds.add(normalized);
-  }
-
-  return modelIds;
-}
-
-function normalizeFrontmatterString(value: string): string {
-  if (value.startsWith('"') && value.endsWith('"')) {
-    try {
-      return JSON.parse(value) as string;
-    } catch {
-      return value.slice(1, -1);
+    const parsed = matter(raw);
+    const modelId = (parsed.data as Record<string, unknown>).modelId;
+    if (typeof modelId === "string" && modelId.trim()) {
+      modelIds.add(modelId.trim());
     }
   }
 
-  return value.replace(/^['"]|['"]$/g, "");
+  return modelIds;
 }
 
 async function writeModels(models: ResolvedModel[]): Promise<number> {

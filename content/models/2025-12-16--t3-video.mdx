@@ -1,0 +1,20 @@
+---
+title: "T3-Video (native 4K text-to-video)"
+date: "2025-12-16"
+source: "Hugging Face"
+url: "https://huggingface.co/APRIL-AIGC/T3-Video"
+modelId: "APRIL-AIGC/T3-Video"
+pipelineTag: "text-to-video"
+blurb: "Text-to-video weights + inference code targeting native 4K generation, reporting a 10× speedup over naive 4K video generation (Apache-2.0 + Wan license)."
+thumbnail: "/models/thumbnails/2025-12-16--t3-video.png"
+---
+
+T3-Video is a text-to-video release focused on *native 4K generation*. The authors position it as a way to accelerate "naive" 4K video generation by more than 10×, building on top of Wan2.1/Wan2.2 video models and shipping pretrained weights plus inference code.
+
+If you want to try it, the README suggests downloading the base Wan weights and the T3-Video weights via `huggingface-cli`, then running the provided multi-GPU inference script for 4K output (the example uses `2176×3840` resolution and `81` frames). This looks best suited for experimentation on a multi-GPU machine; start by generating a short clip from a single prompt and then adjust inference steps / tiled settings to trade quality vs. runtime.
+
+Quick stats from the listing feed: pipeline: text-to-video · 10 likes · 23 downloads.
+
+[View on Hugging Face](https://huggingface.co/APRIL-AIGC/T3-Video)
+
+Source listing: https://huggingface.co/models?sort=modified

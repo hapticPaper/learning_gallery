@@ -1,19 +1,19 @@
 ---
-title: "meituan-longcat/LongCat-Image"
+title: "LongCat-Image"
 date: "2025-12-16"
 source: "Hugging Face"
 url: "https://huggingface.co/meituan-longcat/LongCat-Image"
 modelId: "meituan-longcat/LongCat-Image"
 pipelineTag: "text-to-image"
-blurb: "We introduce LongCat-Image, a pioneering open-source and bilingual (Chinese-English) foundation model for image generation, designed to address core challenges in multilingual text rendering, photorealism, deployment efficiency, and deve…"
+blurb: "A 6B bilingual (Chinese/English) text-to-image model focused on legible text rendering, photorealism, and efficient deployment."
 thumbnail: "/models/thumbnails/2025-12-16--meituan-longcat-longcat-image.png"
 ---
 
-We introduce LongCat-Image, a pioneering open-source and bilingual (Chinese-English) foundation model for image generation, designed to address core challenges in multilingual text rendering, photorealism, deployment efficiency, and developer accessibility prevalent in current leading models.
+LongCat-Image is an open-source bilingual (Chinese/English) text-to-image foundation model that aims to improve a few "hard" diffusion problems at once: reliable multilingual text rendering, strong photorealism, and deployment efficiency. At ~6B parameters, it’s also small enough to be realistic for local or cost-sensitive inference, which makes it a good candidate for benchmarking in real products.
 
-🌟 Exceptional Efficiency and Performance: With only 6B parameters, LongCat-Image surpasses numerous open-source models that are several times larger across multiple benchmarks, demonstrating the immense potential of efficient model design. 🌟 Powerful Chinese Text Rendering: LongCat-Image demonstrates superior accuracy and stability in rendering common Chinese characters compared to existing SOTA open-source models and achieves industry-leading coverage of the Chinese dictionary. 🌟 Remarkable Photorealism: Through an innovative data strategy and training framework, LongCat-Image achieves remarkable photorealism in generated images.
+If you work with Chinese or mixed-language content, the model’s text-rendering emphasis is the main reason to try it first. The authors call out an important prompting detail: wrap any text you want rendered inside quotation marks so the model’s character-level encoding mechanism triggers. A quick sanity check is to generate poster-style images with short quoted slogans (both Chinese and English) and compare legibility and layout consistency to your current baseline.
 
-Quick stats from the listing feed: pipeline: text-to-image · 208 likes · 3130 downloads.
+Quick stats from the listing feed: pipeline: text-to-image · 208 likes · 3199 downloads.
 
 [View on Hugging Face](https://huggingface.co/meituan-longcat/LongCat-Image)
 
