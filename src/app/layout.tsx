@@ -38,10 +38,10 @@ export default function RootLayout({
 
   return (
     <html lang="en">
-      {shouldLoadGtm ? <GoogleTagManager gtmId={gtmId} /> : null}
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased font-sans`}
       >
+        {shouldLoadGtm ? <GoogleTagManager gtmId={gtmId} /> : null}
         {shouldLoadGtm ? (
           <noscript>
             <iframe
