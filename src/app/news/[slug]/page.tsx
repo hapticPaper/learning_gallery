@@ -69,7 +69,7 @@ export default async function NewsItemPage({
 
       <img
         alt=""
-        className="mb-10 aspect-[16/9] w-full rounded-l border border-zinc-200 object-cover shadow-sm dark:border-zinc-800"
+        className="mx-auto mb-10 aspect-[16/9] w-full max-w-2xl rounded-l border border-zinc-200 object-cover shadow-sm dark:border-zinc-800"
         src={withBasePath(item.meta.thumbnail)}
       />
 
