@@ -59,9 +59,10 @@ async function main() {
 
       const resolved = result?.value;
       if (!resolved) continue;
-      if (existingUrls.has(resolved.url)) continue;
-      existingUrls.add(resolved.url);
-      nextStories.push(resolved);
+      const dedupeUrl = normalizeUrlForDedup(resolved.url);
+      if (existingUrls.has(dedupeUrl)) continue;
+      existingUrls.add(dedupeUrl);
+      nextStories.push({ ...resolved, url: dedupeUrl });
     }
   }
 

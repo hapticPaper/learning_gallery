@@ -83,7 +83,17 @@ async function main() {
       .join("; ");
     console.warn(`Failed to resolve ${rejected.length} model candidate(s). ${preview}`);
   }
+
+  if (!resolvedModels.length) {
+    console.log(`Resolved 0 usable models out of ${candidates.length} candidate(s).`);
+    return;
+  }
+
   const nextModels = pickTopModels(resolvedModels, RUN_LIMIT);
+  if (!nextModels.length) {
+    console.log("No eligible models after selection.");
+    return;
+  }
   const created = await writeModels(nextModels);
 
   console.log(`Created ${created} model item(s).`);
