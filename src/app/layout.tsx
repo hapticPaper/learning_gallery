@@ -17,7 +17,7 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-const gtmId = process.env.NEXT_PUBLIC_GTM_ID ?? "GTM-P43CMVDL";
+const gtmId = process.env.NEXT_PUBLIC_GTM_ID ?? "G-VPHFT711T9";
 
 export const metadata: Metadata = {
   title: {
