@@ -12,7 +12,7 @@ export type NewsMeta = {
   date: string;
   source: string;
   url: string;
-  summary: string;
+  blurb: string;
   thumbnail: string;
 };
 
@@ -53,10 +53,10 @@ export async function getAllNews(): Promise<NewsListItem[]> {
   return items
     .filter((item): item is NewsListItem => Boolean(item))
     .sort((a, b) => {
-    const aTime = Date.parse(a.meta.date);
-    const bTime = Date.parse(b.meta.date);
-    return bTime - aTime;
-  });
+      const aTime = Date.parse(a.meta.date);
+      const bTime = Date.parse(b.meta.date);
+      return bTime - aTime;
+    });
 }
 
 export async function getNewsMeta(slug: string): Promise<NewsListItem> {
@@ -66,10 +66,10 @@ export async function getNewsMeta(slug: string): Promise<NewsListItem> {
 
   const meta = parsed.data as Partial<NewsMeta>;
 
-  if (!meta.title || !meta.date || !meta.source || !meta.url || !meta.summary || !meta.thumbnail) {
+  if (!meta.title || !meta.date || !meta.source || !meta.url || !meta.blurb || !meta.thumbnail) {
     throw new Error(
       "Invalid frontmatter for " +
-        `${slug}.mdx. Required fields: title, date, source, url, summary, thumbnail.`,
+        `${slug}.mdx. Required fields: title, date, source, url, blurb, thumbnail.`,
     );
   }
 
@@ -80,7 +80,7 @@ export async function getNewsMeta(slug: string): Promise<NewsListItem> {
       date: meta.date,
       source: meta.source,
       url: meta.url,
-      summary: meta.summary,
+      blurb: meta.blurb,
       thumbnail: meta.thumbnail,
     },
   };
@@ -92,10 +92,10 @@ export async function getNewsItem(slug: string) {
   const { content, frontmatter } = await renderMdx(raw);
 
   const meta = frontmatter as Partial<NewsMeta>;
-  if (!meta.title || !meta.date || !meta.source || !meta.url || !meta.summary || !meta.thumbnail) {
+  if (!meta.title || !meta.date || !meta.source || !meta.url || !meta.blurb || !meta.thumbnail) {
     throw new Error(
       "Invalid frontmatter for " +
-        `${slug}.mdx. Required fields: title, date, source, url, summary, thumbnail.`,
+        `${slug}.mdx. Required fields: title, date, source, url, blurb, thumbnail.`,
     );
   }
 
@@ -106,7 +106,7 @@ export async function getNewsItem(slug: string) {
       date: meta.date,
       source: meta.source,
       url: meta.url,
-      summary: meta.summary,
+      blurb: meta.blurb,
       thumbnail: meta.thumbnail,
     },
     content,

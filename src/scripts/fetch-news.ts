@@ -6,7 +6,7 @@ type StoryDraft = {
   url: string;
   source: string;
   date: string;
-  summary?: string;
+  seedText?: string;
   thumbnailUrl?: string;
   publisherName?: string;
   publisherUrl?: string;
@@ -18,6 +18,7 @@ type ResolvedStory = {
   source: string;
   date: string;
   summary: string;
+  blurb: string;
   thumbnailPath: string;
   slug: string;
 };
@@ -101,7 +102,7 @@ async function getYouTubeCandidate(): Promise<StoryDraft | undefined> {
     url: `https://www.youtube.com/watch?v=${videoId}`,
     source: "The AI Search (YouTube)",
     date: publishedDate,
-    summary: normalizeText(description ?? ""),
+    seedText: normalizeText(description ?? ""),
     thumbnailUrl: `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`,
   };
 }
@@ -133,7 +134,7 @@ async function getGoogleNewsCandidate(): Promise<StoryDraft | undefined> {
     url: link,
     source,
     date,
-    summary: title,
+    seedText: title,
     publisherName,
     publisherUrl,
     thumbnailUrl: publisherUrl
@@ -149,8 +150,9 @@ async function resolveStory(
   const resolvedUrl = await resolveFinalUrl(story.url);
   if (existingUrls.has(resolvedUrl)) return undefined;
 
-  const resolvedSummary = story.summary?.trim() ? story.summary : await getPageDescription(resolvedUrl);
-  const summary = normalizeSummary(resolvedSummary || story.title);
+  const resolvedSeedText = story.seedText?.trim() ? story.seedText : await getPageDescription(resolvedUrl);
+  const summary = normalizeSummaryBody(resolvedSeedText || story.title);
+  const blurb = normalizeBlurb(summary || story.title);
 
   const slug = await allocateSlug({ title: story.title, date: story.date });
   const thumbnailCandidate = story.thumbnailUrl ?? (await getPageThumbnailUrl(resolvedUrl));
@@ -166,6 +168,7 @@ async function resolveStory(
     source: story.source,
     date: story.date,
     summary,
+    blurb,
     thumbnailPath,
     slug,
   };
@@ -228,7 +231,7 @@ function buildMdx(story: ResolvedStory): string {
     `date: ${JSON.stringify(story.date)}`,
     `source: ${JSON.stringify(story.source)}`,
     `url: ${JSON.stringify(story.url)}`,
-    `summary: ${JSON.stringify(story.summary)}`,
+    `blurb: ${JSON.stringify(story.blurb)}`,
     `thumbnail: ${JSON.stringify(story.thumbnailPath)}`,
     "---",
     "",
@@ -269,10 +272,19 @@ function slugify(value: string): string {
   return slug || "story";
 }
 
-function normalizeSummary(value: string): string {
+function normalizeBlurb(value: string): string {
   const normalized = normalizeText(value);
   if (!normalized) return "";
   return normalized.length > 240 ? normalized.slice(0, 237).trimEnd() + "…" : normalized;
+}
+
+function normalizeSummaryBody(value: string): string {
+  const normalized = normalizeText(value);
+  if (!normalized) return "";
+
+  const words = normalized.split(" ").filter(Boolean);
+  if (words.length <= 260) return normalized;
+  return words.slice(0, 260).join(" ").trimEnd() + "…";
 }
 
 function normalizeText(value: string): string {
