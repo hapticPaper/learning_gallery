@@ -1,3 +1,4 @@
 beta:
   proactive:
     - playbook: ".charlie/playbooks/security_audit.md"
+    - playbook: ".charlie/playbooks/daily_news.md"
