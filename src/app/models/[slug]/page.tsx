@@ -70,7 +70,7 @@ export default async function ModelItemPage({
       </div>
 
       <img
-        alt=""
+        alt={`${item.meta.title} thumbnail`}
         className="mx-auto mb-10 aspect-[16/9] w-full max-w-2xl rounded-l border border-zinc-200 object-cover shadow-sm sm:w-11/12 dark:border-zinc-800"
         src={withBasePath(item.meta.thumbnail)}
       />

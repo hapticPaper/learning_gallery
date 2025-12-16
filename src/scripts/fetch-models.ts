@@ -49,8 +49,19 @@ async function main() {
   await fs.mkdir(CONTENT_DIR, { recursive: true });
   await fs.mkdir(THUMBNAILS_DIR, { recursive: true });
 
-  const existingModelIds = await listExistingModelIds();
-  const candidates = await getDailyCandidates({ existingModelIds });
+  const existing = await listExistingModelInfo();
+
+  const today = new Date().toISOString().slice(0, 10);
+  const existingTodayCount = await countExistingPostsForDate(today);
+  const remainingToday = Math.max(0, DAILY_LIMIT - existingTodayCount);
+  if (!remainingToday) {
+    console.log(`Already have ${DAILY_LIMIT} model post(s) for ${today}.`);
+    return;
+  }
+  const candidates = await getDailyCandidates({
+    existingModelIds: existing.modelIds,
+    existingFamilyKeys: existing.familyKeys,
+  });
   if (!candidates.length) {
     console.log("No candidates found.");
     return;
@@ -58,10 +69,15 @@ async function main() {
 
   const resolved = await Promise.all(candidates.map(async (model) => resolveModel(model)));
   const resolvedModels = resolved.filter((item): item is ResolvedModel => Boolean(item));
-  const nextModels = pickTopModels(resolvedModels, DAILY_LIMIT);
+  const nextModels = pickTopModels(resolvedModels, remainingToday);
   const created = await writeModels(nextModels);
 
   console.log(`Created ${created} model item(s).`);
+}
+
+async function countExistingPostsForDate(date: string): Promise<number> {
+  const entries = await fs.readdir(CONTENT_DIR).catch(() => [] as string[]);
+  return entries.filter((name) => name.startsWith(`${date}--`) && name.endsWith(".mdx")).length;
 }
 
 function pickTopModels(models: ResolvedModel[], limit: number): ResolvedModel[] {
@@ -97,7 +113,13 @@ function getFamilyKeyFromModelId(modelId: string): string {
   return owner ? `${owner}/${gensyn}` : gensyn;
 }
 
-async function getDailyCandidates({ existingModelIds }: { existingModelIds: Set<string> }): Promise<ModelDraft[]> {
+async function getDailyCandidates({
+  existingModelIds,
+  existingFamilyKeys,
+}: {
+  existingModelIds: Set<string>;
+  existingFamilyKeys: Set<string>;
+}): Promise<ModelDraft[]> {
   const url = new URL("https://huggingface.co/api/models");
   url.searchParams.set("sort", "lastModified");
   url.searchParams.set("direction", "-1");
@@ -108,6 +130,11 @@ async function getDailyCandidates({ existingModelIds }: { existingModelIds: Set<
   const candidates = data
     .filter((model) => model.modelId && model.lastModified)
     .filter((model) => !existingModelIds.has(model.modelId))
+    .filter((model) => {
+      const familyKey = getFamilyKeyFromModelId(model.modelId);
+      if (!existingFamilyKeys.has(familyKey)) return true;
+      return isParticularlyInterestingDerivative(model);
+    })
     .filter((model) => isInterestingCandidate(model))
     .sort((a, b) => scoreCandidate(b) - scoreCandidate(a));
 
@@ -200,6 +227,13 @@ function scoreCandidate(candidate: HfModelEntry): number {
   return likes * 5 + Math.log10(downloads + 1) * 10 + pipelineBoost;
 }
 
+function isParticularlyInterestingDerivative(candidate: HfModelEntry): boolean {
+  const likes = candidate.likes ?? 0;
+  const downloads = candidate.downloads ?? 0;
+
+  return likes >= 100 || downloads >= 100_000;
+}
+
 function getFamilyKey(candidate: HfModelEntry): string {
   const tags = candidate.tags ?? [];
   const baseTag = tags.find((tag) => tag.startsWith("base_model:"));
@@ -254,11 +288,17 @@ async function resolveModel(model: ModelDraft): Promise<ResolvedModel | undefine
 
   const slug = await allocateSlug({ title, date: model.date });
   const thumbnailCandidate = tags["og:image"] || tags["twitter:image"] || tags["og:image:url"];
-  const thumbnailPath = await downloadThumbnail({
-    slug,
-    pageUrl: model.url,
-    imageUrl: thumbnailCandidate,
-  });
+  let thumbnailPath: string;
+  try {
+    thumbnailPath = await downloadThumbnail({
+      slug,
+      pageUrl: model.url,
+      imageUrl: thumbnailCandidate,
+    });
+  } catch (error) {
+    console.warn(`Thumbnail fetch failed for ${model.modelId}:`, error);
+    return undefined;
+  }
 
   return {
     title,
@@ -422,8 +462,9 @@ function buildSummary({
   return parts.join("\n\n");
 }
 
-async function listExistingModelIds(): Promise<Set<string>> {
+async function listExistingModelInfo(): Promise<{ modelIds: Set<string>; familyKeys: Set<string> }> {
   const modelIds = new Set<string>();
+  const familyKeys = new Set<string>();
   const entries = await fs.readdir(CONTENT_DIR).catch(() => [] as string[]);
   const mdxFiles = entries.filter((name) => name.endsWith(".mdx"));
 
@@ -434,11 +475,13 @@ async function listExistingModelIds(): Promise<Set<string>> {
     const parsed = matter(raw);
     const modelId = (parsed.data as Record<string, unknown>).modelId;
     if (typeof modelId === "string" && modelId.trim()) {
-      modelIds.add(modelId.trim());
+      const normalized = modelId.trim();
+      modelIds.add(normalized);
+      familyKeys.add(getFamilyKeyFromModelId(normalized));
     }
   }
 
-  return modelIds;
+  return { modelIds, familyKeys };
 }
 
 async function writeModels(models: ResolvedModel[]): Promise<number> {
