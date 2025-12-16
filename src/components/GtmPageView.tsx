@@ -2,19 +2,13 @@
 
 import { sendGTMEvent } from "@next/third-parties/google";
 import { usePathname } from "next/navigation";
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 
 export function GtmPageView() {
   const pathname = usePathname();
 
-  const hasMounted = useRef(false);
-
   useEffect(() => {
-    if (!hasMounted.current) {
-      hasMounted.current = true;
-      return;
-    }
-
+    if (typeof window === "undefined") return;
     const pagePath = `${window.location.pathname}${window.location.search}`;
 
     sendGTMEvent({
