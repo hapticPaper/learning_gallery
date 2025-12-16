@@ -38,7 +38,7 @@ const CONTENT_DIR = path.join(process.cwd(), "content", "models");
 const THUMBNAILS_DIR = path.join(process.cwd(), "public", "models", "thumbnails");
 
 const SOURCE_URL = "https://huggingface.co/models?sort=modified";
-const DAILY_LIMIT = 3;
+const RUN_LIMIT = 3;
 const CANDIDATE_MULTIPLIER = 8;
 
 // Grab enough recently-modified models to find 3 high-signal candidates without having to
@@ -51,16 +51,10 @@ async function main() {
 
   const existing = await listExistingModelInfo();
 
-  const today = new Date().toISOString().slice(0, 10);
-  const existingTodayCount = await countExistingPostsForDate(today);
-  const remainingToday = Math.max(0, DAILY_LIMIT - existingTodayCount);
-  if (!remainingToday) {
-    console.log(`Already have ${DAILY_LIMIT} model post(s) for ${today}.`);
-    return;
-  }
-  const candidates = await getDailyCandidates({
+  const candidates = await getRunCandidates({
     existingModelIds: existing.modelIds,
     existingFamilyKeys: existing.familyKeys,
+    limit: RUN_LIMIT,
   });
   if (!candidates.length) {
     console.log("No candidates found.");
@@ -69,15 +63,10 @@ async function main() {
 
   const resolved = await Promise.all(candidates.map(async (model) => resolveModel(model)));
   const resolvedModels = resolved.filter((item): item is ResolvedModel => Boolean(item));
-  const nextModels = pickTopModels(resolvedModels, remainingToday);
+  const nextModels = pickTopModels(resolvedModels, RUN_LIMIT);
   const created = await writeModels(nextModels);
 
   console.log(`Created ${created} model item(s).`);
-}
-
-async function countExistingPostsForDate(date: string): Promise<number> {
-  const entries = await fs.readdir(CONTENT_DIR).catch(() => [] as string[]);
-  return entries.filter((name) => name.startsWith(`${date}--`) && name.endsWith(".mdx")).length;
 }
 
 function pickTopModels(models: ResolvedModel[], limit: number): ResolvedModel[] {
@@ -113,12 +102,14 @@ function getFamilyKeyFromModelId(modelId: string): string {
   return owner ? `${owner}/${gensyn}` : gensyn;
 }
 
-async function getDailyCandidates({
+async function getRunCandidates({
   existingModelIds,
   existingFamilyKeys,
+  limit,
 }: {
   existingModelIds: Set<string>;
   existingFamilyKeys: Set<string>;
+  limit: number;
 }): Promise<ModelDraft[]> {
   const url = new URL("https://huggingface.co/api/models");
   url.searchParams.set("sort", "lastModified");
@@ -140,7 +131,7 @@ async function getDailyCandidates({
 
   const picked: ModelDraft[] = [];
   const familyCounts = new Map<string, number>();
-  const targetCount = DAILY_LIMIT * CANDIDATE_MULTIPLIER;
+  const targetCount = limit * CANDIDATE_MULTIPLIER;
 
   for (const candidate of candidates) {
     if (picked.length >= targetCount) break;
