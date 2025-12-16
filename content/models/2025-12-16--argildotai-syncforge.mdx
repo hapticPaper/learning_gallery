@@ -1,0 +1,19 @@
+---
+title: "argildotai/syncforge"
+date: "2025-12-16"
+source: "Hugging Face"
+url: "https://huggingface.co/argildotai/syncforge"
+modelId: "argildotai/syncforge"
+blurb: "An experimental-looking repo that ships multiple epoch artifacts (GGUF weights + a finetuned wav2vec checkpoint), suggesting a “sync” pipeline that mixes audio features with a GGUF model."
+thumbnail: "/models/thumbnails/2025-12-16--argildotai-syncforge.png"
+---
+
+This repository appears to be a training-artifact drop rather than a single “ready-to-run” model card: it contains multiple epoch folders with GGUF weights plus a finetuned `wav2vec` checkpoint. That combination usually points to a workflow where audio features (from wav2vec-style embeddings) are used alongside a lightweight GGUF model in a larger pipeline—something like alignment/synchronization, scoring, or conditioning.
+
+What to try first: pick one epoch folder, download the GGUF + wav2vec artifact, and validate you can load each component independently (GGUF in a llama.cpp-compatible runner; wav2vec in a PyTorch/Transformers script). Once both load cleanly, you can experiment with your own input audio and see what the repo’s intended “sync” output looks like.
+
+Quick stats from the listing feed: 2023 downloads.
+
+[View on Hugging Face](https://huggingface.co/argildotai/syncforge)
+
+Source listing: https://huggingface.co/models?sort=modified
