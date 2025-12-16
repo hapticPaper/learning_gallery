@@ -273,17 +273,17 @@ async function resolveModel(model: ModelDraft): Promise<ResolvedModel | undefine
 
   const ogTitle = stripHuggingFaceSuffix(tags["og:title"] ?? tags.title ?? model.modelId);
   const title = card?.title && !isBadTitle(card.title) ? card.title : ogTitle;
-  const seedText =
+  let seedText =
     card?.summary && (isGenericHfDescription(normalizedDescription) || !isGenericHfDescription(card.summary))
       ? card.summary
       : normalizedDescription;
 
   if (isGenericHfDescription(seedText) && !model.pipelineTag && model.likes < 5 && model.downloads < 10_000) {
-    return undefined;
+    seedText = "";
   }
 
   if (isBoilerplateModelCard(seedText) && model.likes < 10 && model.downloads < 10_000) {
-    return undefined;
+    seedText = "";
   }
 
   const summary = buildSummary({
