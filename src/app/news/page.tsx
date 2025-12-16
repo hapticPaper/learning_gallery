@@ -1,23 +1,17 @@
 import type { Metadata } from "next";
 
 import { NewsCard } from "@/components/NewsCard";
-import { formatDaysAgo, getDaysSince, getLatestCharlieChangelogEntry } from "@/lib/charlieChangelog";
+import { getCharlieChangelogSnapshot } from "@/lib/charlieChangelogSnapshot";
 import { getAllNews } from "@/lib/news";
-
-const RECENT_CHANGELOG_WINDOW_DAYS = 15;
 
 export const metadata: Metadata = {
   title: "News",
 };
 
 export default async function NewsPage() {
-  const [news, latestChangelogEntry] = await Promise.all([
-    getAllNews(),
-    getLatestCharlieChangelogEntry(),
-  ]);
-  const changelogDaysSince = latestChangelogEntry ? getDaysSince(latestChangelogEntry.date) : null;
-  const hasRecentChangelog =
-    changelogDaysSince !== null && changelogDaysSince < RECENT_CHANGELOG_WINDOW_DAYS;
+  const news = await getAllNews();
+  const { latestEntry: latestChangelogEntry, hasRecentChangelog, windowDays } =
+    getCharlieChangelogSnapshot();
 
   return (
     <div className="space-y-6">
@@ -48,7 +42,7 @@ export default async function NewsPage() {
               </a>
 
               <p className="text-sm text-zinc-600 dark:text-zinc-300">
-                {latestChangelogEntry.dateText} ({formatDaysAgo(changelogDaysSince)})
+                {latestChangelogEntry.dateText}
               </p>
             </>
           ) : (
@@ -62,6 +56,26 @@ export default async function NewsPage() {
                 <p className="text-sm text-zinc-600 dark:text-zinc-300">
                   (Couldn&#39;t load the Charlie Labs changelog right now.)
                 </p>
+              ) : null}
+
+              {latestChangelogEntry && !hasRecentChangelog ? (
+                <>
+                  <p className="text-sm text-zinc-600 dark:text-zinc-300">
+                    (No Charlie Labs changelog updates in the last {windowDays} days.)
+                  </p>
+
+                  <p className="text-sm text-zinc-600 dark:text-zinc-300">
+                    Latest changelog entry:{" "}
+                    <a
+                      className="font-medium text-zinc-950 hover:underline dark:text-zinc-50"
+                      href={latestChangelogEntry.url}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      {latestChangelogEntry.title}
+                    </a>
+                  </p>
+                </>
               ) : null}
 
               <a

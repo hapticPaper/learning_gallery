@@ -1,5 +1,9 @@
 const CHANGELOG_URL = "https://www.charlielabs.ai/changelog";
 
+export const RECENT_CHANGELOG_WINDOW_DAYS = 15;
+
+type ChangelogFetchCache = "force-cache" | "no-store";
+
 const LATEST_ENTRY_REGEX =
   /<div id="([^"]+)"[^>]*>[\s\S]*?<a[^>]+href="\?entry=[^"]+"[^>]*>([^<]+)<\/a>[\s\S]*?<h3[^>]*>([^<]+)<\/h3>/;
 
@@ -11,9 +15,28 @@ export type CharlieChangelogEntry = {
   url: string;
 };
 
-export async function getLatestCharlieChangelogEntry(): Promise<CharlieChangelogEntry | null> {
+/**
+* Determines "recency" using whole UTC calendar days (via `getDaysSince`).
+*/
+export function isChangelogEntryRecent(date: Date, now = new Date()): boolean {
+  const daysSince = getDaysSince(date, now);
+  return daysSince !== null && daysSince < RECENT_CHANGELOG_WINDOW_DAYS;
+}
+
+/**
+* Fetches the latest entry from the public Charlie Labs changelog page.
+*
+* Intended for offline/scheduled snapshot generation (avoid calling in per-request code paths).
+*
+* `cache` defaults to `"force-cache"`. Scheduled scripts should generally run this at most once a day.
+*/
+export async function getLatestCharlieChangelogEntry({
+  cache = "force-cache",
+}: {
+  cache?: ChangelogFetchCache;
+} = {}): Promise<CharlieChangelogEntry | null> {
   try {
-    const response = await fetch(CHANGELOG_URL, { cache: "force-cache" });
+    const response = await fetch(CHANGELOG_URL, { cache });
     if (!response.ok) return null;
 
     const html = await response.text();
@@ -38,20 +61,19 @@ export async function getLatestCharlieChangelogEntry(): Promise<CharlieChangelog
   }
 }
 
+/**
+* Returns the whole-day difference between `date` and `now` using UTC day units.
+*
+* Negative values mean the date is in the future.
+*/
 export function getDaysSince(date: Date, now = new Date()): number | null {
   if (Number.isNaN(date.getTime())) return null;
 
   const msPerDay = 24 * 60 * 60 * 1000;
-  const deltaMs = now.getTime() - date.getTime();
+  const dateUtc = Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate());
+  const nowUtc = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
+  const deltaMs = nowUtc - dateUtc;
   return Math.floor(deltaMs / msPerDay);
-}
-
-export function formatDaysAgo(days: number | null): string {
-  if (days === null) return "recently";
-  if (days < 0) return "in the future";
-  if (days === 0) return "today";
-  if (days === 1) return "1 day ago";
-  return `${days} days ago`;
 }
 
 function decodeHtmlEntities(input: string): string {
