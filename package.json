@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
-    "news:fetch": "bun run src/scripts/fetch-news.ts"
+    "news:fetch": "bun run src/scripts/fetch-news.ts",
+    "models:fetch": "bun run src/scripts/fetch-models.ts"
   },
   "dependencies": {
     "@next/third-parties": "^16.0.10",
