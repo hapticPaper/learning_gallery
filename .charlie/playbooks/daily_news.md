@@ -34,8 +34,8 @@ Each day, find up to 3 high-signal AI/ML stories (Hacker News, The AI Search on 
 2. Run the generator:
    - `bun run news:fetch`
 3. For each newly generated MDX file in `content/news/`:
-   - Ensure the summary is accurate and reads well.
-   - If needed, expand the MDX body beyond the one-liner (still keep it short).
+   - Write a summary 1-2 paragraphs, 150-300 words. 
+   - Create a blurb description thats under 240 characters. 
 4. Confirm thumbnails exist for all new items:
    - `public/news/thumbnails/*` contains a matching downloaded thumbnail.
 5. Open a PR titled "News: Daily digest YYYY-MM-DD".
