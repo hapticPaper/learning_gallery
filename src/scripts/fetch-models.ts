@@ -62,9 +62,27 @@ async function main() {
   }
 
   const resolved = await Promise.allSettled(candidates.map(async (model) => resolveModel(model)));
-  const resolvedModels = resolved
-    .flatMap((result) => (result.status === "fulfilled" ? [result.value] : []))
-    .filter((item): item is ResolvedModel => Boolean(item));
+  const resolvedModels: ResolvedModel[] = [];
+  let rejectedCount = 0;
+  let rejectedExample: string | undefined;
+
+  for (const result of resolved) {
+    if (result.status === "fulfilled") {
+      if (result.value) resolvedModels.push(result.value);
+      continue;
+    }
+
+    rejectedCount += 1;
+    if (!rejectedExample) {
+      rejectedExample = result.reason instanceof Error ? result.reason.message : String(result.reason);
+    }
+  }
+
+  if (rejectedCount > 0) {
+    console.warn(
+      `Failed to resolve ${rejectedCount} model candidate(s)${rejectedExample ? ` (example: ${rejectedExample})` : ""}.`,
+    );
+  }
   const nextModels = pickTopModels(resolvedModels, RUN_LIMIT);
   const created = await writeModels(nextModels);
 
@@ -203,6 +221,7 @@ function isInterestingCandidate(candidate: HfModelEntry): boolean {
   }
 
   const hasNonRegionalTag = tags.some((tag) => !tag.startsWith("region:"));
+  // Keep the threshold low to avoid frequent no-ops when the feed is dominated by brand-new models.
   if (!hasNonRegionalTag && !pipelineTag) {
     return false;
   }
