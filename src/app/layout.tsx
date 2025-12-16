@@ -32,7 +32,7 @@ export default function RootLayout({
 }: Readonly<{
   children: ReactNode;
 }>) {
-  const isValidGtmId = /^GTM-[A-Z0-9]+$/.test(gtmId);
+  const isValidGtmId = /^GTM-[A-Za-z0-9]+$/.test(gtmId);
   const shouldLoadGtm = process.env.NODE_ENV === "production" && isValidGtmId;
 
   return (
@@ -40,6 +40,17 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased font-sans`}
       >
+        {shouldLoadGtm ? (
+          <noscript>
+            <iframe
+              title="Google Tag Manager"
+              src={`https://www.googletagmanager.com/ns.html?id=${gtmId}`}
+              height="0"
+              width="0"
+              style={{ display: "none", visibility: "hidden" }}
+            />
+          </noscript>
+        ) : null}
         <div className="min-h-dvh bg-zinc-50 text-zinc-950 dark:bg-zinc-950 dark:text-zinc-50">
           <SiteHeader />
           <main className="mx-auto w-full max-w-6xl px-4 py-10 sm:px-6">
