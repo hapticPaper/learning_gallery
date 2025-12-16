@@ -62,7 +62,7 @@ async function main() {
       const dedupeUrl = normalizeUrlForDedup(resolved.url);
       if (existingUrls.has(dedupeUrl)) continue;
       existingUrls.add(dedupeUrl);
-      nextStories.push({ ...resolved, url: dedupeUrl });
+      nextStories.push(resolved);
     }
   }
 
@@ -209,24 +209,25 @@ async function resolveStory(
   story: StoryDraft,
   existingUrls: Set<string>,
 ): Promise<ResolvedStory | undefined> {
-  const resolvedUrl = normalizeUrlForDedup(await resolveFinalUrl(story.url));
-  if (existingUrls.has(resolvedUrl)) return undefined;
+  const finalUrl = await resolveFinalUrl(story.url);
+  const dedupeUrl = normalizeUrlForDedup(finalUrl);
+  if (existingUrls.has(dedupeUrl)) return undefined;
 
-  const resolvedSeedText = story.seedText?.trim() ? story.seedText : await getPageDescription(resolvedUrl);
+  const resolvedSeedText = story.seedText?.trim() ? story.seedText : await getPageDescription(finalUrl);
   const summary = normalizeSummaryBody(resolvedSeedText || story.title);
   const blurb = normalizeBlurb(summary || story.title);
 
   const slug = await allocateSlug({ title: story.title, date: story.date });
-  const thumbnailCandidate = story.thumbnailUrl ?? (await getPageThumbnailUrl(resolvedUrl));
+  const thumbnailCandidate = story.thumbnailUrl ?? (await getPageThumbnailUrl(finalUrl));
   const thumbnailPath = await downloadThumbnail({
     slug,
-    pageUrl: story.publisherUrl ?? resolvedUrl,
+    pageUrl: story.publisherUrl ?? finalUrl,
     imageUrl: thumbnailCandidate,
   });
 
   return {
     title: story.title,
-    url: resolvedUrl,
+    url: finalUrl,
     source: story.source,
     date: story.date,
     summary,
