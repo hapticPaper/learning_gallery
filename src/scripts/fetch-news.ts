@@ -345,8 +345,15 @@ function normalizeText(value: string): string {
 }
 
 async function getPageDescription(url: string): Promise<string | undefined> {
-  const html = await fetchText(url).catch(() => "");
-  if (!html) return undefined;
+  let html: string;
+  try {
+    html = await fetchText(url);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.warn(`Failed to fetch HTML for description from ${url}: ${message}`);
+    return undefined;
+  }
+
   const tags = extractMetaTags(html);
   const desc =
     tags["og:description"] ||
@@ -358,8 +365,15 @@ async function getPageDescription(url: string): Promise<string | undefined> {
 }
 
 async function getPageThumbnailUrl(url: string): Promise<string | undefined> {
-  const html = await fetchText(url).catch(() => "");
-  if (!html) return undefined;
+  let html: string;
+  try {
+    html = await fetchText(url);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.warn(`Failed to fetch HTML for thumbnail from ${url}: ${message}`);
+    return undefined;
+  }
+
   const tags = extractMetaTags(html);
   const image = tags["og:image"] || tags["twitter:image"] || tags["og:image:url"];
   if (image) return new URL(image, url).toString();

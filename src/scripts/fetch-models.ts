@@ -63,25 +63,25 @@ async function main() {
 
   const resolved = await Promise.allSettled(candidates.map(async (model) => resolveModel(model)));
   const resolvedModels: ResolvedModel[] = [];
-  let rejectedCount = 0;
-  let rejectedExample: string | undefined;
+  const rejected: Array<{ modelId: string; message: string }> = [];
 
-  for (const result of resolved) {
+  for (const [index, result] of resolved.entries()) {
     if (result.status === "fulfilled") {
       if (result.value) resolvedModels.push(result.value);
       continue;
     }
 
-    rejectedCount += 1;
-    if (!rejectedExample) {
-      rejectedExample = result.reason instanceof Error ? result.reason.message : String(result.reason);
-    }
+    const modelId = candidates[index]?.modelId ?? "<unknown>";
+    const message = result.reason instanceof Error ? result.reason.message : String(result.reason);
+    rejected.push({ modelId, message });
   }
 
-  if (rejectedCount > 0) {
-    console.warn(
-      `Failed to resolve ${rejectedCount} model candidate(s)${rejectedExample ? ` (example: ${rejectedExample})` : ""}.`,
-    );
+  if (rejected.length > 0) {
+    const preview = rejected
+      .slice(0, 3)
+      .map((failure) => `${failure.modelId}: ${failure.message}`)
+      .join("; ");
+    console.warn(`Failed to resolve ${rejected.length} model candidate(s). ${preview}`);
   }
   const nextModels = pickTopModels(resolvedModels, RUN_LIMIT);
   const created = await writeModels(nextModels);
