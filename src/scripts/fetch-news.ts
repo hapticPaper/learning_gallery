@@ -27,41 +27,66 @@ const CONTENT_DIR = path.join(process.cwd(), "content", "news");
 const THUMBNAILS_DIR = path.join(process.cwd(), "public", "news", "thumbnails");
 
 const YOUTUBE_CHANNEL_ID = "UCIgnGlGkVRhd4qNFcEwLL4A";
+const RUN_LIMIT = 3;
 
 async function main() {
   await fs.mkdir(CONTENT_DIR, { recursive: true });
   await fs.mkdir(THUMBNAILS_DIR, { recursive: true });
 
   const existingUrls = await listExistingUrls();
-  const candidates = await getDailyCandidates();
+  const candidates = await getRunCandidates();
   if (!candidates.length) {
     console.log("No candidates found.");
     return;
   }
 
-  const resolved = await Promise.all(candidates.map(async (story) => resolveStory(story, existingUrls)));
-  const nextStories = resolved.filter((item): item is ResolvedStory => Boolean(item));
+  const nextStories: ResolvedStory[] = [];
+  const batchSize = 4;
+
+  for (let i = 0; i < candidates.length && nextStories.length < RUN_LIMIT; i += batchSize) {
+    const batch = candidates.slice(i, i + batchSize);
+    const results = await Promise.allSettled(batch.map(async (story) => resolveStory(story, existingUrls)));
+
+    for (let j = 0; j < results.length && nextStories.length < RUN_LIMIT; j += 1) {
+      const story = batch[j];
+      const result = results[j];
+
+      if (result?.status === "rejected") {
+        const message = result.reason instanceof Error ? result.reason.message : String(result.reason);
+        console.warn(`Skipping candidate ${story?.url}: ${message}`);
+        continue;
+      }
+
+      const resolved = result?.value;
+      if (!resolved) continue;
+      const dedupeUrl = normalizeUrlForDedup(resolved.url);
+      if (existingUrls.has(dedupeUrl)) continue;
+      existingUrls.add(dedupeUrl);
+      nextStories.push(resolved);
+    }
+  }
+
   const created = await writeStories(nextStories);
 
   console.log(`Created ${created} news item(s).`);
 }
 
-async function getDailyCandidates(): Promise<StoryDraft[]> {
+async function getRunCandidates(): Promise<StoryDraft[]> {
   const [hn, yt, google] = await Promise.all([
-    getHackerNewsCandidate(),
-    getYouTubeCandidate(),
-    getGoogleNewsCandidate(),
+    getHackerNewsCandidates(),
+    getYouTubeCandidates(),
+    getGoogleNewsCandidates(),
   ]);
 
-  return [hn, yt, google].filter((item): item is StoryDraft => Boolean(item)).slice(0, 3);
+  return interleaveCandidates([hn, yt, google]);
 }
 
-async function getHackerNewsCandidate(): Promise<StoryDraft | undefined> {
+async function getHackerNewsCandidates(): Promise<StoryDraft[]> {
   const oneDayAgo = Math.floor(Date.now() / 1000 - 60 * 60 * 24);
   const url = new URL("https://hn.algolia.com/api/v1/search");
   url.searchParams.set("query", "AI");
   url.searchParams.set("tags", "story");
-  url.searchParams.set("hitsPerPage", "10");
+  url.searchParams.set("hitsPerPage", "25");
   url.searchParams.set("numericFilters", `created_at_i>${oneDayAgo}`);
   url.searchParams.set("restrictSearchableAttributes", "title");
 
@@ -69,102 +94,140 @@ async function getHackerNewsCandidate(): Promise<StoryDraft | undefined> {
     url.toString(),
   );
 
-  const hit = data.hits.find((item) => item.url && item.title);
-  if (!hit?.url) return undefined;
+  const seen = new Set<string>();
+  const picked: StoryDraft[] = [];
 
-  return {
-    title: hit.title,
-    url: hit.url,
-    source: "Hacker News",
-    date: formatDateFromUnixSeconds(hit.created_at_i),
-  };
+  for (const hit of data.hits) {
+    if (!hit.url || !hit.title) continue;
+    if (seen.has(hit.url)) continue;
+    seen.add(hit.url);
+
+    picked.push({
+      title: hit.title,
+      url: hit.url,
+      source: "Hacker News",
+      date: formatDateFromUnixSeconds(hit.created_at_i),
+    });
+  }
+
+  return picked;
 }
 
-async function getYouTubeCandidate(): Promise<StoryDraft | undefined> {
+async function getYouTubeCandidates(): Promise<StoryDraft[]> {
   const feedUrl = `https://www.youtube.com/feeds/videos.xml?channel_id=${YOUTUBE_CHANNEL_ID}`;
   const xml = await fetchText(feedUrl);
 
   const entries = xml.match(/<entry>[\s\S]*?<\/entry>/g) ?? [];
-  const entry = entries[0];
-  if (!entry) return undefined;
+  const picked: StoryDraft[] = [];
+  const seen = new Set<string>();
 
-  const title = getXmlTag(entry, "title");
-  const videoId = getXmlTag(entry, "yt:videoId");
-  const published = getXmlTag(entry, "published");
-  const description = getXmlTag(entry, "media:description");
+  for (const entry of entries.slice(0, 10)) {
+    const title = getXmlTag(entry, "title");
+    const videoId = getXmlTag(entry, "yt:videoId");
+    const published = getXmlTag(entry, "published");
+    const description = getXmlTag(entry, "media:description");
 
-  if (!title || !videoId || !published) return undefined;
+    if (!title || !videoId || !published) continue;
+    if (seen.has(videoId)) continue;
+    seen.add(videoId);
 
-  const publishedDate = published.slice(0, 10);
+    const publishedDate = published.slice(0, 10);
 
-  return {
-    title,
-    url: `https://www.youtube.com/watch?v=${videoId}`,
-    source: "The AI Search (YouTube)",
-    date: publishedDate,
-    seedText: normalizeText(description ?? ""),
-    thumbnailUrl: `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`,
-  };
+    picked.push({
+      title,
+      url: `https://www.youtube.com/watch?v=${videoId}`,
+      source: "The AI Search (YouTube)",
+      date: publishedDate,
+      seedText: normalizeText(description ?? ""),
+      thumbnailUrl: `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`,
+    });
+  }
+
+  return picked;
 }
 
-async function getGoogleNewsCandidate(): Promise<StoryDraft | undefined> {
+async function getGoogleNewsCandidates(): Promise<StoryDraft[]> {
   const rssUrl =
     "https://news.google.com/rss/search?q=artificial%20intelligence%20when:1d&hl=en-US&gl=US&ceid=US:en";
   const xml = await fetchText(rssUrl);
 
   const items = xml.match(/<item>[\s\S]*?<\/item>/g) ?? [];
-  const item = items[0];
-  if (!item) return undefined;
+  const picked: StoryDraft[] = [];
+  const seen = new Set<string>();
 
-  const rawTitle = decodeXmlEntities(stripCdata(getXmlTag(item, "title") ?? ""));
-  const link = stripCdata(getXmlTag(item, "link") ?? "");
-  const pubDateRaw = stripCdata(getXmlTag(item, "pubDate") ?? "");
+  for (const item of items.slice(0, 25)) {
+    const rawTitle = decodeXmlEntities(stripCdata(getXmlTag(item, "title") ?? ""));
+    const link = stripCdata(getXmlTag(item, "link") ?? "");
+    const pubDateRaw = stripCdata(getXmlTag(item, "pubDate") ?? "");
 
-  const { publisherName, publisherUrl } = parseGoogleNewsSource(item);
-  const title = publisherName ? rawTitle.replace(new RegExp(`\\s+-\\s+${escapeRegExp(publisherName)}$`), "") : rawTitle;
+    const { publisherName, publisherUrl } = parseGoogleNewsSource(item);
+    const title = publisherName
+      ? rawTitle.replace(new RegExp(`\\s+-\\s+${escapeRegExp(publisherName)}$`), "")
+      : rawTitle;
 
-  if (!title || !link) return undefined;
-  const pubDate = pubDateRaw ? new Date(pubDateRaw) : new Date();
-  const date = pubDate.toISOString().slice(0, 10);
+    if (!title || !link) continue;
+    if (seen.has(link)) continue;
+    seen.add(link);
 
-  const source = publisherName ? `${publisherName} (via Google News)` : "Google News";
+    const pubDate = pubDateRaw ? new Date(pubDateRaw) : new Date();
+    const date = pubDate.toISOString().slice(0, 10);
 
-  return {
-    title,
-    url: link,
-    source,
-    date,
-    seedText: title,
-    publisherName,
-    publisherUrl,
-    thumbnailUrl: publisherUrl
-      ? `https://www.google.com/s2/favicons?sz=256&domain_url=${encodeURIComponent(publisherUrl)}`
-      : undefined,
-  };
+    const source = publisherName ? `${publisherName} (via Google News)` : "Google News";
+
+    picked.push({
+      title,
+      url: link,
+      source,
+      date,
+      seedText: title,
+      publisherName,
+      publisherUrl,
+      thumbnailUrl: publisherUrl
+        ? `https://www.google.com/s2/favicons?sz=256&domain_url=${encodeURIComponent(publisherUrl)}`
+        : undefined,
+    });
+  }
+
+  return picked;
+}
+
+function interleaveCandidates(groups: StoryDraft[][]): StoryDraft[] {
+  const maxLen = Math.max(...groups.map((group) => group.length), 0);
+  const interleaved: StoryDraft[] = [];
+
+  for (let i = 0; i < maxLen; i += 1) {
+    for (const group of groups) {
+      const item = group[i];
+      if (item) interleaved.push(item);
+    }
+  }
+
+  return interleaved;
 }
 
 async function resolveStory(
   story: StoryDraft,
   existingUrls: Set<string>,
 ): Promise<ResolvedStory | undefined> {
-  const resolvedUrl = await resolveFinalUrl(story.url);
-  if (existingUrls.has(resolvedUrl)) return undefined;
+  const finalUrl = await resolveFinalUrl(story.url);
+  const dedupeUrl = normalizeUrlForDedup(finalUrl);
+  if (existingUrls.has(dedupeUrl)) return undefined;
 
-  const resolvedSeedText = story.seedText?.trim() ? story.seedText : await getPageDescription(resolvedUrl);
+  const resolvedSeedText = story.seedText?.trim() ? story.seedText : await getPageDescription(finalUrl);
   const summary = normalizeSummaryBody(resolvedSeedText || story.title);
   const blurb = normalizeBlurb(summary || story.title);
 
   const slug = await allocateSlug({ title: story.title, date: story.date });
-  const thumbnailCandidate = story.thumbnailUrl ?? (await getPageThumbnailUrl(resolvedUrl));
+  const thumbnailCandidate = story.thumbnailUrl ?? (await getPageThumbnailUrl(finalUrl));
   const thumbnailPath = await downloadThumbnail({
     slug,
-    pageUrl: story.publisherUrl ?? resolvedUrl,
+    pageUrl: story.publisherUrl ?? finalUrl,
     imageUrl: thumbnailCandidate,
   });
 
   return {
     title: story.title,
-    url: resolvedUrl,
+    url: finalUrl,
     source: story.source,
     date: story.date,
     summary,
@@ -186,7 +249,7 @@ async function listExistingUrls(): Promise<Set<string>> {
     if (!value) continue;
 
     const normalized = normalizeFrontmatterString(value);
-    if (normalized) urls.add(normalized);
+    if (normalized) urls.add(normalizeUrlForDedup(normalized));
   }
 
   return urls;
@@ -202,6 +265,52 @@ function normalizeFrontmatterString(value: string): string {
   }
 
   return value.replace(/^['"]|['"]$/g, "");
+}
+
+function normalizeUrlForDedup(value: string): string {
+  const trimmed = value.trim();
+  try {
+    const url = new URL(trimmed);
+    url.hash = "";
+
+    const trackingKeys = new Set([
+      "fbclid",
+      "gclid",
+      "igshid",
+      "mc_cid",
+      "mc_eid",
+      "ref",
+      "ref_src",
+      "utm_campaign",
+      "utm_content",
+      "utm_id",
+      "utm_medium",
+      "utm_name",
+      "utm_source",
+      "utm_term",
+      "yclid",
+    ]);
+
+    for (const key of Array.from(url.searchParams.keys())) {
+      if (key.startsWith("utm_") || trackingKeys.has(key)) {
+        url.searchParams.delete(key);
+      }
+    }
+
+    const sortedParams = Array.from(url.searchParams.entries()).sort(([a], [b]) => a.localeCompare(b));
+    url.search = "";
+    for (const [key, val] of sortedParams) {
+      url.searchParams.append(key, val);
+    }
+
+    if (url.pathname !== "/" && url.pathname.endsWith("/")) {
+      url.pathname = url.pathname.slice(0, -1);
+    }
+
+    return url.toString();
+  } catch {
+    return trimmed;
+  }
 }
 
 async function writeStories(stories: ResolvedStory[]): Promise<number> {
@@ -292,7 +401,15 @@ function normalizeText(value: string): string {
 }
 
 async function getPageDescription(url: string): Promise<string | undefined> {
-  const html = await fetchText(url);
+  let html: string;
+  try {
+    html = await fetchText(url);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.warn(`Failed to fetch HTML for description from ${url}: ${message}`);
+    return undefined;
+  }
+
   const tags = extractMetaTags(html);
   const desc =
     tags["og:description"] ||
@@ -304,7 +421,15 @@ async function getPageDescription(url: string): Promise<string | undefined> {
 }
 
 async function getPageThumbnailUrl(url: string): Promise<string | undefined> {
-  const html = await fetchText(url);
+  let html: string;
+  try {
+    html = await fetchText(url);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.warn(`Failed to fetch HTML for thumbnail from ${url}: ${message}`);
+    return undefined;
+  }
+
   const tags = extractMetaTags(html);
   const image = tags["og:image"] || tags["twitter:image"] || tags["og:image:url"];
   if (image) return new URL(image, url).toString();

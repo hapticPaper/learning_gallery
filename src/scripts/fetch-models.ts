@@ -38,12 +38,12 @@ const CONTENT_DIR = path.join(process.cwd(), "content", "models");
 const THUMBNAILS_DIR = path.join(process.cwd(), "public", "models", "thumbnails");
 
 const SOURCE_URL = "https://huggingface.co/models?sort=modified";
-const DAILY_LIMIT = 3;
+const RUN_LIMIT = 3;
 const CANDIDATE_MULTIPLIER = 8;
 
 // Grab enough recently-modified models to find 3 high-signal candidates without having to
 // crawl deeply into the feed.
-const API_FETCH_LIMIT = 120;
+const API_FETCH_LIMIT = 240;
 
 async function main() {
   await fs.mkdir(CONTENT_DIR, { recursive: true });
@@ -51,33 +51,52 @@ async function main() {
 
   const existing = await listExistingModelInfo();
 
-  const today = new Date().toISOString().slice(0, 10);
-  const existingTodayCount = await countExistingPostsForDate(today);
-  const remainingToday = Math.max(0, DAILY_LIMIT - existingTodayCount);
-  if (!remainingToday) {
-    console.log(`Already have ${DAILY_LIMIT} model post(s) for ${today}.`);
-    return;
-  }
-  const candidates = await getDailyCandidates({
+  const candidates = await getRunCandidates({
     existingModelIds: existing.modelIds,
     existingFamilyKeys: existing.familyKeys,
+    limit: RUN_LIMIT,
   });
   if (!candidates.length) {
     console.log("No candidates found.");
     return;
   }
 
-  const resolved = await Promise.all(candidates.map(async (model) => resolveModel(model)));
-  const resolvedModels = resolved.filter((item): item is ResolvedModel => Boolean(item));
-  const nextModels = pickTopModels(resolvedModels, remainingToday);
+  const resolved = await Promise.allSettled(candidates.map(async (model) => resolveModel(model)));
+  const resolvedModels: ResolvedModel[] = [];
+  const rejected: Array<{ modelId: string; message: string }> = [];
+
+  for (const [index, result] of resolved.entries()) {
+    if (result.status === "fulfilled") {
+      if (result.value) resolvedModels.push(result.value);
+      continue;
+    }
+
+    const modelId = candidates[index]?.modelId ?? "<unknown>";
+    const message = result.reason instanceof Error ? result.reason.message : String(result.reason);
+    rejected.push({ modelId, message });
+  }
+
+  if (rejected.length > 0) {
+    const preview = rejected
+      .slice(0, 3)
+      .map((failure) => `${failure.modelId}: ${failure.message}`)
+      .join("; ");
+    console.warn(`Failed to resolve ${rejected.length} model candidate(s). ${preview}`);
+  }
+
+  if (!resolvedModels.length) {
+    console.log(`Resolved 0 usable models out of ${candidates.length} candidate(s).`);
+    return;
+  }
+
+  const nextModels = pickTopModels(resolvedModels, RUN_LIMIT);
+  if (!nextModels.length) {
+    console.log("No eligible models after selection.");
+    return;
+  }
   const created = await writeModels(nextModels);
 
   console.log(`Created ${created} model item(s).`);
-}
-
-async function countExistingPostsForDate(date: string): Promise<number> {
-  const entries = await fs.readdir(CONTENT_DIR).catch(() => [] as string[]);
-  return entries.filter((name) => name.startsWith(`${date}--`) && name.endsWith(".mdx")).length;
 }
 
 function pickTopModels(models: ResolvedModel[], limit: number): ResolvedModel[] {
@@ -113,12 +132,14 @@ function getFamilyKeyFromModelId(modelId: string): string {
   return owner ? `${owner}/${gensyn}` : gensyn;
 }
 
-async function getDailyCandidates({
+async function getRunCandidates({
   existingModelIds,
   existingFamilyKeys,
+  limit,
 }: {
   existingModelIds: Set<string>;
   existingFamilyKeys: Set<string>;
+  limit: number;
 }): Promise<ModelDraft[]> {
   const url = new URL("https://huggingface.co/api/models");
   url.searchParams.set("sort", "lastModified");
@@ -140,7 +161,7 @@ async function getDailyCandidates({
 
   const picked: ModelDraft[] = [];
   const familyCounts = new Map<string, number>();
-  const targetCount = DAILY_LIMIT * CANDIDATE_MULTIPLIER;
+  const targetCount = limit * CANDIDATE_MULTIPLIER;
 
   for (const candidate of candidates) {
     if (picked.length >= targetCount) break;
@@ -209,14 +230,14 @@ function isInterestingCandidate(candidate: HfModelEntry): boolean {
     return false;
   }
 
-  const hasPipeline = Boolean(pipelineTag);
   const hasNonRegionalTag = tags.some((tag) => !tag.startsWith("region:"));
+  // Keep thresholds modest so runs don't no-op when the feed is dominated by brand-new models.
+  if (!hasNonRegionalTag && !pipelineTag) {
+    return false;
+  }
 
-  const qualifies = hasPipeline
-    ? likes >= 1 || downloads >= 200
-    : likes >= 5 || downloads >= 2_000;
-
-  return qualifies && hasNonRegionalTag;
+  const hasPipeline = Boolean(pipelineTag);
+  return hasPipeline ? likes >= 1 || downloads >= 100 : likes >= 2 || downloads >= 200;
 }
 
 function scoreCandidate(candidate: HfModelEntry): number {
@@ -263,17 +284,17 @@ async function resolveModel(model: ModelDraft): Promise<ResolvedModel | undefine
 
   const ogTitle = stripHuggingFaceSuffix(tags["og:title"] ?? tags.title ?? model.modelId);
   const title = card?.title && !isBadTitle(card.title) ? card.title : ogTitle;
-  const seedText =
+  let seedText =
     card?.summary && (isGenericHfDescription(normalizedDescription) || !isGenericHfDescription(card.summary))
       ? card.summary
       : normalizedDescription;
 
   if (isGenericHfDescription(seedText) && !model.pipelineTag && model.likes < 5 && model.downloads < 10_000) {
-    return undefined;
+    seedText = "";
   }
 
   if (isBoilerplateModelCard(seedText) && model.likes < 10 && model.downloads < 10_000) {
-    return undefined;
+    seedText = "";
   }
 
   const summary = buildSummary({
@@ -444,8 +465,9 @@ function buildSummary({
   if (description) {
     parts.push(description);
   } else {
+    const pipelineHint = pipelineTag ? ` It’s tagged as \`${pipelineTag}\` in the listing.` : "";
     parts.push(
-      `A recently updated model on Hugging Face (${modelId}). If the card is sparse, check the README for details on what it does and how to run it.`,
+      `A recently updated model on Hugging Face (${modelId}).${pipelineHint} If the card is sparse, check the README for details on what it does and how to run it.`,
     );
   }
 
