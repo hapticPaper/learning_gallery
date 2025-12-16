@@ -43,7 +43,7 @@ const CANDIDATE_MULTIPLIER = 8;
 
 // Grab enough recently-modified models to find 3 high-signal candidates without having to
 // crawl deeply into the feed.
-const API_FETCH_LIMIT = 120;
+const API_FETCH_LIMIT = 240;
 
 async function main() {
   await fs.mkdir(CONTENT_DIR, { recursive: true });
@@ -221,12 +221,13 @@ function isInterestingCandidate(candidate: HfModelEntry): boolean {
   }
 
   const hasNonRegionalTag = tags.some((tag) => !tag.startsWith("region:"));
-  // Keep the threshold low to avoid frequent no-ops when the feed is dominated by brand-new models.
+  // Keep thresholds modest so runs don't no-op when the feed is dominated by brand-new models.
   if (!hasNonRegionalTag && !pipelineTag) {
     return false;
   }
 
-  return Boolean(pipelineTag) || likes >= 1 || downloads >= 10;
+  const hasPipeline = Boolean(pipelineTag);
+  return hasPipeline ? likes >= 1 || downloads >= 100 : likes >= 2 || downloads >= 200;
 }
 
 function scoreCandidate(candidate: HfModelEntry): number {

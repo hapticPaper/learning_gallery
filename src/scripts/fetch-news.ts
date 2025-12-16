@@ -208,7 +208,7 @@ async function resolveStory(
   story: StoryDraft,
   existingUrls: Set<string>,
 ): Promise<ResolvedStory | undefined> {
-  const resolvedUrl = await resolveFinalUrl(story.url);
+  const resolvedUrl = normalizeUrlForDedup(await resolveFinalUrl(story.url));
   if (existingUrls.has(resolvedUrl)) return undefined;
 
   const resolvedSeedText = story.seedText?.trim() ? story.seedText : await getPageDescription(resolvedUrl);
@@ -247,7 +247,7 @@ async function listExistingUrls(): Promise<Set<string>> {
     if (!value) continue;
 
     const normalized = normalizeFrontmatterString(value);
-    if (normalized) urls.add(normalized);
+    if (normalized) urls.add(normalizeUrlForDedup(normalized));
   }
 
   return urls;
@@ -263,6 +263,52 @@ function normalizeFrontmatterString(value: string): string {
   }
 
   return value.replace(/^['"]|['"]$/g, "");
+}
+
+function normalizeUrlForDedup(value: string): string {
+  const trimmed = value.trim();
+  try {
+    const url = new URL(trimmed);
+    url.hash = "";
+
+    const trackingKeys = new Set([
+      "fbclid",
+      "gclid",
+      "igshid",
+      "mc_cid",
+      "mc_eid",
+      "ref",
+      "ref_src",
+      "utm_campaign",
+      "utm_content",
+      "utm_id",
+      "utm_medium",
+      "utm_name",
+      "utm_source",
+      "utm_term",
+      "yclid",
+    ]);
+
+    for (const key of Array.from(url.searchParams.keys())) {
+      if (key.startsWith("utm_") || trackingKeys.has(key)) {
+        url.searchParams.delete(key);
+      }
+    }
+
+    const sortedParams = Array.from(url.searchParams.entries()).sort(([a], [b]) => a.localeCompare(b));
+    url.search = "";
+    for (const [key, val] of sortedParams) {
+      url.searchParams.append(key, val);
+    }
+
+    if (url.pathname !== "/" && url.pathname.endsWith("/")) {
+      url.pathname = url.pathname.slice(0, -1);
+    }
+
+    return url.toString();
+  } catch {
+    return trimmed;
+  }
 }
 
 async function writeStories(stories: ResolvedStory[]): Promise<number> {
