@@ -31,7 +31,7 @@ export function NewsCard({ item }: { item: NewsListItem }) {
         </div>
 
         <p className="mt-2 line-clamp-2 text-sm leading-6 text-zinc-600 dark:text-zinc-300">
-          {item.meta.summary}
+          {item.meta.blurb}
         </p>
       </div>
     </Link>

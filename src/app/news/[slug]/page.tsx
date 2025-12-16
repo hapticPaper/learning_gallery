@@ -21,7 +21,7 @@ export async function generateMetadata({
   const item = await getNewsItem(slug);
   return {
     title: item.meta.title,
-    description: item.meta.summary,
+    description: item.meta.blurb,
   };
 }
 
