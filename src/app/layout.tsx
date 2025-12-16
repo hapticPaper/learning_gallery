@@ -41,15 +41,18 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased font-sans`}
       >
         {shouldLoadGtm ? (
-          <noscript>
-            <iframe
-              title="Google Tag Manager"
-              src={`https://www.googletagmanager.com/ns.html?id=${gtmId}`}
-              height="0"
-              width="0"
-              style={{ display: "none", visibility: "hidden" }}
-            />
-          </noscript>
+          <>
+            <GoogleTagManager gtmId={gtmId} />
+            <noscript>
+              <iframe
+                title="Google Tag Manager"
+                src={`https://www.googletagmanager.com/ns.html?id=${gtmId}`}
+                height="0"
+                width="0"
+                style={{ display: "none", visibility: "hidden" }}
+              />
+            </noscript>
+          </>
         ) : null}
         <div className="min-h-dvh bg-zinc-50 text-zinc-950 dark:bg-zinc-950 dark:text-zinc-50">
           <SiteHeader />
@@ -59,7 +62,6 @@ export default function RootLayout({
           <SiteFooter />
         </div>
       </body>
-      {shouldLoadGtm ? <GoogleTagManager gtmId={gtmId} /> : null}
     </html>
   );
 }
