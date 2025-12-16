@@ -12,7 +12,7 @@ export type NewsMeta = {
   date: string;
   source: string;
   url: string;
-  summary: string;
+  blurb: string;
   thumbnail: string;
 };
 
@@ -20,6 +20,28 @@ export type NewsListItem = {
   slug: string;
   meta: NewsMeta;
 };
+
+function compareNewsItems(a: NewsListItem, b: NewsListItem): number {
+  const aTime = Date.parse(a.meta.date);
+  const bTime = Date.parse(b.meta.date);
+
+  const aOk = Number.isFinite(aTime);
+  const bOk = Number.isFinite(bTime);
+
+  // Prefer items with valid dates. Items with invalid dates are always sorted after items
+  // with valid dates.
+  if (aOk && !bOk) return -1;
+  if (!aOk && bOk) return 1;
+
+  if (aOk && bOk) {
+    const diff = bTime - aTime;
+    if (diff !== 0) return diff;
+  }
+
+  // If both items have invalid dates (or the same timestamp), fall back to slug for
+  // deterministic ordering.
+  return a.slug.localeCompare(b.slug);
+}
 
 async function safeReadDir(dir: string): Promise<string[]> {
   try {
@@ -52,11 +74,7 @@ export async function getAllNews(): Promise<NewsListItem[]> {
 
   return items
     .filter((item): item is NewsListItem => Boolean(item))
-    .sort((a, b) => {
-    const aTime = Date.parse(a.meta.date);
-    const bTime = Date.parse(b.meta.date);
-    return bTime - aTime;
-  });
+    .sort(compareNewsItems);
 }
 
 export async function getNewsMeta(slug: string): Promise<NewsListItem> {
@@ -66,10 +84,10 @@ export async function getNewsMeta(slug: string): Promise<NewsListItem> {
 
   const meta = parsed.data as Partial<NewsMeta>;
 
-  if (!meta.title || !meta.date || !meta.source || !meta.url || !meta.summary || !meta.thumbnail) {
+  if (!meta.title || !meta.date || !meta.source || !meta.url || !meta.blurb || !meta.thumbnail) {
     throw new Error(
       "Invalid frontmatter for " +
-        `${slug}.mdx. Required fields: title, date, source, url, summary, thumbnail.`,
+        `${slug}.mdx. Required fields: title, date, source, url, blurb, thumbnail.`,
     );
   }
 
@@ -80,7 +98,7 @@ export async function getNewsMeta(slug: string): Promise<NewsListItem> {
       date: meta.date,
       source: meta.source,
       url: meta.url,
-      summary: meta.summary,
+      blurb: meta.blurb,
       thumbnail: meta.thumbnail,
     },
   };
@@ -92,10 +110,10 @@ export async function getNewsItem(slug: string) {
   const { content, frontmatter } = await renderMdx(raw);
 
   const meta = frontmatter as Partial<NewsMeta>;
-  if (!meta.title || !meta.date || !meta.source || !meta.url || !meta.summary || !meta.thumbnail) {
+  if (!meta.title || !meta.date || !meta.source || !meta.url || !meta.blurb || !meta.thumbnail) {
     throw new Error(
       "Invalid frontmatter for " +
-        `${slug}.mdx. Required fields: title, date, source, url, summary, thumbnail.`,
+        `${slug}.mdx. Required fields: title, date, source, url, blurb, thumbnail.`,
     );
   }
 
@@ -106,7 +124,7 @@ export async function getNewsItem(slug: string) {
       date: meta.date,
       source: meta.source,
       url: meta.url,
-      summary: meta.summary,
+      blurb: meta.blurb,
       thumbnail: meta.thumbnail,
     },
     content,
