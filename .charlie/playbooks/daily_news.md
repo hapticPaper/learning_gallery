@@ -30,16 +30,55 @@ Each day, find up to 3 high-signal AI/ML stories (Hacker News, The AI Search on 
 
 ## Steps
 
-1. Create a branch `news-digest-YYYYMMDD`.
-2. Run the generator:
+1. Create a branch `news-digest-YYYYMMDD` from the latest `develop`.
+   - `git fetch origin && git switch develop && git pull --ff-only && git switch -c news-digest-YYYYMMDD`
+   - Assumes `origin` points to the canonical repo and `develop` is the integration branch.
+   - All remaining steps assume you stay on this `news-digest-YYYYMMDD` branch.
+2. Ensure your working tree is clean on `news-digest-YYYYMMDD` before running the generator.
+   - If `git status --porcelain` is not empty, commit/stash/discard your changes before continuing.
+3. Run the generator:
    - `bun run news:fetch`
-3. For each newly generated MDX file in `content/news/`:
-   - Write a summary 1-2 paragraphs, 150-300 words. For the youtube summaries, just make a bulleted list. 
-   - Create a blurb description thats under 240 characters. 
-4. Confirm thumbnails exist for all new items:
+4. If there are no changes after the generator runs, stop (no-op) and do not open a PR.
+   - If `git status --porcelain` is empty, stop here.
+   - **If step 4 is a no-op, do not proceed to steps 5–10.**
+5. For each modified/new MDX file in `content/news/` (see `git status --porcelain content/news`):
+   - Write a summary 1-2 paragraphs, 150-300 words. For the YouTube summaries, just make a bulleted list.
+   - Create a blurb description that's under 240 characters.
+6. If `git status --porcelain` shows files outside `content/news` and `public/news/thumbnails`, pause and inspect them.
+   - If they are unrelated local changes, reset them or move them to another branch before continuing.
+   - If they were created by `bun run news:fetch`, treat this as a contract change: stop, do not commit/push/open a PR, and update the generator/playbook before proceeding.
+   - If you are unsure, stop and check with the News owner before proceeding.
+7. Confirm thumbnails exist for all new items:
    - `public/news/thumbnails/*` contains a matching downloaded thumbnail.
-5. Open a PR titled "News: Daily digest YYYY-MM-DD".
-   - Body includes the list of added stories and links.
+8. Verify:
+   - `bun run typecheck`
+   - `bun run lint`
+9. Commit and push the changes.
+   - `git add content/news public/news/thumbnails`
+   - `git commit -m "News: Daily digest YYYY-MM-DD"`
+   - `git push -u origin HEAD`
+10. Open a PR titled "News: Daily digest YYYY-MM-DD".
+   - Only do this if step 4 produced changes.
+   - Assign and request review from the current News owner (currently `hapticPaper`).
+   - If `gh` is unavailable, open the PR in the GitHub UI from `news-digest-YYYYMMDD` into `develop`.
+     - Make sure to manually set `hapticPaper` as both assignee and reviewer.
+   - `BASE_BRANCH` is the integration branch (currently `develop`).
+   - `NEWS_OWNER` is the current News owner (currently `hapticPaper`).
+   ```bash
+   BASE_BRANCH=develop
+   NEWS_OWNER=hapticPaper
+
+   # Update BASE_BRANCH and NEWS_OWNER if these change
+   gh pr create --base "$BASE_BRANCH" \
+     -t "News: Daily digest YYYY-MM-DD" \
+     -b "$(cat <<'PR_BODY'
+   Daily news digest.
+
+   - See `content/news/*.mdx` in the diff for story titles and links.
+   PR_BODY
+   )" \
+     --assignee "$NEWS_OWNER" --reviewer "$NEWS_OWNER"
+   ```
 
 ## No-op when
 
@@ -48,8 +87,8 @@ Each day, find up to 3 high-signal AI/ML stories (Hacker News, The AI Search on 
 
 ## Verify
 
-- `bun run typecheck` passes.
-- `bun run lint` passes.
+- If the run was a no-op (step 4), no PR should be opened.
+- Before opening a PR by any method (CLI or UI), ensure you have run `bun run typecheck` and `bun run lint` on the exact commit being pushed (see step 8).
 - News pages render with images for all newly-added items.
 
 ## Rollback
@@ -60,3 +99,6 @@ Each day, find up to 3 high-signal AI/ML stories (Hacker News, The AI Search on 
 
 - Generator: `src/scripts/fetch-news.ts`
 - News content: `content/news/*.mdx`
+
+Note: `src/scripts/fetch-news.ts` is expected to only write News content under `content/news` and `public/news/thumbnails`.
+If you observe writes outside these paths, follow step 6 to pause the run and update the generator/playbook before resuming.
