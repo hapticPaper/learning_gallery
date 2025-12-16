@@ -41,20 +41,28 @@ async function main() {
   }
 
   const nextStories: ResolvedStory[] = [];
-  for (const story of candidates) {
-    if (nextStories.length >= RUN_LIMIT) break;
+  const batchSize = 4;
 
-    let resolved: ResolvedStory | undefined;
-    try {
-      resolved = await resolveStory(story, existingUrls);
-    } catch (error) {
-      const message = error instanceof Error ? error.message : String(error);
-      console.warn(`Skipping candidate ${story.url}: ${message}`);
-      continue;
+  for (let i = 0; i < candidates.length && nextStories.length < RUN_LIMIT; i += batchSize) {
+    const batch = candidates.slice(i, i + batchSize);
+    const results = await Promise.allSettled(batch.map(async (story) => resolveStory(story, existingUrls)));
+
+    for (let j = 0; j < results.length && nextStories.length < RUN_LIMIT; j += 1) {
+      const story = batch[j];
+      const result = results[j];
+
+      if (result?.status === "rejected") {
+        const message = result.reason instanceof Error ? result.reason.message : String(result.reason);
+        console.warn(`Skipping candidate ${story?.url}: ${message}`);
+        continue;
+      }
+
+      const resolved = result?.value;
+      if (!resolved) continue;
+      if (existingUrls.has(resolved.url)) continue;
+      existingUrls.add(resolved.url);
+      nextStories.push(resolved);
     }
-    if (!resolved) continue;
-    existingUrls.add(resolved.url);
-    nextStories.push(resolved);
   }
 
   const created = await writeStories(nextStories);
