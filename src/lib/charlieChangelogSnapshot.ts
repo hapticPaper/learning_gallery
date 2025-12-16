@@ -1,4 +1,5 @@
 import rawSnapshot from "@/data/charlie-changelog.json";
+import { RECENT_CHANGELOG_WINDOW_DAYS } from "@/lib/charlieChangelog";
 
 export type CharlieChangelogSnapshotEntry = {
   id: string;
@@ -9,6 +10,7 @@ export type CharlieChangelogSnapshotEntry = {
 };
 
 export type CharlieChangelogSnapshot = {
+  windowDays: number;
   hasRecentChangelog: boolean;
   latestEntry: CharlieChangelogSnapshotEntry | null;
 };
@@ -16,15 +18,20 @@ export type CharlieChangelogSnapshot = {
 export function getCharlieChangelogSnapshot(): CharlieChangelogSnapshot {
   const snapshot = rawSnapshot as unknown;
   if (!snapshot || typeof snapshot !== "object") {
-    return { hasRecentChangelog: false, latestEntry: null };
+    return { windowDays: RECENT_CHANGELOG_WINDOW_DAYS, hasRecentChangelog: false, latestEntry: null };
   }
 
   const record = snapshot as Record<string, unknown>;
 
+  const windowDays =
+    typeof record.windowDays === "number" && Number.isFinite(record.windowDays)
+      ? record.windowDays
+      : RECENT_CHANGELOG_WINDOW_DAYS;
   const hasRecentChangelog = record.hasRecentChangelog === true;
   const latestEntry = parseSnapshotEntry(record.latestEntry);
 
   return {
+    windowDays,
     hasRecentChangelog: hasRecentChangelog && Boolean(latestEntry),
     latestEntry,
   };

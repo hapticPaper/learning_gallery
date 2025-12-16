@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 
 import { NewsCard } from "@/components/NewsCard";
-import { RECENT_CHANGELOG_WINDOW_DAYS } from "@/lib/charlieChangelog";
 import { getCharlieChangelogSnapshot } from "@/lib/charlieChangelogSnapshot";
 import { getAllNews } from "@/lib/news";
 
@@ -11,7 +10,8 @@ export const metadata: Metadata = {
 
 export default async function NewsPage() {
   const news = await getAllNews();
-  const { latestEntry: latestChangelogEntry, hasRecentChangelog } = getCharlieChangelogSnapshot();
+  const { latestEntry: latestChangelogEntry, hasRecentChangelog, windowDays } =
+    getCharlieChangelogSnapshot();
 
   return (
     <div className="space-y-6">
@@ -61,7 +61,7 @@ export default async function NewsPage() {
               {latestChangelogEntry && !hasRecentChangelog ? (
                 <>
                   <p className="text-sm text-zinc-600 dark:text-zinc-300">
-                    (No Charlie Labs changelog updates in the last {RECENT_CHANGELOG_WINDOW_DAYS} days.)
+                    (No Charlie Labs changelog updates in the last {windowDays} days.)
                   </p>
 
                   <p className="text-sm text-zinc-600 dark:text-zinc-300">

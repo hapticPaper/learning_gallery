@@ -2,6 +2,7 @@ import fs from "node:fs/promises";
 import path from "node:path";
 
 import {
+  RECENT_CHANGELOG_WINDOW_DAYS,
   isChangelogEntryRecent,
   getLatestCharlieChangelogEntry,
 } from "../lib/charlieChangelog";
@@ -15,6 +16,7 @@ type CharlieChangelogSnapshotEntry = {
 };
 
 type CharlieChangelogSnapshot = {
+  windowDays: number;
   hasRecentChangelog: boolean;
   latestEntry: CharlieChangelogSnapshotEntry | null;
 };
@@ -33,6 +35,7 @@ async function main() {
     const dateIso = Number.isNaN(latest.date.getTime()) ? null : latest.date.toISOString().slice(0, 10);
 
     const nextSnapshot: CharlieChangelogSnapshot = {
+      windowDays: RECENT_CHANGELOG_WINDOW_DAYS,
       hasRecentChangelog,
       latestEntry: {
         id: latest.id,
@@ -46,7 +49,7 @@ async function main() {
     await fs.mkdir(path.dirname(SNAPSHOT_PATH), { recursive: true });
 
     const nextRaw = `${JSON.stringify(nextSnapshot, null, 2)}\n`;
-    const prevRaw = await fs.readFile(SNAPSHOT_PATH, "utf8").catch(() => null);
+    const prevRaw = await readFileIfExists(SNAPSHOT_PATH);
     if (prevRaw === nextRaw) {
       console.log("Charlie changelog snapshot is up to date.");
       return;
@@ -57,6 +60,15 @@ async function main() {
   } catch (error) {
     console.error("Failed to update Charlie changelog snapshot:", error);
     process.exitCode = 1;
+  }
+}
+
+async function readFileIfExists(filePath: string): Promise<string | null> {
+  try {
+    return await fs.readFile(filePath, "utf8");
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === "ENOENT") return null;
+    throw error;
   }
 }
 
