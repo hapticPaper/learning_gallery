@@ -454,8 +454,9 @@ function buildSummary({
   if (description) {
     parts.push(description);
   } else {
+    const pipelineHint = pipelineTag ? ` It’s tagged as \`${pipelineTag}\` in the listing.` : "";
     parts.push(
-      `A recently updated model on Hugging Face (${modelId}). If the card is sparse, check the README for details on what it does and how to run it.`,
+      `A recently updated model on Hugging Face (${modelId}).${pipelineHint} If the card is sparse, check the README for details on what it does and how to run it.`,
     );
   }
 
