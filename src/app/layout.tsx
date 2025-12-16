@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { GoogleTagManager } from "@next/third-parties/google";
 import type { ReactNode } from "react";
 import "./globals.css";
 
@@ -16,6 +17,8 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const gtmId = process.env.NEXT_PUBLIC_GTM_ID ?? "GTM-P43CMVDL";
+
 export const metadata: Metadata = {
   title: {
     default: "Learning Gallery",
@@ -29,11 +32,26 @@ export default function RootLayout({
 }: Readonly<{
   children: ReactNode;
 }>) {
+  const isValidGtmId = /^GTM-[A-Za-z0-9_-]+$/.test(gtmId);
+  const shouldLoadGtm = process.env.NODE_ENV === "production" && isValidGtmId;
+
   return (
     <html lang="en">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased font-sans`}
       >
+        {shouldLoadGtm ? <GoogleTagManager gtmId={gtmId} /> : null}
+        {shouldLoadGtm ? (
+          <noscript>
+            <iframe
+              title="Google Tag Manager"
+              src={`https://www.googletagmanager.com/ns.html?id=${gtmId}`}
+              height="0"
+              width="0"
+              style={{ display: "none", visibility: "hidden" }}
+            />
+          </noscript>
+        ) : null}
         <div className="min-h-dvh bg-zinc-50 text-zinc-950 dark:bg-zinc-950 dark:text-zinc-50">
           <SiteHeader />
           <main className="mx-auto w-full max-w-6xl px-4 py-10 sm:px-6">

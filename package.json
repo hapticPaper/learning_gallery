@@ -11,6 +11,7 @@
     "news:fetch": "bun run src/scripts/fetch-news.ts"
   },
   "dependencies": {
+    "@next/third-parties": "^16.0.10",
     "clsx": "^2.1.1",
     "gray-matter": "^4.0.3",
     "next": "16.0.10",
