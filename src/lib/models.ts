@@ -23,6 +23,26 @@ export type ModelListItem = {
   meta: ModelMeta;
 };
 
+function normalizeModelMeta(slug: string, meta: Partial<ModelMeta>): ModelMeta {
+  if (!meta.title || !meta.date || !meta.source || !meta.url || !meta.blurb || !meta.thumbnail || !meta.modelId) {
+    throw new Error(
+      "Invalid frontmatter for " +
+        `${slug}.mdx. Required fields: title, date, source, url, blurb, thumbnail, modelId.`,
+    );
+  }
+
+  return {
+    title: meta.title,
+    date: meta.date,
+    source: meta.source,
+    url: meta.url,
+    blurb: meta.blurb,
+    thumbnail: meta.thumbnail,
+    modelId: meta.modelId,
+    pipelineTag: meta.pipelineTag,
+  };
+}
+
 function compareModelItems(a: ModelListItem, b: ModelListItem): number {
   const aTime = Date.parse(a.meta.date);
   const bTime = Date.parse(b.meta.date);
@@ -78,27 +98,9 @@ export async function getModelMeta(slug: string): Promise<ModelListItem> {
   const raw = await fs.readFile(mdxPath, "utf8");
   const parsed = matter(raw);
 
-  const meta = parsed.data as Partial<ModelMeta>;
-
-  if (!meta.title || !meta.date || !meta.source || !meta.url || !meta.blurb || !meta.thumbnail || !meta.modelId) {
-    throw new Error(
-      "Invalid frontmatter for " +
-        `${slug}.mdx. Required fields: title, date, source, url, blurb, thumbnail, modelId.`,
-    );
-  }
-
   return {
     slug,
-    meta: {
-      title: meta.title,
-      date: meta.date,
-      source: meta.source,
-      url: meta.url,
-      blurb: meta.blurb,
-      thumbnail: meta.thumbnail,
-      modelId: meta.modelId,
-      pipelineTag: meta.pipelineTag,
-    },
+    meta: normalizeModelMeta(slug, parsed.data as Partial<ModelMeta>),
   };
 }
 
@@ -107,26 +109,9 @@ export async function getModelItem(slug: string) {
   const raw = await fs.readFile(mdxPath, "utf8");
   const { content, frontmatter } = await renderMdx(raw);
 
-  const meta = frontmatter as Partial<ModelMeta>;
-  if (!meta.title || !meta.date || !meta.source || !meta.url || !meta.blurb || !meta.thumbnail || !meta.modelId) {
-    throw new Error(
-      "Invalid frontmatter for " +
-        `${slug}.mdx. Required fields: title, date, source, url, blurb, thumbnail, modelId.`,
-    );
-  }
-
   return {
     slug,
-    meta: {
-      title: meta.title,
-      date: meta.date,
-      source: meta.source,
-      url: meta.url,
-      blurb: meta.blurb,
-      thumbnail: meta.thumbnail,
-      modelId: meta.modelId,
-      pipelineTag: meta.pipelineTag,
-    },
+    meta: normalizeModelMeta(slug, frontmatter as Partial<ModelMeta>),
     content,
   };
 }
