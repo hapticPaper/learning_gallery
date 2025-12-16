@@ -38,7 +38,12 @@ function parseSnapshotEntry(input: unknown): CharlieChangelogSnapshotEntry | nul
   const title = typeof record.title === "string" ? record.title : null;
   const dateText = typeof record.dateText === "string" ? record.dateText : null;
   const url = typeof record.url === "string" ? record.url : null;
-  const dateIso = record.dateIso === null || typeof record.dateIso === "string" ? record.dateIso : null;
+  const rawDateIso = record.dateIso;
+  const dateIso =
+    rawDateIso === null ||
+    (typeof rawDateIso === "string" && /^\d{4}-\d{2}-\d{2}$/.test(rawDateIso))
+      ? rawDateIso
+      : null;
 
   if (!id || !title || !dateText || !url) return null;
 

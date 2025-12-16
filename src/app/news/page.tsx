@@ -59,9 +59,23 @@ export default async function NewsPage() {
               ) : null}
 
               {latestChangelogEntry && !hasRecentChangelog ? (
-                <p className="text-sm text-zinc-600 dark:text-zinc-300">
-                  (No Charlie Labs changelog updates in the last {RECENT_CHANGELOG_WINDOW_DAYS} days.)
-                </p>
+                <>
+                  <p className="text-sm text-zinc-600 dark:text-zinc-300">
+                    (No Charlie Labs changelog updates in the last {RECENT_CHANGELOG_WINDOW_DAYS} days.)
+                  </p>
+
+                  <p className="text-sm text-zinc-600 dark:text-zinc-300">
+                    Latest changelog entry:{" "}
+                    <a
+                      className="font-medium text-zinc-950 hover:underline dark:text-zinc-50"
+                      href={latestChangelogEntry.url}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      {latestChangelogEntry.title}
+                    </a>
+                  </p>
+                </>
               ) : null}
 
               <a
