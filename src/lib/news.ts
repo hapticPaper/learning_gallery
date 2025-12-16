@@ -21,6 +21,27 @@ export type NewsListItem = {
   meta: NewsMeta;
 };
 
+function compareNewsItems(a: NewsListItem, b: NewsListItem): number {
+  const aTime = Date.parse(a.meta.date);
+  const bTime = Date.parse(b.meta.date);
+
+  const aOk = Number.isFinite(aTime);
+  const bOk = Number.isFinite(bTime);
+
+  if (aOk !== bOk) {
+    return aOk ? -1 : 1;
+  }
+
+  if (aOk && bOk) {
+    const diff = bTime - aTime;
+    if (diff !== 0) return diff;
+  }
+
+  const dateCompare = b.meta.date.localeCompare(a.meta.date);
+  if (dateCompare !== 0) return dateCompare;
+  return b.slug.localeCompare(a.slug);
+}
+
 async function safeReadDir(dir: string): Promise<string[]> {
   try {
     return await fs.readdir(dir);
@@ -52,26 +73,7 @@ export async function getAllNews(): Promise<NewsListItem[]> {
 
   return items
     .filter((item): item is NewsListItem => Boolean(item))
-    .sort((a, b) => {
-      const aTime = Date.parse(a.meta.date);
-      const bTime = Date.parse(b.meta.date);
-
-      const aOk = Number.isFinite(aTime);
-      const bOk = Number.isFinite(bTime);
-
-      if (aOk !== bOk) {
-        return aOk ? -1 : 1;
-      }
-
-      if (aOk && bOk) {
-        const diff = bTime - aTime;
-        if (diff !== 0) return diff;
-      }
-
-      const dateCompare = b.meta.date.localeCompare(a.meta.date);
-      if (dateCompare !== 0) return dateCompare;
-      return b.slug.localeCompare(a.slug);
-    });
+    .sort(compareNewsItems);
 }
 
 export async function getNewsMeta(slug: string): Promise<NewsListItem> {
