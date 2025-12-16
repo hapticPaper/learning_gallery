@@ -12,6 +12,7 @@ export function SiteHeader() {
         </Link>
         <nav className="flex items-center gap-1 text-sm">
           <NavLink href="/experiments">Experiments</NavLink>
+          <NavLink href="/news">News</NavLink>
           <a
             className="rounded-md px-3 py-2 text-zinc-600 hover:bg-zinc-100 hover:text-zinc-950 dark:text-zinc-300 dark:hover:bg-zinc-900 dark:hover:text-zinc-50"
             href="https://github.com/hapticPaper/learning_gallery"
