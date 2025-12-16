@@ -59,15 +59,18 @@ export async function getAllNews(): Promise<NewsListItem[]> {
       const aOk = Number.isFinite(aTime);
       const bOk = Number.isFinite(bTime);
 
+      if (aOk !== bOk) {
+        return aOk ? -1 : 1;
+      }
+
       if (aOk && bOk) {
         const diff = bTime - aTime;
         if (diff !== 0) return diff;
-      } else {
-        if (aOk) return -1;
-        if (bOk) return 1;
       }
 
-      return b.meta.date.localeCompare(a.meta.date) || b.slug.localeCompare(a.slug);
+      const dateCompare = b.meta.date.localeCompare(a.meta.date);
+      if (dateCompare !== 0) return dateCompare;
+      return b.slug.localeCompare(a.slug);
     });
 }
 
