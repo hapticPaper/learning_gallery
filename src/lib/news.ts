@@ -37,8 +37,8 @@ function compareNewsItems(a: NewsListItem, b: NewsListItem): number {
     if (diff !== 0) return diff;
   }
 
-  const dateCompare = a.meta.date.localeCompare(b.meta.date);
-  if (dateCompare !== 0) return dateCompare;
+  // If both items have invalid dates (or the same timestamp), fall back to slug for
+  // deterministic ordering.
   return a.slug.localeCompare(b.slug);
 }
 
