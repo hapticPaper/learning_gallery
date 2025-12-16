@@ -28,7 +28,8 @@ function compareNewsItems(a: NewsListItem, b: NewsListItem): number {
   const aOk = Number.isFinite(aTime);
   const bOk = Number.isFinite(bTime);
 
-  // Prefer items with valid dates.
+  // Prefer items with valid dates. Items with invalid dates are always sorted after items
+  // with valid dates.
   if (aOk && !bOk) return -1;
   if (!aOk && bOk) return 1;
 
