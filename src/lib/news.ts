@@ -28,18 +28,18 @@ function compareNewsItems(a: NewsListItem, b: NewsListItem): number {
   const aOk = Number.isFinite(aTime);
   const bOk = Number.isFinite(bTime);
 
-  if (aOk !== bOk) {
-    return aOk ? -1 : 1;
-  }
+  // Prefer items with valid dates.
+  if (aOk && !bOk) return -1;
+  if (!aOk && bOk) return 1;
 
   if (aOk && bOk) {
     const diff = bTime - aTime;
     if (diff !== 0) return diff;
   }
 
-  const dateCompare = b.meta.date.localeCompare(a.meta.date);
+  const dateCompare = a.meta.date.localeCompare(b.meta.date);
   if (dateCompare !== 0) return dateCompare;
-  return b.slug.localeCompare(a.slug);
+  return a.slug.localeCompare(b.slug);
 }
 
 async function safeReadDir(dir: string): Promise<string[]> {
