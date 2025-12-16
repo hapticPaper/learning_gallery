@@ -8,7 +8,6 @@ export function GtmPageView() {
   const pathname = usePathname();
 
   useEffect(() => {
-    if (typeof window === "undefined") return;
     const pagePath = `${window.location.pathname}${window.location.search}`;
 
     sendGTMEvent({

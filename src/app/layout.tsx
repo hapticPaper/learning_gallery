@@ -38,7 +38,7 @@ export default function RootLayout({
 
   return (
     <html lang="en">
-      <head>{shouldLoadGtm ? <GoogleTagManager gtmId={gtmId} /> : null}</head>
+      {shouldLoadGtm ? <GoogleTagManager gtmId={gtmId} /> : null}
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased font-sans`}
       >
