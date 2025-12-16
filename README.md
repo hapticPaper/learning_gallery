@@ -1,6 +1,6 @@
 
 
-[https://hapticpaper.github.io/learning_gallery]([https://hapticpaper.github.io/learning_gallery/])
+[https://hapticpaper.github.io/learning_gallery](https://hapticpaper.github.io/learning_gallery/)
 
 Learning Gallery is a lightweight, MDX-first website for showcasing machine learning experiments: narratives, code snippets, videos (Isaac Sim or real robot clips), charts, and interactive diagrams.
 
