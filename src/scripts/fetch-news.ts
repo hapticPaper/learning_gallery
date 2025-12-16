@@ -44,7 +44,14 @@ async function main() {
   for (const story of candidates) {
     if (nextStories.length >= RUN_LIMIT) break;
 
-    const resolved = await resolveStory(story, existingUrls);
+    let resolved: ResolvedStory | undefined;
+    try {
+      resolved = await resolveStory(story, existingUrls);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      console.warn(`Skipping candidate ${story.url}: ${message}`);
+      continue;
+    }
     if (!resolved) continue;
     existingUrls.add(resolved.url);
     nextStories.push(resolved);
@@ -338,7 +345,8 @@ function normalizeText(value: string): string {
 }
 
 async function getPageDescription(url: string): Promise<string | undefined> {
-  const html = await fetchText(url);
+  const html = await fetchText(url).catch(() => "");
+  if (!html) return undefined;
   const tags = extractMetaTags(html);
   const desc =
     tags["og:description"] ||
@@ -350,7 +358,8 @@ async function getPageDescription(url: string): Promise<string | undefined> {
 }
 
 async function getPageThumbnailUrl(url: string): Promise<string | undefined> {
-  const html = await fetchText(url);
+  const html = await fetchText(url).catch(() => "");
+  if (!html) return undefined;
   const tags = extractMetaTags(html);
   const image = tags["og:image"] || tags["twitter:image"] || tags["og:image:url"];
   if (image) return new URL(image, url).toString();

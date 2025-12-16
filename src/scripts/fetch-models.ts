@@ -61,8 +61,10 @@ async function main() {
     return;
   }
 
-  const resolved = await Promise.all(candidates.map(async (model) => resolveModel(model)));
-  const resolvedModels = resolved.filter((item): item is ResolvedModel => Boolean(item));
+  const resolved = await Promise.allSettled(candidates.map(async (model) => resolveModel(model)));
+  const resolvedModels = resolved
+    .flatMap((result) => (result.status === "fulfilled" ? [result.value] : []))
+    .filter((item): item is ResolvedModel => Boolean(item));
   const nextModels = pickTopModels(resolvedModels, RUN_LIMIT);
   const created = await writeModels(nextModels);
 
@@ -200,14 +202,12 @@ function isInterestingCandidate(candidate: HfModelEntry): boolean {
     return false;
   }
 
-  const hasPipeline = Boolean(pipelineTag);
   const hasNonRegionalTag = tags.some((tag) => !tag.startsWith("region:"));
+  if (!hasNonRegionalTag && !pipelineTag) {
+    return false;
+  }
 
-  const qualifies = hasPipeline
-    ? likes >= 1 || downloads >= 200
-    : likes >= 5 || downloads >= 2_000;
-
-  return qualifies && hasNonRegionalTag;
+  return Boolean(pipelineTag) || likes >= 1 || downloads >= 10;
 }
 
 function scoreCandidate(candidate: HfModelEntry): number {
