@@ -1,13 +1,11 @@
 "use client";
 
 import { sendGTMEvent } from "@next/third-parties/google";
-import { usePathname, useSearchParams } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { useEffect, useRef } from "react";
 
 export function GtmPageView() {
   const pathname = usePathname();
-  const searchParams = useSearchParams();
-  const search = searchParams?.toString() ?? "";
 
   const hasMounted = useRef(false);
 
@@ -25,7 +23,7 @@ export function GtmPageView() {
       page_path: pagePath,
       page_title: document.title,
     });
-  }, [pathname, search]);
+  }, [pathname]);
 
   return null;
 }
