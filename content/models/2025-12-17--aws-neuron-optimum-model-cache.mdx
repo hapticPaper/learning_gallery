@@ -8,7 +8,7 @@ blurb: "A cache of precompiled AWS Neuron artifacts so `optimum-neuron` / Neuron
 thumbnail: "/models/thumbnails/2025-12-17--aws-neuron-optimum-model-cache.png"
 ---
 
-This is a “plumbing” repo rather than a new model: it hosts cached AWS Neuron compilation artifacts for popular Hugging Face Hub models. If you’re deploying LLMs on AWS Inferentia or Trainium, a lot of the pain is the compile step (exporting a model and producing Neuron-compatible artifacts). This cache is meant to make that workflow much more repeatable and less time-consuming.
+This is a “plumbing” repo rather than a new model: it hosts cached AWS Neuron compilation artifacts for popular Hugging Face Hub models. If you’re deploying LLMs on AWS Inferentia or Trainium, a common bottleneck is the compile step (exporting a model and producing Neuron-compatible artifacts). This cache is meant to make that workflow much more repeatable and less time-consuming.
 
 In practice, it plugs into the existing AWS Neuron ecosystem: `optimum-neuron` and NeuronX TGI can look up and reuse cached configs instead of compiling from scratch, and the model page supports a “Deploy → AWS SageMaker” flow with an Inferentia/Trainium-specific snippet. If you’re experimenting, a good first step is to run `optimum-cli neuron cache lookup` for the model you care about and see whether there’s a cached configuration that matches your target hardware and sequence length.
 
