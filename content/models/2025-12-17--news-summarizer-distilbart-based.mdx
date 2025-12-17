@@ -1,0 +1,26 @@
+---
+title: "News summarizer (DistilBART)"
+date: "2025-12-17"
+source: "Hugging Face"
+url: "https://huggingface.co/Sachin21112004/distilbart-news-summarizer"
+modelId: "Sachin21112004/distilbart-news-summarizer"
+pipelineTag: "summarization"
+blurb: "AGPL-3.0 English abstractive summarizer based on DistilBART (CNN/DM), positioned for fast, lightweight news/article summarization."
+thumbnail: "/models/thumbnails/2025-12-17--news-summarizer-distilbart-based.png"
+---
+
+This is a straightforward “abstractive” English news summarizer fine-tuned from the DistilBART CNN/DailyMail checkpoint (`sshleifer/distilbart-cnn-12-6`). The main appeal is practicality: DistilBART is small enough to run cheaply and quickly, which makes it a decent fit for API-style summarization where throughput and latency matter more than squeezing out the last bit of quality.
+
+Caveats before using it in a product:
+
+- AGPL-3.0 license (strong copyleft implications for commercial use).
+- Truncation is still required for long inputs (the model card’s example uses `max_length=1024`, but you’ll likely want to tune this based on your own context length and latency/quality trade-offs).
+- The DistilBART CNN/DailyMail lineage can bias summary style and topic coverage.
+
+If you want to evaluate it quickly, load it with Transformers and run a small batch of your own news articles, then compare its compression ratio and factual drift against your current baseline summarizer.
+
+Quick stats from the listing feed: pipeline: summarization · 721 downloads.
+
+[View on Hugging Face](https://huggingface.co/Sachin21112004/distilbart-news-summarizer)
+
+Source listing: https://huggingface.co/models?sort=modified

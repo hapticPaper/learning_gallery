@@ -1,0 +1,20 @@
+---
+title: "T5-XXL text encoder (GGUF)"
+date: "2025-12-17"
+source: "Hugging Face"
+url: "https://huggingface.co/chatpig/encoder"
+modelId: "chatpig/encoder"
+pipelineTag: "feature-extraction"
+blurb: "A GGUF-packaged T5-XXL text encoder (from `google/t5-v1_1-xxl`) intended for local pipelines that load encoders from `./models/text_encoders` (Apache-2.0)."
+thumbnail: "/models/thumbnails/2025-12-17--t5xxl-encoder.png"
+---
+
+This repo is a lightweight packaging of a *text encoder* rather than a full chat model. It’s **not** a standalone generation checkpoint; it’s intended to be used as an encoder component in larger systems (conditioning or multimodal pipelines). It’s based on Google’s `t5-v1_1-xxl` and is distributed in GGUF form for environments that can load GGUF encoders locally. The README suggests a “drop-in” workflow (copy into `./models/text_encoders`) and points to a broader set of related encoder artifacts (CLIP-L/CLIP-G, Gemma2/Qwen encoders, and other T5 variants).
+
+If you’re building a local creative or multimodal pipeline that supports swapping encoders, this can be useful when you want a higher-capacity text encoder in GGUF format without managing your own conversion pipeline. You can test whether a different text encoder changes prompt understanding, style consistency, or compositional reliability in downstream generation. Start by wiring it into the smallest reproducible workflow your tooling supports (one prompt, one seed, one baseline encoder), then swap in this encoder and compare results.
+
+Quick stats from the listing feed: 27 likes · 3828 downloads.
+
+[View on Hugging Face](https://huggingface.co/chatpig/encoder)
+
+Source listing: https://huggingface.co/models?sort=modified
