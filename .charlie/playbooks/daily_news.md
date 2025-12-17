@@ -79,7 +79,7 @@ Each day, find up to 3 high-signal AI/ML stories (Hacker News, The AI Search on 
    )" \
      --assignee "$NEWS_OWNER" --reviewer "$NEWS_OWNER"
    ```
-
+11. Use the `team_update.md` playbook to summarize the new content added as bullet points and notify the team over slack.
 ## No-op when
 
 - No candidate stories are available, or
