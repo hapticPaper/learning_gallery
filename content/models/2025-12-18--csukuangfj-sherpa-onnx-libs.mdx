@@ -1,0 +1,21 @@
+---
+title: "Sherpa-ONNX prebuilt libs"
+date: "2025-12-18"
+source: "Hugging Face"
+url: "https://huggingface.co/csukuangfj/sherpa-onnx-libs"
+modelId: "csukuangfj/sherpa-onnx-libs"
+blurb: "Prebuilt sherpa-onnx native bundles (incl. Android + ONNX Runtime variants) so you can ship offline speech features without building native deps from scratch."
+thumbnail: "/models/thumbnails/2025-12-18--csukuangfj-sherpa-onnx-libs.png"
+---
+
+This is *not a model checkpoint* — it’s a distribution repo for prebuilt `sherpa-onnx` native libraries across versions and platforms (the file tree is organized by `sherpa-onnx` version and target). If you’ve ever tried to embed speech features into an app, you’ve probably hit the “native build tax”: pulling in ONNX Runtime, building for Android/iOS/Linux, and keeping those artifacts consistent across CI.
+
+What makes this interesting is the pragmatic packaging: you can grab a tarball for a specific `sherpa-onnx` version and platform (e.g., Android builds that statically link ONNX Runtime, or Linux `aarch64` bundles) and plug it into your application build. That’s especially handy for mobile apps or edge deployments where you want *offline* ASR/TTS pipelines without fighting toolchains.
+
+If you want to try it, start by picking the exact version you’re targeting (e.g. `1.12.x`) and the artifact that matches your environment (CPU vs GPU, architecture, and the ONNX Runtime variant). Then integrate the extracted shared/static libs into your build system (NDK/CMake/etc.) and confirm you’re pairing them with compatible model files from the broader Sherpa-ONNX ecosystem.
+
+Quick stats from the listing feed: 6 likes.
+
+[View on Hugging Face](https://huggingface.co/csukuangfj/sherpa-onnx-libs)
+
+Source listing: https://huggingface.co/models?sort=modified

@@ -1,0 +1,20 @@
+---
+title: "HY-WorldPlay (interactive world model)"
+date: "2025-12-18"
+source: "Hugging Face"
+url: "https://huggingface.co/tencent/HY-WorldPlay"
+modelId: "tencent/HY-WorldPlay"
+pipelineTag: "text-to-3d"
+blurb: "Tencent’s HY-World 1.5 “WorldPlay” aims to stream an interactive world model with real-time latency, long-horizon geometric consistency, and explicit keyboard/mouse action control."
+thumbnail: "/models/thumbnails/2025-12-18--tencent-hy-worldplay.png"
+---
+
+HY-WorldPlay is Tencent’s take on an *interactive* “world model”: instead of generating a whole scene offline and calling it done, it aims to stream a coherent environment forward in time while responding to user actions (keyboard/mouse). The core promise here is real-time latency *and* long-horizon geometric consistency — two things that often fight each other when you try to run diffusion-style generation autoregressively.
+
+What makes it stand out is the systems framing: it’s presented as an end-to-end pipeline (data → training → inference deployment), with explicit mechanisms for action conditioning and memory/context management so the model can keep important past information “in play” without blowing up compute. If you want to experiment, the best starting point is the project’s GitHub repo and demo links from the model card — you’ll get a feel for the interaction loop quickly, and then you can dig into the technical report if you want the details on the memory/reinforcement-learning pieces.
+
+Quick stats from the listing feed: pipeline: text-to-3d · 135 likes.
+
+[View on Hugging Face](https://huggingface.co/tencent/HY-WorldPlay)
+
+Source listing: https://huggingface.co/models?sort=modified
