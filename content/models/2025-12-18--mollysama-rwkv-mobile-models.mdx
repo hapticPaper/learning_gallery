@@ -1,0 +1,22 @@
+---
+title: "RWKV mobile model pack (WebRWKV + GGUF)"
+date: "2025-12-18"
+source: "Hugging Face"
+url: "https://huggingface.co/mollysama/rwkv-mobile-models"
+modelId: "mollysama/rwkv-mobile-models"
+pipelineTag: "text-generation"
+blurb: "A grab-bag of RWKV weights packaged for mobile/web runtimes (WebRWKV `.st`/`.prefab`) plus GGUF quantizations for llama.cpp-style runners."
+thumbnail: "/models/thumbnails/2025-12-18--mollysama-rwkv-mobile-models.png"
+---
+
+This repo is less “one model” and more a *distribution hub* for RWKV-family weights in formats that are convenient on constrained devices. It includes WebRWKV artifacts (you’ll see lots of `.st` and `.prefab` files under `WebRWKV/`) across multiple sizes and versions, and also GGUF files (e.g. under `gguf/`) for people who want to run RWKV variants via llama.cpp-style tooling.
+
+The interesting part is the emphasis on *practical formats and quantizations*: you can choose smaller models for on-device experiments, or grab NF4 / int8-style variants where the runtime supports them. There are also some “utility” subfolders (including ONNX artifacts under `multimodal/`) that hint at broader mobile inference workflows beyond plain text.
+
+If you want a quick first try, pick a small RWKV v7 weight (for example a 0.4B or 1.5B file with a context length you can afford) and load it in a compatible runner: WebRWKV for the `.st`/`.prefab` builds, or a GGUF-capable runner for the GGUF variants. Expect some trial-and-error: format support and context length are both runner-specific, so match the file type to the app/library you’re actually using.
+
+Quick stats from the listing feed: 12 likes · 7807 downloads.
+
+[View on Hugging Face](https://huggingface.co/mollysama/rwkv-mobile-models)
+
+Source listing: https://huggingface.co/models?sort=modified
