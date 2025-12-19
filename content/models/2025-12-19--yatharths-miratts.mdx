@@ -1,0 +1,20 @@
+---
+title: "MiraTTS (fast 48kHz text-to-speech)"
+date: "2025-12-19"
+source: "Hugging Face"
+url: "https://huggingface.co/YatharthS/MiraTTS"
+modelId: "YatharthS/MiraTTS"
+pipelineTag: "text-to-speech"
+blurb: "A text-to-speech model targeting clear 48kHz audio with very high throughput (claims 100x realtime via lmdeploy + batching) while fitting in ~6GB VRAM. Worth a look if you need low-latency TTS for apps."
+thumbnail: "/models/thumbnails/2025-12-19--yatharths-miratts.png"
+---
+
+MiraTTS is a text-to-speech model with an unusually performance-focused pitch: the author claims very high throughput (over 100x realtime) when paired with lmdeploy + batching, while still fitting within ~6GB VRAM and keeping latency low. On the quality side, the model targets 48kHz audio output, which can help speech sound less “compressed” than many lower-sample-rate TTS demos.
+
+If you’re building anything interactive (voice UI, agents, real-time narration), the main question is whether those speed claims hold for your deployment shape: single requests vs batched, GPU type, and how much post-processing you need. The quickest way to evaluate is to try the linked Hugging Face Space first to get a feel for voice quality and latency, then follow the GitHub repo instructions to reproduce the runtime setup locally and measure end-to-end performance with your own text lengths and concurrency.
+
+Quick stats from the listing feed: pipeline: text-to-speech · 28 likes · 123 downloads.
+
+[View on Hugging Face](https://huggingface.co/YatharthS/MiraTTS)
+
+Source listing: https://huggingface.co/models?sort=modified

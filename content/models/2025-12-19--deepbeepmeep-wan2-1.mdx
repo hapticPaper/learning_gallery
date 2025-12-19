@@ -1,0 +1,20 @@
+---
+title: "DeepBeepMeep/Wan2.1"
+date: "2025-12-19"
+source: "Hugging Face"
+url: "https://huggingface.co/DeepBeepMeep/Wan2.1"
+modelId: "DeepBeepMeep/Wan2.1"
+pipelineTag: "text-to-video"
+blurb: "A curated bundle of Wan 2.1 text-to-video checkpoints packaged for Wan2GP, aiming to make open-source video generation usable on lower-VRAM (even older) GPUs via a simple web UI."
+thumbnail: "/models/thumbnails/2025-12-19--deepbeepmeep-wan2-1.png"
+---
+
+This repo is essentially a “batteries included” collection of Wan 2.1 video-generation checkpoints, packaged specifically for the Wan2GP project. The pitch is very practical: instead of hunting down the right variants and wiring them into a local UI, Wan2GP can auto-pull models adapted to your architecture and offer a web interface plus helper tools (mask editor, prompt enhancement, and temporal/spatial controls).
+
+What makes it worth noting isn’t a brand-new architecture — it’s the focus on accessibility. The README explicitly calls out running on low VRAM (down to ~6GB for some setups) and supporting older consumer GPUs, which is a real constraint for people trying to experiment with open-source video models without a top-end workstation. If you want to try it, start from Wan2GP’s setup guide, then select the smallest/most compatible Wan 2.1 option first to confirm your pipeline is stable (VRAM, drivers, and performance), before moving up to larger variants or adding LoRAs.
+
+Quick stats from the listing feed: 29 likes · 374729 downloads.
+
+[View on Hugging Face](https://huggingface.co/DeepBeepMeep/Wan2.1)
+
+Source listing: https://huggingface.co/models?sort=modified
