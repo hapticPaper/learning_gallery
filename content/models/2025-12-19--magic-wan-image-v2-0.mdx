@@ -1,0 +1,20 @@
+---
+title: "Magic-Wan-Image V2.0"
+date: "2025-12-19"
+source: "Hugging Face"
+url: "https://huggingface.co/vantagewithai/Magic-Wan-Image-V2-GGUF"
+modelId: "vantagewithai/Magic-Wan-Image-V2-GGUF"
+pipelineTag: "text-to-image"
+blurb: "A GGUF-quantized packaging of Magic-Wan-Image V2.0 for text-to-image, aimed at easier/lighter local inference. Useful if you specifically want GGUF artifacts instead of a standard Diffusers checkpoint."
+thumbnail: "/models/thumbnails/2025-12-19--magic-wan-image-v2-0.png"
+---
+
+This entry is a GGUF-quantized repackage of *Magic-Wan-Image V2.0* (originally published as `wikeeyang/Magic-Wan-Image-V2`). That makes it “derivative,” but in a way that can be genuinely useful: if you have a GGUF-capable runtime in your local workflow, a curated set of quantized artifacts can be easier to drop in than converting a full-precision checkpoint yourself.
+
+The upstream model is positioned for photorealistic portraits and real-world scenes (with an emphasis on skin texture and detail). This repo doesn’t change the creative intent so much as the *deployment ergonomics* — trading some fidelity for smaller size and potentially faster inference, depending on the quantization level and runtime. If you’re evaluating it, start by checking the original model card for example prompts and aesthetic targets, then pick a conservative quantization first (to sanity-check output quality) before going more aggressive.
+
+Quick stats from the listing feed: pipeline: text-to-image · 1 like · 932 downloads.
+
+[View on Hugging Face](https://huggingface.co/vantagewithai/Magic-Wan-Image-V2-GGUF)
+
+Source listing: https://huggingface.co/models?sort=modified
