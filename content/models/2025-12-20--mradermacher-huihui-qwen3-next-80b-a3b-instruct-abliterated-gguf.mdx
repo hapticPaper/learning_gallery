@@ -1,0 +1,20 @@
+---
+title: "Huihui Qwen3-Next 80B-A3B (abliterated) GGUF"
+date: "2025-12-20"
+source: "Hugging Face"
+url: "https://huggingface.co/mradermacher/Huihui-Qwen3-Next-80B-A3B-Instruct-abliterated-GGUF"
+modelId: "mradermacher/Huihui-Qwen3-Next-80B-A3B-Instruct-abliterated-GGUF"
+pipelineTag: "text-generation"
+blurb: "A static GGUF quant pack of `huihui-ai/Huihui-Qwen3-Next-80B-A3B-Instruct-abliterated`, curated by `mradermacher`. Useful if you want ready-made Q4/Q2 artifacts for llama.cpp-style local inference."
+thumbnail: "/models/thumbnails/2025-12-20--mradermacher-huihui-qwen3-next-80b-a3b-instruct-abliterated-gguf.png"
+---
+
+This is a “derivative, but practical” entry: it’s not a new architecture or fine-tune, but a curated set of *GGUF quant files* for a large Qwen3-Next instruct model. If your workflow runs LLMs via llama.cpp-compatible runtimes (or tools that build on them), having a prebuilt set of quant levels can be much more convenient than downloading an FP16 checkpoint and converting it yourself.
+
+`mradermacher`’s card calls out multiple static quant variants (with notes like “fast, recommended” for the Q4_K_S file), and points to third-party guidance on how to choose GGUF quant types. A practical way to start is to download the recommended mid-range quant first, verify the prompt format/behavior against the upstream model, then iterate down or up in size depending on your hardware and quality needs. The model is tagged “abliterated/uncensored,” so it’s worth treating it as a less-safety-constrained variant and using it accordingly.
+
+Quick stats from the listing feed: 2399 downloads.
+
+[View on Hugging Face](https://huggingface.co/mradermacher/Huihui-Qwen3-Next-80B-A3B-Instruct-abliterated-GGUF)
+
+Source listing: https://huggingface.co/models?sort=modified

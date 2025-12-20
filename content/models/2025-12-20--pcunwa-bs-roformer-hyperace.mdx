@@ -1,0 +1,19 @@
+---
+title: "BS-RoFormer HyperACE (music source separation)"
+date: "2025-12-20"
+source: "Hugging Face"
+url: "https://huggingface.co/pcunwa/BS-Roformer-HyperACE"
+modelId: "pcunwa/BS-Roformer-HyperACE"
+blurb: "A BS-RoFormer checkpoint for music source separation (vocals vs instrumental) with MVSEP-reported metrics and “v2” weights for both stems. Best suited for people already running a BS-RoFormer pipeline."
+thumbnail: "/models/thumbnails/2025-12-20--pcunwa-bs-roformer-hyperace.png"
+---
+
+This model page is essentially a checkpoint drop with evaluation numbers: `pcunwa/BS-Roformer-HyperACE` publishes updated “v2” weights for both instrumental and vocals stems, with links to MVSEP Quality Checker entries and a set of reported metrics (SDR, SI-SDR, etc.). The author claims the instrumental v2 weights hit a top score on at least one MVSEP metric for the Multisong dataset.
+
+The key caveat is that it’s *not* a turnkey inference package. The model card’s usage guidance is basically “replace the model file with one from this repository,” and notes the weights build on `anvuew/BS-RoFormer`. So this entry is most useful if you already have a BS-RoFormer-based separation setup (or are benchmarking checkpoints) and want to try a newer set of weights without re-training. A good first test is to run a small batch of tracks through the same settings you use for your current baseline, then A/B stems for bleed and artifacting rather than relying only on headline metrics.
+
+Quick stats from the listing feed: 9 likes · 564 downloads.
+
+[View on Hugging Face](https://huggingface.co/pcunwa/BS-Roformer-HyperACE)
+
+Source listing: https://huggingface.co/models?sort=modified
