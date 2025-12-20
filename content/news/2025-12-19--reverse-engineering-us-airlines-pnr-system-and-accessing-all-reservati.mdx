@@ -1,0 +1,14 @@
+---
+title: "Reverse Engineering US Airline's PNR System and Accessing All Reservations"
+date: "2025-12-19"
+source: "Hacker News"
+url: "https://alexschapiro.com/security/vulnerability/2025/11/20/avelo-airline-reservation-api-vulnerability"
+blurb: "A researcher found Avelo’s reservation API could be brute-forced (no last-name check or rate limits), potentially exposing passenger PII. The writeup includes a detailed responsible disclosure timeline and fix verification."
+thumbnail: "/news/thumbnails/2025-12-19--reverse-engineering-us-airlines-pnr-system-and-accessing-all-reservati.png"
+---
+
+This writeup is a great reminder that “security through obscurity” tends to fail fastest in industries that still rely on short, human-typed identifiers. The author noticed their browser hitting Avelo’s reservation endpoints while changing a flight, then worked backward to understand how confirmation codes (PNRs) are checked and how airlines typically gate reservation lookups.
+
+The core issue: the API reportedly allowed querying reservation details using the confirmation code alone, without verifying the passenger’s last name, and without meaningful rate limiting. That turns a normally safe two-factor lookup (code + name) into something an attacker can brute force at scale, potentially exposing sensitive fields (PII and government ID numbers) tied to every reservation. The post also models what good disclosure looks like: early outreach to the security team, rapid back-and-forth on the details, a production fix shipped (and independently verified) before publication, and clear communication the whole way.
+
+[Read the original](https://alexschapiro.com/security/vulnerability/2025/11/20/avelo-airline-reservation-api-vulnerability)
