@@ -1,0 +1,20 @@
+---
+title: "Qwen-Edit 2509 ComfyUI workflow"
+date: "2025-12-20"
+source: "Hugging Face"
+url: "https://huggingface.co/dx8152/Qwen-Edit-2509-workflow"
+modelId: "dx8152/Qwen-Edit-2509-workflow"
+pipelineTag: "image-to-image"
+blurb: "A ComfyUI workflow pack for `Qwen/Qwen-Image-Edit-2509` that demos controllable edits (line/depth, pose, masks, outpainting, try-on) and lists the required custom nodes + a companion Lightning LoRA."
+thumbnail: "/models/thumbnails/2025-12-20--dx8152-qwen-edit-2509-workflow.png"
+---
+
+This isn’t a new base checkpoint so much as a “batteries included” *workflow pack* for running Qwen’s image-edit model (`Qwen/Qwen-Image-Edit-2509`) inside ComfyUI. The model card focuses on practical, high-control editing tasks: guided redraw using line/depth maps, selective inpainting via masks, pose-conditioned edits, multi-image compositing, outpainting/expansion, and even virtual try-on style workflows.
+
+What makes it useful is the specificity: it calls out the exact ComfyUI node packages you’ll need, plus a companion LoRA (`lightx2v/Qwen-Image-Lightning`) the author expects you to use. If you try it, treat it like an integration recipe: install the listed nodes, drop the provided `model_patches` into your ComfyUI `models/` directory, then start with one of the “single control” examples (like masks or outpainting) before moving on to multi-image fusion.
+
+Quick stats from the listing feed: pipeline: image-to-image · 42 likes.
+
+[View on Hugging Face](https://huggingface.co/dx8152/Qwen-Edit-2509-workflow)
+
+Source listing: https://huggingface.co/models?sort=modified
