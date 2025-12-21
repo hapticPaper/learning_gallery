@@ -513,10 +513,13 @@ async function fetchJson<T>(url: string): Promise<T> {
 }
 
 async function fetchText(url: string): Promise<string> {
+  const { hostname, pathname } = new URL(url);
+  const isYouTubeRssFeed = hostname === "www.youtube.com" && pathname.startsWith("/feeds/");
+
   const response = await fetchWithTimeout(url, {
     headers: {
-      "user-agent": "learning-gallery-news-bot",
       accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+      ...(isYouTubeRssFeed ? {} : { "user-agent": "learning-gallery-news-bot" }),
     },
   });
 
