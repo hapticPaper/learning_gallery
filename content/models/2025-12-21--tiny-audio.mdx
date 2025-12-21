@@ -1,0 +1,20 @@
+---
+title: "Tiny Audio"
+date: "2025-12-21"
+source: "Hugging Face"
+url: "https://huggingface.co/mazesmazes/tiny-audio"
+modelId: "mazesmazes/tiny-audio"
+pipelineTag: "automatic-speech-recognition"
+blurb: "A cheap-to-train ASR model: frozen Whisper encoder + small trained projector + frozen SmolLM3-3B decoder. Trained in ~24h on one A40 (~$12) and reports ~12% WER on LoquaciousSet."
+thumbnail: "/models/thumbnails/2025-12-21--tiny-audio.png"
+---
+
+Tiny Audio is a nice example of “do the minimum, measure it, and publish the recipe.” It’s an English ASR model that freezes almost everything: a Whisper encoder on the audio side and a small language model (SmolLM3-3B) on the text side. The only trained component is a relatively small projector that maps Whisper’s audio embeddings into the text model’s embedding space.
+
+Why that matters: it dramatically lowers the cost of experimentation. The model card claims ~24 hours of training on a single NVIDIA A40 and a total cost around $12, while still reporting a ~12% word error rate on LoquaciousSet’s test set. If you want to try it, the quickest sanity check is running `transformers` ASR inference on a handful of clean 16kHz clips, then seeing how it degrades under noise / accents (the listed limitations suggest those are the main pain points). The linked Tiny Audio repo is also useful even if you don’t adopt this checkpoint — it’s a compact reference for building your own “frozen backbone + small adapter” speech stack.
+
+Quick stats from the listing feed: pipeline: automatic-speech-recognition · 1 like · 353 downloads.
+
+[View on Hugging Face](https://huggingface.co/mazesmazes/tiny-audio)
+
+Source listing: https://huggingface.co/models?sort=modified

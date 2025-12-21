@@ -1,0 +1,20 @@
+---
+title: "llasa phoneme finetune v3 (Llama CausalLM)"
+date: "2025-12-21"
+source: "Hugging Face"
+url: "https://huggingface.co/AdoCleanCode/llasa_phoneme_finetune_v3"
+modelId: "AdoCleanCode/llasa_phoneme_finetune_v3"
+pipelineTag: "text-generation"
+blurb: "A recently updated Llama-style CausalLM (16 layers, 128k context, very large vocab). The card is still boilerplate, so treat it as experimental and verify license/training data before building on it."
+thumbnail: "/models/thumbnails/2025-12-21--adocleancode-llasa-phoneme-finetune-v3.png"
+---
+
+This is a recently updated Llama-style CausalLM checkpoint published via `transformers`. Even though the model card is still the auto-generated boilerplate, the config gives a few useful signals: it’s a 16-layer Llama (`LlamaForCausalLM`) with a very long context window (131,072 tokens) and an unusually large vocabulary. That combination often shows up when a model has been adapted to emit a specialized token set (for example, phoneme-like sequences) rather than “normal” natural-language text.
+
+If you’re evaluating it, treat it as an experimental artifact until the author fills in the missing details (license, training data, intended use). A practical first step is to inspect the tokenizer (vocab size and any custom tokens) and run a small prompt-throughput sanity check with `transformers` to see what kind of text it tends to produce. If your goal is speech/TTS-adjacent work, don’t assume it’s ready-to-use for pronunciation or alignment without validating outputs against a known phoneme standard and a small held-out test set.
+
+Quick stats from the listing feed: pipeline: text-generation · 345 downloads.
+
+[View on Hugging Face](https://huggingface.co/AdoCleanCode/llasa_phoneme_finetune_v3)
+
+Source listing: https://huggingface.co/models?sort=modified

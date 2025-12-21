@@ -1,0 +1,19 @@
+---
+title: "DidulaThavishaPro/ppo-gtc-trading-agent"
+date: "2025-12-21"
+source: "Hugging Face"
+url: "https://huggingface.co/DidulaThavishaPro/ppo-gtc-trading-agent"
+modelId: "DidulaThavishaPro/ppo-gtc-trading-agent"
+blurb: "A PyTorch checkpoint for a sequence-based trading agent (conv + Transformer encoder, 26 input features, 3 actions). There’s no model card yet, so you’ll need your own loading code and serious backtesting before using it."
+thumbnail: "/models/thumbnails/2025-12-21--didulathavishapro-ppo-gtc-trading-agent.png"
+---
+
+This repo contains a handful of raw PyTorch checkpoint files (for example `best_model_checkpoint.pt` / `pytorch_model.bin`) plus a small JSON config describing a conv + Transformer encoder architecture. The config indicates a 200-step input sequence, 26 input features per timestep, and a 3-dimensional action space — a shape that’s consistent with “buy / sell / hold”-style decision policies.
+
+What’s missing right now is the most important part: there’s no README or training/inference code, and Hugging Face doesn’t report a pipeline tag or other task metadata. So treat this as a research artifact, not a plug-and-play model. If you want to evaluate it, start by locating (or recreating) the exact environment and feature engineering this agent expects, then run offline backtests across multiple market regimes (including transaction costs and slippage) before trusting any “good” results. Also remember that even a strong backtest can overfit — a trading policy without a clear, reproducible methodology is easy to misinterpret.
+
+Quick stats from the listing feed: 1 like · 1397 downloads.
+
+[View on Hugging Face](https://huggingface.co/DidulaThavishaPro/ppo-gtc-trading-agent)
+
+Source listing: https://huggingface.co/models?sort=modified
