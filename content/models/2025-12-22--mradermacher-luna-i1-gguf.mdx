@@ -1,0 +1,20 @@
+---
+title: "Luna (imatrix GGUF quants)"
+date: "2025-12-22"
+source: "Hugging Face"
+url: "https://huggingface.co/mradermacher/Luna-i1-GGUF"
+modelId: "mradermacher/Luna-i1-GGUF"
+pipelineTag: "text-generation"
+blurb: "A big menu of GGUF quant files for beyoru/Luna, including imatrix-weighted IQ quants. Useful if you run llama.cpp / Ollama-style local inference and want to trade quality for VRAM."
+thumbnail: "/models/thumbnails/2025-12-22--mradermacher-luna-i1-gguf.png"
+---
+
+This is a quantization drop, not a new base checkpoint: `mradermacher/Luna-i1-GGUF` packages a bunch of GGUF quant files for the `beyoru/Luna` model, including IQ variants and imatrix-weighted quants. If you run local inference via llama.cpp-style runtimes (including many “GGUF consumer” tools), having a well-labeled quant menu is often more valuable than yet another fine-tune.
+
+The practical workflow is straightforward: pick a size/quality point (often one of the Q4/Q5 variants as a baseline), download the matching `.gguf`, and validate on a small prompt set that reflects your actual use (roleplay/chat vs. narrative writing vs. multilingual). If you’re chasing small-footprint deployments, the IQ options can be appealing, but don’t skip a quick spot-check for regressions in instruction-following and formatting — aggressive quantization can change failure modes in subtle ways.
+
+Quick stats from the listing feed: pipeline: text-generation · 2 likes · 369 downloads.
+
+[View on Hugging Face](https://huggingface.co/mradermacher/Luna-i1-GGUF)
+
+Source listing: https://huggingface.co/models?sort=modified
