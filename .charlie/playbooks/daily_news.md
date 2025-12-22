@@ -28,6 +28,7 @@ Each day, find up to 3 high-signal AI/ML stories (Hacker News, The AI Search on 
 2. YouTube: latest upload from https://www.youtube.com/@theAIsearch.
 3. Google News: AI-related headlines in the last 24h.
 
+No motley fool or other less-reputable sources. 
 ## Steps
 
 1. Create a branch `news-digest-YYYYMMDD` from the latest `develop`.
