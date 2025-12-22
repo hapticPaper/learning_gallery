@@ -1,0 +1,20 @@
+---
+title: "Qwen Image Layered (ComfyUI weights)"
+date: "2025-12-22"
+source: "Hugging Face"
+url: "https://huggingface.co/Comfy-Org/Qwen-Image-Layered_ComfyUI"
+modelId: "Comfy-Org/Qwen-Image-Layered_ComfyUI"
+pipelineTag: "text-to-image"
+blurb: "A ComfyUI-friendly packaging of the Qwen Image Layered diffusion weights (bf16 + fp8mixed) plus a matching VAE, ready to drop into a node-based image pipeline."
+thumbnail: "/models/thumbnails/2025-12-22--comfy-org-qwen-image-layered-comfyui.png"
+---
+
+This Hugging Face repo is a ComfyUI-oriented packaging of the Qwen Image Layered diffusion checkpoint. Instead of a single “mystery file,” it ships the core diffusion weights in multiple formats (including bf16 and an fp8-mixed variant) plus a matching VAE under `split_files/`, which makes it easier to wire into a node-based workflow without hunting for the right companion components.
+
+If you’re already living in ComfyUI, this is the kind of release that’s worth bookmarking: it’s not so much a new model family as a practical delivery format. The fastest way to try it is to drop the diffusion weights and VAE into your ComfyUI models directories, load the checkpoint in a minimal text-to-image graph, and then iterate toward your real pipeline (hi-res fix, ControlNet, inpainting, or whatever you actually ship). If you run into quality/perf tradeoffs, compare bf16 vs. fp8mixed on the same prompt and seed to see whether fp8 is “good enough” for your use case.
+
+Quick stats from the listing feed: pipeline: text-to-image · 22 likes.
+
+[View on Hugging Face](https://huggingface.co/Comfy-Org/Qwen-Image-Layered_ComfyUI)
+
+Source listing: https://huggingface.co/models?sort=modified

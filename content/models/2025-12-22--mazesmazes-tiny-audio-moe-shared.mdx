@@ -1,0 +1,20 @@
+---
+title: "Tiny Audio MoE (shared projector)"
+date: "2025-12-22"
+source: "Hugging Face"
+url: "https://huggingface.co/mazesmazes/tiny-audio-moe-shared"
+modelId: "mazesmazes/tiny-audio-moe-shared"
+pipelineTag: "automatic-speech-recognition"
+blurb: "An ASR stack that pairs Whisper Large v3 Turbo’s encoder with SmolLM3-3B — but swaps the adapter for a shared MoE projector (4 experts, 2 active per token) and ships custom `transformers` code."
+thumbnail: "/models/thumbnails/2025-12-22--mazesmazes-tiny-audio-moe-shared.png"
+---
+
+This is a variant of the “Tiny Audio” style ASR recipe: keep a strong audio encoder (Whisper Large v3 Turbo) and a small-ish text model (SmolLM3-3B), and train an adapter that maps audio embeddings into the language model’s space. What’s different here is the adapter: the config indicates a shared mixture-of-experts projector (4 experts, with 2 selected per token) instead of a single dense projector.
+
+The repo also includes custom `transformers` glue (`asr_modeling.py`, `asr_pipeline.py`, `asr_processing.py`) and sets `pipeline_tag` to automatic speech recognition, so this isn’t just weights — it’s a small runnable stack. If you try it, start with clean 16kHz clips and verify basic stability (does it return text reliably, does it hallucinate, does it handle long segments). Then, if you care about cost/latency, compare throughput and WER against the non-MoE Tiny Audio baseline to see whether the extra routing complexity buys you anything.
+
+Quick stats from the listing feed: pipeline: automatic-speech-recognition · 744 downloads.
+
+[View on Hugging Face](https://huggingface.co/mazesmazes/tiny-audio-moe-shared)
+
+Source listing: https://huggingface.co/models?sort=modified
