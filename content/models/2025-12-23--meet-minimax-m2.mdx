@@ -1,0 +1,20 @@
+---
+title: "Meet MiniMax-M2"
+date: "2025-12-23"
+source: "Hugging Face"
+url: "https://huggingface.co/MiniMaxAI/MiniMax-M2"
+modelId: "MiniMaxAI/MiniMax-M2"
+pipelineTag: "text-generation"
+blurb: "A large MoE text-generation model from MiniMax (230B total / 10B active) positioned for coding and agent workflows, released under a modified MIT license."
+thumbnail: "/models/thumbnails/2025-12-23--meet-minimax-m2.png"
+---
+
+MiniMax-M2 is an open-weight mixture-of-experts (MoE) text generation model from MiniMax that’s explicitly framed around “agentic” and coding-heavy workloads. The model card describes it as 230B total parameters with 10B active parameters, aiming to keep per-token compute closer to a much smaller model while still benefitting from a large expert pool.
+
+If you’re evaluating it, the most interesting angle is less “can it chat” and more “can it reliably do end-to-end developer loops”: multi-file edits, reasoning across long contexts, and tool-driven workflows. The authors’ README emphasizes performance on coding and agent benchmarks, and notes evaluations run with very long context windows (reported as 128k in their SWE-bench Verified setup). Practically, you’ll want to test it on a small repo task that has an objective pass/fail signal (tests or a linter) and see whether the model can converge without excessive retries.
+
+Quick stats from the listing feed: pipeline: text-generation · 1416 likes · 131385 downloads.
+
+[View on Hugging Face](https://huggingface.co/MiniMaxAI/MiniMax-M2)
+
+Source listing: https://huggingface.co/models?sort=modified
