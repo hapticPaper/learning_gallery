@@ -1,0 +1,19 @@
+---
+title: "Fun-ASR"
+date: "2025-12-23"
+source: "Hugging Face"
+url: "https://huggingface.co/FunAudioLLM/Fun-ASR-Nano-2512"
+modelId: "FunAudioLLM/Fun-ASR-Nano-2512"
+blurb: "An 800M-parameter ASR model from Tongyi Lab focused on low-latency transcription, with strong Chinese dialect coverage and a sibling checkpoint for 31-language recognition."
+thumbnail: "/models/thumbnails/2025-12-23--fun-asr.png"
+---
+
+Fun-ASR-Nano-2512 is an end-to-end speech recognition checkpoint from Tongyi Lab (listed as an 800M-parameter model) aimed at low-latency transcription and strong robustness in noisy or far-field audio. In this specific repo, the focus is primarily on Chinese, English, and Japanese, with unusually detailed support for Chinese dialects and regional accents (the model card also references lyric/rap recognition as a use case). The project also points to a sibling “MLT” checkpoint that broadens coverage to 31 languages.
+
+If you want to try it quickly, start by transcribing a short clip that you can sanity-check by ear, then stress it with the conditions that usually break ASR in practice: background noise, distant mics, and domain terms. The usage example on the model card runs via the `funasr` `AutoModel` API (with `trust_remote_code`) and supports practical knobs like language selection, inverse text normalization (`itn`), and hotwords.
+
+Quick stats from the listing feed: 101 likes · 373 downloads.
+
+[View on Hugging Face](https://huggingface.co/FunAudioLLM/Fun-ASR-Nano-2512)
+
+Source listing: https://huggingface.co/models?sort=modified
