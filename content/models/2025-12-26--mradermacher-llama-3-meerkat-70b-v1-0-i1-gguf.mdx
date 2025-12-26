@@ -1,0 +1,21 @@
+---
+title: "mradermacher/llama-3-meerkat-70b-v1.0-i1-GGUF"
+date: "2025-12-26"
+source: "Hugging Face"
+url: "https://huggingface.co/mradermacher/llama-3-meerkat-70b-v1.0-i1-GGUF"
+modelId: "mradermacher/llama-3-meerkat-70b-v1.0-i1-GGUF"
+blurb: "Imatrix-weighted GGUF quants of llama-3-meerkat-70B, aimed at higher quality local inference in llama.cpp."
+thumbnail: "/models/thumbnails/2025-12-26--mradermacher-llama-3-meerkat-70b-v1-0-i1-gguf.png"
+---
+
+This is a collection of GGUF files (for llama.cpp-style runtimes) providing imatrix/importance-weighted quantizations of `dmis-lab/llama-3-meerkat-70b-v1.0`. If you like running big instruction-tuned models locally but you’re sensitive to quality loss, imatrix-weighted quants are one of the more reliable ways to keep smaller quant types from falling apart.
+
+The card includes a large menu of quant options at different sizes (including an imatrix file if you want to generate your own quants). If you’re just trying it out, start with one of the mid-range quants that the author calls out as “recommended” (for example `Q4_K_S` or `Q4_K_M`) and run it in your preferred llama.cpp wrapper. If you’re happy with the behavior, you can then step down (smaller) for speed, or step up (larger) for quality.
+
+Even with aggressive quantization, a 70B-class model is still a heavyweight, so your choice here is mostly a function of available RAM/VRAM and your target tokens/sec.
+
+Quick stats from the listing feed: 2506 downloads.
+
+[View on Hugging Face](https://huggingface.co/mradermacher/llama-3-meerkat-70b-v1.0-i1-GGUF)
+
+Source listing: https://huggingface.co/models?sort=modified

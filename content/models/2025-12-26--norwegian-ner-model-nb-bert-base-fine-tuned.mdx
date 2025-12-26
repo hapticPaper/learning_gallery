@@ -1,0 +1,22 @@
+---
+title: "Norwegian NER Model (nb-bert-base fine-tuned)"
+date: "2025-12-26"
+source: "Hugging Face"
+url: "https://huggingface.co/thivy/nb-bert-cleaned-norne-wikiann-ner"
+modelId: "thivy/nb-bert-cleaned-norne-wikiann-ner"
+pipelineTag: "token-classification"
+blurb: "A Norwegian (nb/nn) NER model fine-tuned from NbAiLab/nb-bert-base with ~0.93 F1 across PER/ORG/LOC/MISC."
+thumbnail: "/models/thumbnails/2025-12-26--norwegian-ner-model-nb-bert-base-fine-tuned.png"
+---
+
+This is a solid, practical Named Entity Recognition (NER) model for Norwegian Bokmål and Nynorsk, built by fine-tuning `NbAiLab/nb-bert-base` on a combined dataset (NorNE + WikiANN). It’s a good fit for “classic NLP plumbing” tasks—pulling people, organizations, and place names out of Norwegian text—where you want something lightweight and predictable rather than a general-purpose chat model.
+
+The model card includes clear evaluation numbers (F1 ≈ 0.93, with precision/recall around 0.93 as well) and documents the supported entity types: `PER`, `ORG`, `LOC`, and `MISC`. To try it quickly, you can run it with the `transformers` `pipeline("ner", ...)` API and an aggregation strategy like `simple` to merge subword tokens. If you’re building search, analytics, redaction, or enrichment for Norwegian content, this is the kind of model that can slot in cleanly.
+
+The training data is a fairly substantial combined set (tens of thousands of samples) and the card is refreshingly specific about data sources and training choices. It’s also published under a permissive CC BY 4.0 license, which makes it easier to adopt in downstream projects.
+
+Quick stats from the listing feed: pipeline: token-classification · 148 downloads.
+
+[View on Hugging Face](https://huggingface.co/thivy/nb-bert-cleaned-norne-wikiann-ner)
+
+Source listing: https://huggingface.co/models?sort=modified

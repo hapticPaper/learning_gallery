@@ -1,0 +1,22 @@
+---
+title: "Arunav_Flux"
+date: "2025-12-26"
+source: "Hugging Face"
+url: "https://huggingface.co/arunav007/arunav_flux"
+modelId: "arunav007/arunav_flux"
+pipelineTag: "text-to-image"
+blurb: "A FLUX.1-dev LoRA with a simple trigger word, usable via diffusers or ComfyUI for style/subject steering."
+thumbnail: "/models/thumbnails/2025-12-26--arunav-flux.png"
+---
+
+`Arunav_Flux` is a LoRA adapter for `black-forest-labs/FLUX.1-dev`, meant to let you steer generations toward a specific learned look/subject using a single trigger token. The model card calls out `ARUNAV` as the trigger word, and shows two straightforward ways to run it: loading the LoRA weights in the 🧨 diffusers pipeline, or using it in node-based workflows like ComfyUI.
+
+If you’re already using FLUX.1-dev and want a quick “drop-in” adapter to experiment with, this is a nice lightweight place to start: load the LoRA, include `ARUNAV` in your prompt, and vary the prompt/style descriptors around it to see how strongly it pulls the image. One thing to double-check before you build anything on top is licensing: the model references FLUX.1-dev’s non-commercial license, so it’s best suited for personal exploration and prototyping.
+
+Most LoRA loaders also let you control the adapter strength/weight—start with a moderate value and adjust up/down until the effect is noticeable without overpowering the rest of your prompt.
+
+Quick stats from the listing feed: pipeline: text-to-image · 599 downloads.
+
+[View on Hugging Face](https://huggingface.co/arunav007/arunav_flux)
+
+Source listing: https://huggingface.co/models?sort=modified
