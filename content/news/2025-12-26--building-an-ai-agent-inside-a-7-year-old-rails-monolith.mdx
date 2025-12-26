@@ -1,0 +1,14 @@
+---
+title: "Building an AI agent inside a 7-year-old Rails monolith"
+date: "2025-12-26"
+source: "Hacker News"
+url: "https://catalinionescu.dev/ai-agent/building-ai-agent-part-1/"
+blurb: "A practical guide to adding an agent tool to a mature Rails app without weakening auth: RubyLLM + Pundit + Algolia."
+thumbnail: "/news/thumbnails/2025-12-26--building-an-ai-agent-inside-a-7-year-old-rails-monolith.webp"
+---
+
+This is a grounded “how we actually shipped it” write-up on adding an AI agent to an established, multi-tenant Rails app with real authorization constraints. Instead of bolting on a separate microservice or letting the model roam free, the author treats the agent as just another feature: it can only act through explicit tools, and those tools reuse the same policies and data access paths the rest of the app already relies on.
+
+The most useful bits are the architectural patterns: using RubyLLM for the agent layer, exposing a narrowly scoped “search” tool backed by their existing Algolia index, and enforcing Pundit checks so the agent can’t see or do anything a user can’t. If you’re considering agents in a production app, this is a good first read because it focuses on guardrails and integration (permissions, tenancy, and auditability), not just prompt engineering. A good experiment to try after reading is to implement a single read-only tool (search, lookup, or summarization over a known index) and make “policy enforcement” a hard requirement before you add any write actions.
+
+[Read the original](https://catalinionescu.dev/ai-agent/building-ai-agent-part-1/)
