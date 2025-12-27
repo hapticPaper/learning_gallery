@@ -1,0 +1,22 @@
+---
+title: "GLM-4.6 GGUF (Unsloth Dynamic 2.0)"
+date: "2025-12-27"
+source: "Hugging Face"
+url: "https://huggingface.co/unsloth/GLM-4.6-GGUF"
+modelId: "unsloth/GLM-4.6-GGUF"
+pipelineTag: "text-generation"
+blurb: "Quantized GGUF builds of Zhipu’s GLM-4.6 for llama.cpp-style local inference (200K context)."
+thumbnail: "/models/thumbnails/2025-12-27--unsloth-glm-4-6-gguf.png"
+---
+
+This is a GGUF conversion of Zhipu’s GLM-4.6 packaged by Unsloth, intended for running locally with `llama.cpp`-style tooling (or apps built on top of it). The model card emphasizes two practical details: (1) you’ll want a recent `llama.cpp`, and (2) the GGUF includes multiple chat-template fixes, including support for Jinja templates.
+
+From a capability standpoint, GLM-4.6 is positioned as an incremental step up from GLM-4.5 with a longer context window (200K tokens), improved coding performance, and stronger reasoning/tool-use behavior. That combination is especially relevant if you’re evaluating “agentic” coding assistants, because a bigger working context plus better tool use can materially change how often a model gets lost in multi-step tasks.
+
+If you want to try it quickly: pick a quant that fits your CPU/RAM (or GPU VRAM if you’re using a GPU-accelerated runtime), then run a small coding benchmark prompt you already trust (bugfix, refactor, or “add tests” request). Keep temperature and sampling parameters consistent so you can compare runs across models.
+
+Quick stats from the listing feed: pipeline: text-generation · 144 likes · 35388 downloads.
+
+[View on Hugging Face](https://huggingface.co/unsloth/GLM-4.6-GGUF)
+
+Source listing: https://huggingface.co/models?sort=modified
