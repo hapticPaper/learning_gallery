@@ -1,0 +1,22 @@
+---
+title: "AiARTiST ACG Playground SDXL V6 (Hyper)"
+date: "2025-12-28"
+source: "Hugging Face"
+url: "https://huggingface.co/GuangyuanSD/AiARTiSTACG6"
+modelId: "GuangyuanSD/AiARTiSTACG6"
+pipelineTag: "text-to-image"
+blurb: "SDXL checkpoint tuned for bright, detailed ACG/anime-style images, with an included Hyper-SDXL LoRA for fast 8-10 step generation."
+thumbnail: "/models/thumbnails/2025-12-28--guangyuansd-aiartistacg6.png"
+---
+
+This is an SDXL-based checkpoint aimed at ACG/anime illustration, with a focus on clean composition, brighter color, and high-detail textures. The model card calls out V6 as a refinement over earlier versions: less "overstyled" output, improved handling of 3D scenes/characters, and an overall brighter look that still holds up at higher resolutions.
+
+The "Hyper" variant is designed to pair with a Hyper-SDXL accelerator LoRA, letting you generate usable results in fewer steps without the usual quality collapse you get from aggressively reducing sampling. If you want a straightforward starting point in ComfyUI or Automatic1111, the author recommends relatively low guidance, around ~10 steps, and Euler a as a sampler; then iterate by adjusting CFG, steps, and your upscaling flow based on the look you're going for.
+
+If you're comparing SDXL checkpoints, a good quick test is to run a handful of consistent prompts (character portrait, full-body pose, and a complex background scene) and see which model keeps anatomy and scene geometry stable while still producing the textures you want.
+
+Quick stats from the listing feed: pipeline: text-to-image · 4 likes · 68 downloads.
+
+[View on Hugging Face](https://huggingface.co/GuangyuanSD/AiARTiSTACG6)
+
+Source listing: https://huggingface.co/models?sort=modified
