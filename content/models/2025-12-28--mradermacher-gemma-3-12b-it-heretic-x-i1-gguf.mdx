@@ -1,0 +1,22 @@
+---
+title: "Gemma 3 12B IT Heretic X GGUF (imatrix)"
+date: "2025-12-28"
+source: "Hugging Face"
+url: "https://huggingface.co/mradermacher/gemma-3-12b-it-heretic-x-i1-GGUF"
+modelId: "mradermacher/gemma-3-12b-it-heretic-x-i1-GGUF"
+pipelineTag: "text-generation"
+blurb: "Imatrix-weighted GGUF quants of LastRef's Gemma 3 12B instruction model (Heretic X variant) for llama.cpp-style local inference, with a wide range of IQ/Q2-Q6 sizes."
+thumbnail: "/models/thumbnails/2025-12-28--mradermacher-gemma-3-12b-it-heretic-x-i1-gguf.png"
+---
+
+This is an imatrix-weighted GGUF conversion of `LastRef/gemma-3-12b-it-heretic-x`, packaged by mradermacher for `llama.cpp`-compatible runtimes. In practice, the value here is convenience: instead of doing your own conversion, you can grab a quant that fits your machine (IQ quants and classic Q2-Q6 variants) and start testing quickly.
+
+The model card positions Heretic X as a "decensored/abliterated" flavor of Gemma, which can change behavior in ways that matter for safety and alignment (both in what it will generate and how it responds to instruction). If you're evaluating it for real use, it's worth running a small, consistent prompt suite that includes your normal helpfulness tasks *and* the kinds of edge cases you care about (refusals, sensitive requests, and jailbreak attempts), then deciding whether the tradeoff is acceptable.
+
+To try it first: start with a mid-range quant like Q4_K_M (or an IQ4 variant if you're comfortable with that ecosystem), then compare against a baseline Gemma quant at the same size. Because this repo is labeled as a vision model, mmproj files (if needed for your runtime) live in the linked static GGUF repository.
+
+Quick stats from the listing feed: pipeline: text-generation · 4 likes · 2266 downloads.
+
+[View on Hugging Face](https://huggingface.co/mradermacher/gemma-3-12b-it-heretic-x-i1-GGUF)
+
+Source listing: https://huggingface.co/models?sort=modified
