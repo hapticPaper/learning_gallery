@@ -1,0 +1,20 @@
+---
+title: "Fin.AI (from-scratch GPT-2-style, 30M)"
+date: "2025-12-29"
+source: "Hugging Face"
+url: "https://huggingface.co/MeridianAlgo/Fin.AI"
+modelId: "MeridianAlgo/Fin.AI"
+pipelineTag: "text-generation"
+blurb: "An experimental 30M-parameter GPT-2-style model trained from scratch with frequent automated updates (CPU-only), plus public training logs."
+thumbnail: "/models/thumbnails/2025-12-29--meridianalgo-fin-ai.png"
+---
+
+This is an interesting “continuous training” experiment: a small GPT-2-style decoder-only model (~30M parameters) that’s explicitly trained from scratch (random initialization) and automatically re-uploaded to Hugging Face on a frequent schedule. The authors publish training logs and a public repo, which makes it a useful reference if you’re curious what it looks like to run an always-on training loop with commodity constraints (they describe CPU-only runs and short cycles).
+
+The key caveat is quality: a from-scratch model like this will produce nonsense early on, and the model card explicitly frames it as research / long-running experimentation rather than a ready-to-use assistant. Still, it’s a nice artifact for tracking how coherence emerges over time, and for validating tooling around training, checkpoints, and evaluation. If you try it, treat it like a weekly snapshot: run a fixed set of prompts (short story, QA, sentiment, financial headline) and compare outputs over successive updates to get a feel for progress.
+
+Quick stats from the listing feed: pipeline: text-generation · 264 downloads.
+
+[View on Hugging Face](https://huggingface.co/MeridianAlgo/Fin.AI)
+
+Source listing: https://huggingface.co/models?sort=modified
