@@ -1,0 +1,20 @@
+---
+title: "Calibri Flux"
+date: "2025-12-29"
+source: "Hugging Face"
+url: "https://huggingface.co/makriot/flux-calibri"
+modelId: "makriot/flux-calibri"
+pipelineTag: "text-to-image"
+blurb: "A FLUX-compatible Diffusers checkpoint (“Calibri Flux”) with a minimal `DiffusionPipeline` example for fast 1024px generations."
+thumbnail: "/models/thumbnails/2025-12-29--makriot-flux-calibri.png"
+---
+
+This is a small, straight-to-the-point text-to-image checkpoint intended to be used via Hugging Face Diffusers’ `DiffusionPipeline` (tagged as a `FluxPipeline`-compatible model). The model card is minimal, but it does include a runnable snippet with sensible “try it first” settings: BF16 weights, `num_inference_steps=15`, modest guidance (`3.5`), and 1024×1024 outputs.
+
+What makes it worth a look is how easy it is to A/B against other FLUX-compatible checkpoints: you can keep your prompts, sampler settings, and resolution fixed, then swap only the model ID to see how style and adherence change. If you’re experimenting, start with a small prompt set (5–10 prompts covering portraits, scenes, and text-heavy subjects) and save outputs with identical seeds. That will tell you quickly whether “Calibri Flux” has a distinct look or better prompt following for the kinds of images you care about.
+
+Quick stats from the listing feed: pipeline: text-to-image · 1 like · 98 downloads.
+
+[View on Hugging Face](https://huggingface.co/makriot/flux-calibri)
+
+Source listing: https://huggingface.co/models?sort=modified

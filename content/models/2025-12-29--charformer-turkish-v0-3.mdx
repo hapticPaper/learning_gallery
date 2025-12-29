@@ -1,0 +1,20 @@
+---
+title: "Charformer Turkish v0.3"
+date: "2025-12-29"
+source: "Hugging Face"
+url: "https://huggingface.co/orkungedik/charformer-turkish-v0.3"
+modelId: "orkungedik/charformer-turkish-v0.3"
+pipelineTag: "text-generation"
+blurb: "A character-level decoder-only Transformer for Turkish Wikipedia with a tiny 105-char vocab and 2K context, useful for experimenting with char-level generation."
+thumbnail: "/models/thumbnails/2025-12-29--charformer-turkish-v0-3.png"
+---
+
+Charformer Turkish v0.3 is a character-level decoder-only Transformer trained on a Turkish Wikipedia dump. Instead of a subword tokenizer, it uses a small fixed character vocabulary (105 symbols) and maps characters to IDs via a `vocab.json` file, which makes it a neat reference point if you’re curious about “tokenizer-free” language modeling.
+
+The tradeoff is compute: character-level modeling usually needs longer contexts to represent the same amount of text, but it can be surprisingly robust to spelling variation and morphological richness (both relevant for Turkish). If you want to try it, start with short prompts and sample a few continuations at different temperatures to see whether it’s learned plausible Turkish character patterns. For a slightly deeper test, feed it a few paragraphs of clean Turkish text and check how quickly it drifts into garbage characters or repetitive loops.
+
+Quick stats from the listing feed: pipeline: text-generation · 242 downloads.
+
+[View on Hugging Face](https://huggingface.co/orkungedik/charformer-turkish-v0.3)
+
+Source listing: https://huggingface.co/models?sort=modified
