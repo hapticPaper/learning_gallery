@@ -1,0 +1,14 @@
+---
+title: "Show HN: Z80-μLM, a 'Conversational AI' That Fits in 40KB"
+date: "2025-12-29"
+source: "Hacker News"
+url: "https://github.com/HarryR/z80ai"
+blurb: "A 2-bit “micro language model” that runs on a Z80: train in Python, export a ~40KB CP/M .COM binary, and chat on vintage hardware."
+thumbnail: "/news/thumbnails/2025-12-29--show-hn-z80-lm-a-conversational-ai-that-fits-in-40kb.png"
+---
+
+Z80-μLM is a delightfully pragmatic take on “tiny language models”: instead of chasing fluency, it focuses on personality-driven, short responses that can run on extremely constrained hardware. The project trains a small neural network in Python with quantization-aware training, then exports inference code *and* weights into a single CP/M `.COM` program that can run on a 1970s-era Z80 with classic 64KB limits.
+
+Technically, it’s closer to a clever character-level classifier than a modern chat model: user input is hashed into trigram buckets (typo-tolerant and mostly word-order invariant), and the network uses 2-bit weights and integer-only math to keep inference feasible. The repo includes examples like a terse “tinychat” bot and a 20-questions-style game, plus tooling to generate and balance training data. If you like retrocomputing or embedded ML, a fun first experiment is to train a model on your own short Q&A or “yes/no/maybe” dataset, then run it in a CP/M emulator to see what kinds of interaction patterns still feel surprisingly “alive” even without deep context.
+
+[Read the original](https://github.com/HarryR/z80ai)
