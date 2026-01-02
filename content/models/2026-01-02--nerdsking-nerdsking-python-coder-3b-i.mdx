@@ -1,0 +1,22 @@
+---
+title: "Nerdsking Python Coder 3B-i"
+date: "2026-01-02"
+source: "Hugging Face"
+url: "https://huggingface.co/Nerdsking/nerdsking-python-coder-3B-i"
+modelId: "Nerdsking/nerdsking-python-coder-3B-i"
+pipelineTag: "text-generation"
+blurb: "A 3B Python-focused code model with a reported 88.41 HumanEval pass@1 (bf16, zero-shot), positioned as a developer-oriented / partially uncensored assistant."
+thumbnail: "/models/thumbnails/2026-01-02--nerdsking-nerdsking-python-coder-3b-i.png"
+---
+
+Nerdsking Python Coder 3B-i is a small (3B) code model tuned specifically for Python. The model card positions it as “partially uncensored” / developer-oriented, with English as the primary language and a training focus on Python logic, standard library usage, and algorithmic reasoning.
+
+The headline claim is its reported HumanEval score: 88.41 pass@1 (bf16, zero-shot) using a chat-formatted prompt. For a 3B parameter model that’s a surprisingly strong number, and it makes this worth a look if you want a lightweight local Python assistant that can draft functions, complete unit-test style tasks, or refactor small modules without needing a large GPU.
+
+Two practical tips if you try it: (1) use Python-specific prompts (“Write a function…”, “Explain this traceback…”) rather than general “code” tasks to get the best behavior, and (2) keep an eye on imports/boilerplate — the authors note some benchmark failures were missing-import issues rather than logic errors. There’s also a 7B sibling in the same family if you want to trade VRAM for headroom.
+
+Quick stats from the listing feed: pipeline: text-generation · 2 likes · 2642 downloads.
+
+[View on Hugging Face](https://huggingface.co/Nerdsking/nerdsking-python-coder-3B-i)
+
+Source listing: https://huggingface.co/models?sort=modified
