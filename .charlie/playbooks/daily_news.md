@@ -26,7 +26,8 @@ Each day, find up to 3 high-signal AI/ML stories (Hacker News, The AI Search on 
 
 1. Hacker News: search for AI-related stories in the last 24h.
 2. YouTube: latest upload from https://www.youtube.com/@theAIsearch.
-3. Google News: AI-related headlines in the last 24h.
+3. Youtube: latest videos from https://www.youtube.com/@code4AI.
+4. Google News: AI-related headlines in the last 24h.
 
 No motley fool or other less-reputable sources. 
 ## Steps
