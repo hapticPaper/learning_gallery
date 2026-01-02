@@ -1,0 +1,20 @@
+---
+title: "VulnLLM-R-7B (MLX 6-bit)"
+date: "2026-01-02"
+source: "Hugging Face"
+url: "https://huggingface.co/mlx-community/VulnLLM-R-7B-6bit"
+modelId: "mlx-community/VulnLLM-R-7B-6bit"
+pipelineTag: "text-generation"
+blurb: "A 6-bit MLX conversion of UCSB-SURFI's VulnLLM-R-7B (Qwen2.5-based), tuned for vulnerability detection and code analysis on Apple Silicon."
+thumbnail: "/models/thumbnails/2026-01-02--mlx-community-vulnllm-r-7b-6bit.png"
+---
+
+VulnLLM-R-7B-6bit is an Apple Silicon–friendly release of the security-focused VulnLLM-R model: the MLX Community converted `UCSB-SURFI/VulnLLM-R-7B` into the MLX format and quantized it to a 6-bit variant for faster local inference. The upstream model is based on Qwen2.5 and is positioned for vulnerability detection / code analysis workflows, where you want the model to reason about code paths, identify risky patterns, or explain potential fixes.
+
+What makes this entry useful is the packaging: MLX models are straightforward to run on Macs without juggling CUDA builds, and the card includes a minimal `mlx-lm` example to load the model and generate responses (including chat-template prompting when available). If you already have a corpus of internal code or security findings, a good first test is to feed a small function and ask for likely bug classes (e.g., injection, unsafe deserialization, missing bounds checks) and suggested hardening steps.
+
+Quick stats from the listing feed: pipeline: text-generation.
+
+[View on Hugging Face](https://huggingface.co/mlx-community/VulnLLM-R-7B-6bit)
+
+Source listing: https://huggingface.co/models?sort=modified

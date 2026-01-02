@@ -1,0 +1,22 @@
+---
+title: "GPT-OSS 20B BalitaNLP CPT"
+date: "2026-01-02"
+source: "Hugging Face"
+url: "https://huggingface.co/sapinsapin/gpt-oss-20b-balitanlp-cpt"
+modelId: "sapinsapin/gpt-oss-20b-balitanlp-cpt"
+pipelineTag: "text-generation"
+blurb: "A continuous-pretraining (CPT) run that adapts GPT-OSS 20B toward Filipino/Tagalog using the BalitaNLP news dataset; meant as a language-adaptation checkpoint, not an instruction-tuned assistant."
+thumbnail: "/models/thumbnails/2026-01-02--gpt-oss-20b-balitanlp-cpt.png"
+---
+
+This checkpoint is a “continuous pre-training” (CPT) experiment on top of `openai/gpt-oss-20b`, trained on the BalitaNLP dataset (Filipino news articles). The goal is language adaptation: keep the base model’s general capabilities while expanding vocabulary and fluency in Filipino/Tagalog.
+
+The model card is explicit that this is still a *base* model checkpoint rather than an instruction-tuned assistant. CPT doesn’t teach chat behavior or task-following; it mostly reshapes the model’s next-token predictions. In practice that means you may see improved Filipino generation, but also the usual base-model downsides: rambling completions, limited “helpfulness,” and output that needs additional post-training (SFT / preference optimization) before it’s useful in an application.
+
+If you want to quickly sanity-check the adaptation, try prompting in Filipino with a short seed phrase and see whether it continues naturally without code-switching back to English. If you’re building something real, treat this as a starting point for instruction tuning on a Filipino-heavy conversation or translation dataset.
+
+Quick stats from the listing feed: pipeline: text-generation · 5512 downloads.
+
+[View on Hugging Face](https://huggingface.co/sapinsapin/gpt-oss-20b-balitanlp-cpt)
+
+Source listing: https://huggingface.co/models?sort=modified
