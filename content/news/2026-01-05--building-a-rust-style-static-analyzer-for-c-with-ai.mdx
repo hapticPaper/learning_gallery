@@ -1,0 +1,16 @@
+---
+title: "Building a Rust-style static analyzer for C++ with AI"
+date: "2026-01-05"
+source: "Hacker News"
+url: "http://mpaxos.com/blog/rusty-cpp.html"
+blurb: "A deep dive into building a Clang-based analyzer that brings Rust-like safe/unsafe boundaries and borrow-style checks to C++ using comment annotations, with heavy help from Claude Code."
+thumbnail: "/news/thumbnails/2026-01-05--building-a-rust-style-static-analyzer-for-c-with-ai.jpg"
+---
+
+This post is both a project diary and a design sketch for "rusty-cpp": a static analyzer that tries to bring some of Rust’s memory-safety ergonomics into C++ without requiring a custom compiler. The motivation is familiar to anyone who has fought C++ pointer bugs: segmentation faults, use-after-free, and the endless temptation to wrap everything in `shared_ptr` just to sleep at night.
+
+Instead of asking teams to rewrite large codebases in Rust (or to adopt a nonstandard compiler), the project takes a more incremental approach. C++ code is annotated using comments like `@safe` and `@unsafe`, and the analyzer enforces a simple boundary: `@safe` code can only call other `@safe` code directly, and anything unannotated (including the STL and legacy code) is treated as unsafe unless explicitly wrapped. The author argues this creates an audit-friendly seam: you can start by making a small “safe island” in an existing codebase and expand it over time.
+
+The other interesting angle is process: the author describes using Claude Code to iterate on the prototype (code + tests), gradually hardening it as failures were found. Even if you’re skeptical about whether Rust-like guarantees can be bolted onto C++, it’s a concrete example of LLM-assisted engineering being used to bootstrap a non-trivial tooling project.
+
+[Read the original](http://mpaxos.com/blog/rusty-cpp.html)
