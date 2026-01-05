@@ -29,9 +29,43 @@ const THUMBNAILS_DIR = path.join(process.cwd(), "public", "news", "thumbnails");
 const YOUTUBE_CHANNEL_ID = "UCIgnGlGkVRhd4qNFcEwLL4A";
 const RUN_LIMIT = 3;
 
+// Comma-separated, case-insensitive substrings matched against Google News publisher names.
+// Use `NEWS_DEBUG_FILTERS=1` to log details when items are filtered.
+const BLOCKED_GOOGLE_NEWS_PUBLISHER_SUBSTRINGS = (process.env.NEWS_BLOCKED_PUBLISHERS ?? "motley fool")
+  .split(",")
+  .map((value) => normalizePublisherMatchText(value))
+  .filter(Boolean);
+
+const NEWS_DEBUG_FILTERS =
+  process.env.NEWS_DEBUG_FILTERS === "1" && (process.env.NODE_ENV ?? "") !== "production";
+
+function isBlockedGoogleNewsPublisher(publisherName: string): boolean {
+  const normalized = ` ${normalizePublisherMatchText(publisherName)} `;
+  return BLOCKED_GOOGLE_NEWS_PUBLISHER_SUBSTRINGS.some((blocked) => normalized.includes(` ${blocked} `));
+}
+
+function normalizePublisherMatchText(value: string): string {
+  return value
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 async function main() {
   await fs.mkdir(CONTENT_DIR, { recursive: true });
   await fs.mkdir(THUMBNAILS_DIR, { recursive: true });
+
+  if (NEWS_DEBUG_FILTERS) {
+    console.log(
+      JSON.stringify({
+        event: "news_filter_config",
+        source: "google_news",
+        blockedPublisherCount: BLOCKED_GOOGLE_NEWS_PUBLISHER_SUBSTRINGS.length,
+      }),
+    );
+  }
 
   const existingUrls = await listExistingUrls();
   const candidates = await getRunCandidates();
@@ -162,7 +196,27 @@ async function getGoogleNewsCandidates(): Promise<StoryDraft[]> {
 
     const { publisherName, publisherUrl } = parseGoogleNewsSource(item);
 
-    if (publisherName === "The Motley Fool") {
+    if (publisherName && isBlockedGoogleNewsPublisher(publisherName)) {
+      const baseUrl = link.split("?")[0];
+      const host = (() => {
+        try {
+          return new URL(baseUrl).hostname;
+        } catch {
+          return null;
+        }
+      })();
+
+      if (NEWS_DEBUG_FILTERS) {
+        console.log(
+          JSON.stringify({
+            event: "filtered_google_news_item",
+            source: "google_news",
+            publisher: publisherName,
+            host,
+            baseUrl,
+          }),
+        );
+      }
       continue;
     }
 
