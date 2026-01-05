@@ -1,0 +1,18 @@
+---
+title: "GLM-4.7 GGUF (imatrix)"
+date: "2026-01-05"
+source: "Hugging Face"
+url: "https://huggingface.co/mradermacher/GLM-4.7-i1-GGUF"
+modelId: "mradermacher/GLM-4.7-i1-GGUF"
+pipelineTag: "text-generation"
+blurb: "Imatrix (importance-matrix) GGUF quants of ZhipuAI’s GLM-4.7, packaged for llama.cpp-style local inference across a wide range of sizes."
+thumbnail: "/models/thumbnails/2026-01-05--mradermacher-glm-4-7-i1-gguf.png"
+---
+
+This is a quantized GGUF release of `zai-org/GLM-4.7`, with multiple “imatrix” (importance-matrix) quant variants published by `mradermacher`. In practice that means you can run a modern GLM-family model locally using GGUF-compatible runtimes (like `llama.cpp` and tools built on top of it), without needing a full PyTorch/Transformers stack.
+
+If you’re new to GGUF, the main choice is which quant to start with: smaller quants run on more hardware but lose some quality, while larger ones need more RAM/VRAM. A reasonable first try is a mid-range quant (often a Q4/Q5 variant) and then adjust up or down depending on speed and output quality. Because this repo includes many sizes, it’s also a handy “one stop” option if you want to benchmark GLM-4.7 across hardware.
+
+[View on Hugging Face](https://huggingface.co/mradermacher/GLM-4.7-i1-GGUF)
+
+Source listing: https://huggingface.co/models?sort=modified
