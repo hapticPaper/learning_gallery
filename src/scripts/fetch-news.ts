@@ -161,6 +161,11 @@ async function getGoogleNewsCandidates(): Promise<StoryDraft[]> {
     const pubDateRaw = stripCdata(getXmlTag(item, "pubDate") ?? "");
 
     const { publisherName, publisherUrl } = parseGoogleNewsSource(item);
+
+    if (publisherName === "The Motley Fool") {
+      continue;
+    }
+
     const title = publisherName
       ? rawTitle.replace(new RegExp(`\\s+-\\s+${escapeRegExp(publisherName)}$`), "")
       : rawTitle;
