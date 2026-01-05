@@ -1,0 +1,18 @@
+---
+title: "DistilBART news summarizer"
+date: "2026-01-05"
+source: "Hugging Face"
+url: "https://huggingface.co/Sachin21112004/distilbart-news-summarizer"
+modelId: "Sachin21112004/distilbart-news-summarizer"
+pipelineTag: "summarization"
+blurb: "A distilled BART (CNN/DM-style) model tuned for abstractive news summarization—small enough for quick local runs, with a straightforward Transformers usage snippet."
+thumbnail: "/models/thumbnails/2026-01-05--sachin21112004-distilbart-news-summarizer.png"
+---
+
+This model is a lightweight, “batteries-included” option for abstractive news summarization. It’s built on top of the distilled BART CNN/DM checkpoint (`sshleifer/distilbart-cnn-12-6`) and is intended for the common “take a long-ish article and produce a short paragraph summary” workflow.
+
+The card includes a simple Transformers recipe: load the tokenizer + `AutoModelForSeq2SeqLM`, truncate inputs to the model’s max context window, and generate with a small beam search. If you’re building a news reader, research assistant, or internal “summarize this link” tool, this kind of smaller seq2seq model can be a nice fit when you want predictable latency and don’t need the cost/complexity of running a much larger instruction-tuned LLM.
+
+[View on Hugging Face](https://huggingface.co/Sachin21112004/distilbart-news-summarizer)
+
+Source listing: https://huggingface.co/models?sort=modified

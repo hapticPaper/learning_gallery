@@ -1,0 +1,20 @@
+---
+title: "T5 small spoken-typo corrector"
+date: "2026-01-05"
+source: "Hugging Face"
+url: "https://huggingface.co/willwade/t5-small-spoken-typo"
+modelId: "willwade/t5-small-spoken-typo"
+pipelineTag: "text-generation"
+blurb: "A fine-tuned T5-small for fixing missing spaces and common typos in short, conversational English—useful for chat logs, AAC phrases, and spoken-text cleanup."
+thumbnail: "/models/thumbnails/2026-01-05--t5-small-spoken-typo.png"
+---
+
+`willwade/t5-small-spoken-typo` is a small, practical text-correction model that targets a very specific pain point: short, conversational sentences that come in “smashed together” (missing spaces), plus everyday typos. If you’re processing chat logs, transcription snippets, or AAC phrase sets, it’s the kind of cleanup pass that can make downstream search, moderation, or summarization work noticeably better.
+
+It’s trained as a T5-style text-to-text model, so you typically provide an instruction-like prefix and let it rewrite the input into a corrected version. A simple starting point is to feed it inputs like `grammar: Didyoucatchthegamelastnight` and compare the output to a human-corrected reference; once you’re happy with the behavior, it’s easy to wrap in a lightweight “normalize before indexing” pipeline.
+
+Quick stats from the listing feed: pipeline: text-generation · 6 likes · 47 downloads.
+
+[View on Hugging Face](https://huggingface.co/willwade/t5-small-spoken-typo)
+
+Source listing: https://huggingface.co/models?sort=modified
