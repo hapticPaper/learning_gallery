@@ -1,0 +1,20 @@
+---
+title: "VAETKI 112B-A10B (MoE)"
+date: "2026-01-06"
+source: "Hugging Face"
+url: "https://huggingface.co/NC-AI-consortium-VAETKI/VAETKI"
+modelId: "NC-AI-consortium-VAETKI/VAETKI"
+pipelineTag: "text-generation"
+blurb: "A 112B-parameter (10B active) MoE LLM from NC-AI’s 13-org consortium, with 32k context, Korean/English/Chinese/Japanese support, and an MIT license."
+thumbnail: "/models/thumbnails/2026-01-06--nc-ai-consortium-vaetki-vaetki.png"
+---
+
+VAETKI is a large multilingual language model released by the NC-AI consortium (a collaboration across 13 organizations). The headline spec is a Mixture-of-Experts setup: ~112B total parameters with ~10B active per token, which is a common tradeoff for getting “big model” capacity without paying full dense-model compute at inference time.
+
+It’s also unusually explicit about being built for both research and real deployment. The model is published under an MIT license, supports Korean/English/Chinese/Japanese, and advertises a 32k context window. The README also describes a “thinking mode” vs. “non-thinking mode” behavior (with non-thinking used for tool-agent style tasks). If you’re evaluating open LLMs for agent scaffolding or multilingual apps, this is worth a look simply because it comes with clearer architecture details than most newly uploaded repos.
+
+Quick stats from the listing feed: pipeline: text-generation · 41 likes · 2614 downloads.
+
+[View on Hugging Face](https://huggingface.co/NC-AI-consortium-VAETKI/VAETKI)
+
+Source listing: https://huggingface.co/models?sort=modified
