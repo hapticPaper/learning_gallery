@@ -1,0 +1,20 @@
+---
+title: "Qwen3 0.6B GGUF (high-fidelity quants)"
+date: "2026-01-06"
+source: "Hugging Face"
+url: "https://huggingface.co/geoffmunn/Qwen3-0.6B-f16"
+modelId: "geoffmunn/Qwen3-0.6B-f16"
+pipelineTag: "text-generation"
+blurb: "A GGUF release of Qwen3-0.6B with multiple high-fidelity quants (including Q3_HIFI) for llama.cpp/LM Studio—useful when you need an ultra-small, offline model on limited hardware."
+thumbnail: "/models/thumbnails/2026-01-06--qwen3-0-6b-f16-gguf.png"
+---
+
+This repo packages `Qwen/Qwen3-0.6B` as GGUF so it can be used directly with `llama.cpp`-style runtimes (LM Studio, OpenWebUI, GPT4All, etc.). At 0.6B parameters it’s firmly in the “tiny model” category: you should not expect strong reasoning or coding performance, but you *can* expect it to run basically anywhere (including CPU-only environments) and to be easy to ship for offline or on-device use cases.
+
+The reason this upload is still worth noting is that it’s not just a single quant — it’s an opinionated set of quantizations built from an f16 base, including a custom “Q3_HIFI” option that aims to trade a bit of speed for better quality at a small size. If you’re benchmarking what “good enough” looks like at the very small end (or you need a fast baseline for intent detection / short responses), having a curated quant set and published eval notes can save time.
+
+Quick stats from the listing feed: pipeline: text-generation · 1 like · 4708 downloads.
+
+[View on Hugging Face](https://huggingface.co/geoffmunn/Qwen3-0.6B-f16)
+
+Source listing: https://huggingface.co/models?sort=modified

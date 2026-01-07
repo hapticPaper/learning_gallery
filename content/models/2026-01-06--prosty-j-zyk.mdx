@@ -1,0 +1,20 @@
+---
+title: "Prosty Język"
+date: "2026-01-06"
+source: "Hugging Face"
+url: "https://huggingface.co/jglowa/prosty-jezyk"
+modelId: "jglowa/prosty-jezyk"
+pipelineTag: "text-generation"
+blurb: "A Polish “plain language” assistant built on Bielik-4.5B, packaged as a local/offline llamafile app for rewriting bureaucratic text into simpler Polish (Apache-2.0)."
+thumbnail: "/models/thumbnails/2026-01-06--prosty-j-zyk.png"
+---
+
+This repo is less of a “raw model drop” and more of a practical, privacy-friendly tool: a Polish assistant that rewrites dense, bureaucratic documents into plainer Polish (“prosty język”). It’s built on `speakleash/Bielik-4.5B-v3.0-Instruct` and is published under Apache-2.0.
+
+The interesting part is packaging. Instead of requiring Python/Transformers, it ships as a `llamafile`-based local app (Windows/Linux/macOS), with optional CUDA/ROCm acceleration when available. That makes it a nice reference if you’re trying to deliver LLM functionality to non-technical users (or regulated environments) where “upload the document to a SaaS” is a non-starter. If you work with government, legal, or health orgs in Poland, this is also a concrete example of a narrow, language-specific workflow where a mid-sized local model can be genuinely useful.
+
+Quick stats from the listing feed: pipeline: text-generation · 8 likes · 26 downloads.
+
+[View on Hugging Face](https://huggingface.co/jglowa/prosty-jezyk)
+
+Source listing: https://huggingface.co/models?sort=modified
