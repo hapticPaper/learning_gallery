@@ -1,0 +1,22 @@
+---
+title: "Whisper-medium fine-tuned for Teochew ASR"
+date: "2026-01-07"
+source: "Hugging Face"
+url: "https://huggingface.co/panlr/whisper-finetune-teochew"
+modelId: "panlr/whisper-finetune-teochew"
+pipelineTag: "automatic-speech-recognition"
+blurb: "A `whisper-medium` fine-tune for Teochew (潮州话) ASR using a custom orthography to reduce ambiguity across dialectal variants, trained on the open `teochew_wild` dataset."
+thumbnail: "/models/thumbnails/2026-01-07--whisper-finetune-teochew.png"
+---
+
+`panlr/whisper-finetune-teochew` is a fine-tuned `whisper-medium` checkpoint for Teochew (潮州话 / 潮汕话) automatic speech recognition. The goal is “proper writing” transcription of spoken Teochew — not translation into Mandarin. It’s trained on the open `panlr/teochew_wild` dataset (about 18.9 hours / 12,500 clips) covering multiple speakers and regional accents.
+
+Two details make this one worth bookmarking if you work with regional language ASR: (1) the dataset uses a custom orthography (“歹看正字法”) to reduce ambiguity that can happen with homophones and variant characters, and (2) the README includes measured character error rate (CER) numbers after fine-tuning (roughly ~12% on validation/test splits). If you want to try it quickly, the model works with the standard `transformers` ASR `pipeline` — point it at a `.wav` file and inspect the returned `text`.
+
+There’s also a hosted Spaces demo linked from the README, which is handy for a first sanity-check before you wire it into a batch transcription script. If you’ve struggled to find public ASR resources for Teochew (or you need a starting point for another Min dialect), this is a solid “baseline + data + recipe” bundle.
+
+Quick stats from the listing feed: pipeline: automatic-speech-recognition · 10 likes · 32 downloads.
+
+[View on Hugging Face](https://huggingface.co/panlr/whisper-finetune-teochew)
+
+Source listing: https://huggingface.co/models?sort=modified

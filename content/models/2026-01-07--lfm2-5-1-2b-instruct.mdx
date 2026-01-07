@@ -1,0 +1,22 @@
+---
+title: "LFM2.5-1.2B-Instruct"
+date: "2026-01-07"
+source: "Hugging Face"
+url: "https://huggingface.co/LiquidAI/LFM2.5-1.2B-Instruct"
+modelId: "LiquidAI/LFM2.5-1.2B-Instruct"
+pipelineTag: "text-generation"
+blurb: "A 1.2B-parameter on-device chat model tuned for fast local inference and long-context extraction/RAG and agent-style workflows, not for heavy coding or deep-knowledge tasks."
+thumbnail: "/models/thumbnails/2026-01-07--lfm2-5-1-2b-instruct.png"
+---
+
+`LiquidAI/LFM2.5-1.2B-Instruct` is positioned as a “real” assistant model for edge devices: small enough to run locally, but trained as an instruction-tuned chat model (and not just a toy demo). Liquid AI emphasizes on-device deployment and broad runtime support (Transformers, vLLM, llama.cpp, and MLX), which makes it easy to benchmark the same checkpoint across different local inference stacks.
+
+What’s useful about this upload is how explicit it is about intended use: the card calls out agentic tasks, data extraction, and RAG-style workflows, and (importantly) warns that it’s *not* recommended for knowledge-heavy queries or programming. The model also advertises a relatively long context window for its size (32,768 tokens) and a multilingual vocabulary, which is a practical combo for “local document assistant” experiments.
+
+If you want to try it quickly, start with the model’s ChatML-like template (via `tokenizer.apply_chat_template()` in Transformers) and test a few structured prompts: extraction into JSON, short summarization, and tool-style function calling. Those are exactly the places where small, fast instruction models can feel surprisingly capable.
+
+Quick stats from the listing feed: pipeline: text-generation · 121 likes · 2917 downloads.
+
+[View on Hugging Face](https://huggingface.co/LiquidAI/LFM2.5-1.2B-Instruct)
+
+Source listing: https://huggingface.co/models?sort=modified

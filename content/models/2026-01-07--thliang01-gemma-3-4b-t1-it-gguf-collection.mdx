@@ -1,0 +1,20 @@
+---
+title: "Gemma 3 4B T1-it (GGUF collection)"
+date: "2026-01-07"
+source: "Hugging Face"
+url: "https://huggingface.co/thliang01/gemma-3-4B-T1-it-GGUF"
+modelId: "thliang01/gemma-3-4B-T1-it-GGUF"
+pipelineTag: "text-generation"
+blurb: "Ready-to-run GGUF quantizations of the Taiwan-focused `twinkle-ai/gemma-3-4B-T1-it` so you can choose a speed/quality tradeoff and run Gemma 3 locally with `llama.cpp`."
+thumbnail: "/models/thumbnails/2026-01-07--thliang01-gemma-3-4b-t1-it-gguf-collection.png"
+---
+
+This repo is a convenience layer for local inference: it converts `twinkle-ai/gemma-3-4B-T1-it` into GGUF so you can run it directly with `llama.cpp` (or tools built on top of it like LM Studio). The upstream base model is a Gemma 3 4B instruction-tuned checkpoint with a Taiwan/Traditional-Chinese focus, and this upload packages multiple quantized variants so you can choose the speed vs. quality vs. RAM tradeoff that fits your machine.
+
+If you’ve never pulled models via `llama.cpp`’s Hugging Face integration, the README’s examples are a good starting point: use `llama-cli` or `llama-server` with `--hf-repo` and `--hf-file` to fetch and run a specific `.gguf`. In practice, this is a solid way to evaluate a model family quickly (especially on CPU or consumer GPUs) without setting up a full Transformers stack. If the model behavior interests you, you’ll still want to read the original model card for training details and intended use.
+
+Quick stats from the listing feed: 2 likes · 234 downloads.
+
+[View on Hugging Face](https://huggingface.co/thliang01/gemma-3-4B-T1-it-GGUF)
+
+Source listing: https://huggingface.co/models?sort=modified
