@@ -1,0 +1,14 @@
+---
+title: "Comparing AI agents to cybersecurity professionals in real-world pen testing"
+date: "2026-01-06"
+source: "Hacker News"
+url: "https://arxiv.org/abs/2512.09882"
+blurb: "A new arXiv paper compares AI pentest agents with ten human security professionals on a live 8,000-host network, showing a strong multi-agent scaffold can rival top human submissions while still struggling with false positives."
+thumbnail: "/news/thumbnails/2026-01-06--comparing-ai-agents-to-cybersecurity-professionals-in-real-world-pen-t.png"
+---
+
+This paper is a rare “apples to apples” benchmark for agentic security work: AI pentest agents vs. experienced humans on a live enterprise-like environment. The authors evaluate ten cybersecurity professionals and several existing AI agent setups on a large university network (~8,000 hosts across 12 subnets), then introduce their own multi-agent scaffold (ARTEMIS) that focuses on prompt/tool orchestration, sub-agent delegation, and vulnerability triage.
+
+The headline result is less “AI beats humans” and more “scaffolding matters”: the best-performing system (ARTEMIS) reportedly placed second overall, finding nine valid vulnerabilities with a high valid-submission rate and outperforming most human participants, while other agent scaffolds lagged behind. The write-up is also clear about where agents still fall down in real environments: higher false-positive rates, brittle handling of UI-driven steps, and the gap between “found something interesting” and “submitting a clean, reproducible report.” If you care about where security agents are headed, this is a useful reminder that the evaluation target isn’t just exploitation — it’s the full loop from enumeration to high-quality submission.
+
+[Read the original](https://arxiv.org/abs/2512.09882)

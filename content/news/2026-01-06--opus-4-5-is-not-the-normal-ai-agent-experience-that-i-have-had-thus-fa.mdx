@@ -1,0 +1,16 @@
+---
+title: "Opus 4.5 is not the normal AI agent experience that I have had thus far"
+date: "2026-01-06"
+source: "Hacker News"
+url: "https://burkeholland.github.io/posts/opus-4-5-change-everything/"
+blurb: "A developer argues Claude Opus 4.5 is the first coding agent that reliably builds end-to-end apps by iterating via CLI feedback (and Firebase tooling), raising a practical question: how much should humans still optimize for readability?"
+thumbnail: "/news/thumbnails/2026-01-06--opus-4-5-is-not-the-normal-ai-agent-experience-that-i-have-had-thus-fa.jpg"
+---
+
+Burke Holland makes a strong claim: Claude Opus 4.5 is the first “coding agent” he’s used that consistently completes projects instead of producing spaghetti code and endless copy/paste fixes. His bar isn’t “write a component” — it’s build something end-to-end, run it locally, read the errors, and iterate until it works.
+
+The post is grounded in a set of concrete builds. He describes using Opus 4.5 to create a Windows right-click image conversion utility (including packaging, install/uninstall scripts, a distribution site, and GitHub Actions), then pushing further into a screen-recording and editing app. The most interesting examples are the ones that touch real-world plumbing: a mobile app that generates captions for photos and schedules posts to Facebook, and an order tracking / route optimization tool — both backed by Firebase, set up via the Firebase CLI, with the agent reading logs and fixing cloud function errors.
+
+He ends with the uncomfortable part: he doesn’t fully understand the generated code (including Swift), but argues that if the agent can maintain it, “human readability” may stop being the primary optimization target. Even if you disagree with that conclusion, it’s a useful checklist for evaluating agents: can they use standard tooling, diagnose failures from logs, and keep moving without constant hand-holding?
+
+[Read the original](https://burkeholland.github.io/posts/opus-4-5-change-everything/)
