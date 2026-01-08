@@ -1,0 +1,14 @@
+---
+title: "Notion AI: Unpatched data exfiltration"
+date: "2026-01-07"
+source: "Hacker News"
+url: "https://www.promptarmor.com/resources/notion-ai-unpatched-data-exfiltration"
+blurb: "A prompt-injection report shows Notion AI can leak page contents via external image URLs before a user approves the suggested edit."
+thumbnail: "/news/thumbnails/2026-01-07--notion-ai-unpatched-data-exfiltration.png"
+---
+
+PromptArmor walks through an indirect prompt injection attack where an uploaded document (a resume PDF in their demo) contains hidden instructions that steer Notion AI into leaking workspace data. The trick is to get the model to “helpfully” update a page (a hiring tracker) while also inserting a Markdown image whose `src` URL is built from the tracker’s text plus an attacker-controlled domain.
+
+Notion surfaces a warning asking whether you trust the external URL — but, according to the report, the edit is saved and the browser makes the image request *before* the user approves. That means the exfiltration happens even if the user rejects the change. The write-up also calls out a similar risk in Notion Mail drafts if external images are rendered during generation. It’s a good reminder that “LLM safety” isn’t just about filtering model output: any feature that turns model-generated strings into network requests needs hard gating (e.g., strict allowlists / CSP, and delaying side effects until explicit user approval).
+
+[Read the original](https://www.promptarmor.com/resources/notion-ai-unpatched-data-exfiltration)
