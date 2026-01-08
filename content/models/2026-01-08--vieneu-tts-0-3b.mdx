@@ -1,0 +1,22 @@
+---
+title: "VieNeu-TTS 0.3B"
+date: "2026-01-08"
+source: "Hugging Face"
+url: "https://huggingface.co/pnnbao-ump/VieNeu-TTS-0.3B"
+modelId: "pnnbao-ump/VieNeu-TTS-0.3B"
+pipelineTag: "text-to-speech"
+blurb: "A fast Vietnamese text-to-speech model (0.3B) built for offline/on-device synthesis and instant voice cloning, with GGUF Q4/Q8 variants for CPU/mobile."
+thumbnail: "/models/thumbnails/2026-01-08--vieneu-tts-0-3b.png"
+---
+
+`pnnbao-ump/VieNeu-TTS-0.3B` is a compact Vietnamese text-to-speech model designed for offline/on-device use, with an emphasis on low-latency synthesis and “instant” voice cloning from a short reference clip. The project positions this 0.3B checkpoint as a from-scratch retrain (not a shrink of the earlier 0.5B release), and calls out Vietnamese pronunciation stability and Vietnamese↔English code-switching as goals.
+
+The other practical hook is deployment flexibility: in addition to the PyTorch weights, the author provides GGUF Q4/Q8 variants for faster CPU/mobile inference. That’s a nice pattern for TTS projects, where “demo works on my GPU” isn’t the hard part — the hard part is getting something that runs reliably on everyday hardware while still sounding good.
+
+If you want to try it quickly, start with the repo’s Gradio demo to validate your audio pipeline and reference-clip quality, then benchmark the GGUF versions for your target device. Also note the license (CC BY-NC 4.0), which makes it a better fit for research and personal projects than commercial deployments.
+
+Quick stats from the listing feed: pipeline: text-to-speech · 4 likes · 17 downloads.
+
+[View on Hugging Face](https://huggingface.co/pnnbao-ump/VieNeu-TTS-0.3B)
+
+Source listing: https://huggingface.co/models?sort=modified
