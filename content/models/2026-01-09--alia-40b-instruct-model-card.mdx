@@ -1,0 +1,22 @@
+---
+title: "ALIA-40B Instruct"
+date: "2026-01-09"
+source: "Hugging Face"
+url: "https://huggingface.co/BSC-LT/ALIA-40b-instruct"
+modelId: "BSC-LT/ALIA-40b-instruct"
+pipelineTag: "text-generation"
+blurb: "A 40B multilingual assistant (35 European languages) tuned for very long context (~160k) and released under Apache-2.0, with training scripts available."
+thumbnail: "/models/thumbnails/2026-01-09--alia-40b-instruct-model-card.png"
+---
+
+`BSC-LT/ALIA-40b-instruct` is a 40B instruction-tuned LLM from the Barcelona Supercomputing Center’s Language Technologies group. It’s trained from scratch and positioned as a broadly multilingual assistant: the base model covers 35 European languages (plus code), and the post-training focuses most heavily on Spanish, Catalan, Basque, Galician, and English.
+
+The most notable spec is the context window: the model card lists a context length of 163,840 tokens after long-context adaptation. That makes it a compelling candidate for “long document” workflows (multilingual retrieval, translation + summarization, or Q&A over big reference material), assuming you have the hardware to run a 40B checkpoint.
+
+Two practical notes from the authors: (1) the model is only *preliminarily* aligned (they explicitly warn about biased/incorrect/harmful output), so treat it as a research/development model unless you’re adding your own safety layer; and (2) this checkpoint is marked as superseded by a newer `ALIA-40b-instruct-2512` release, so you’ll likely want to start there if you’re evaluating ALIA today.
+
+Quick stats from the listing feed: pipeline: text-generation · 1 like · 280 downloads.
+
+[View on Hugging Face](https://huggingface.co/BSC-LT/ALIA-40b-instruct)
+
+Source listing: https://huggingface.co/models?sort=modified
