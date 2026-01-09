@@ -1,0 +1,22 @@
+---
+title: "VAETKI-VL 7B-A1B (GGUF)"
+date: "2026-01-09"
+source: "Hugging Face"
+url: "https://huggingface.co/dororodoroddo/VAETKI-VL-7B-A1B-GGUF"
+modelId: "dororodoroddo/VAETKI-VL-7B-A1B-GGUF"
+pipelineTag: "image-text-to-text"
+blurb: "A 7.6B MoE vision-language model (1.2B active) converted to GGUF for llama.cpp, with separate text weights + `mmproj` for Korean/English multimodal prompts."
+thumbnail: "/models/thumbnails/2026-01-09--vaetki-vl-7b-a1b-gguf.png"
+---
+
+`dororodoroddo/VAETKI-VL-7B-A1B-GGUF` is a GGUF packaging of `nc-ai-consortium/VAETKI-VL-7B-A1B`, a Korean/English vision-language model built as a Mixture-of-Experts. The model card calls out 7.58B total parameters with ~1.2B activated (64 experts, 5 active per token), plus a 16k context window — a design that aims to keep inference relatively efficient while still offering a larger-capacity backbone.
+
+What makes this repo practically useful is that it’s structured the way the llama.cpp ecosystem expects: a quantized text model GGUF plus a separate `mmproj` GGUF for the vision encoder. That means it’s geared toward running locally (for example, with llama.cpp’s multimodal CLI) for tasks like image captioning, describing screenshots, or Korean/English visual Q&A.
+
+The catch is compatibility: the author notes that llama.cpp support is pending an upstream merge and points to a fork in the meantime. If you want to try it, treat it like an “early access” integration — validate your exact llama.cpp build supports VAETKI-VL before you commit to it for anything beyond experimentation.
+
+Quick stats from the listing feed: pipeline: image-text-to-text · 2 likes · 56 downloads.
+
+[View on Hugging Face](https://huggingface.co/dororodoroddo/VAETKI-VL-7B-A1B-GGUF)
+
+Source listing: https://huggingface.co/models?sort=modified

@@ -1,0 +1,22 @@
+---
+title: "Reasoner Llama 3.1 70B V2 (imatrix GGUF)"
+date: "2026-01-09"
+source: "Hugging Face"
+url: "https://huggingface.co/mradermacher/Reasoner-Llama3.1-70B-V2-i1-GGUF"
+modelId: "mradermacher/Reasoner-Llama3.1-70B-V2-i1-GGUF"
+pipelineTag: "text-generation"
+blurb: "Imatrix-weighted GGUF quants of a Reasoner-tuned Llama 3.1 70B checkpoint, giving llama.cpp users a menu of sizes from IQ1 to Q6."
+thumbnail: "/models/thumbnails/2026-01-09--mradermacher-reasoner-llama3-1-70b-v2-i1-gguf.png"
+---
+
+`mradermacher/Reasoner-Llama3.1-70B-V2-i1-GGUF` is a practical “distribution package” for local inference: it provides imatrix-weighted GGUF quantizations of `Guilherme34/Reasoner-Llama3.1-70b-V2`, so you can run the model in llama.cpp-compatible tooling without doing your own conversion.
+
+The headline is optionality. Instead of a single recommended quant, the repo offers a spread from extremely compressed IQ quants up through larger Q4/Q6 variants. For a 70B model, that matters: even “midrange” quants are hefty (the card lists ~40–43 GB for Q4_K_*), so you’re trading memory, speed, and quality based on what your machine can actually sustain.
+
+If you want to try it quickly, pick the smallest quant that fits comfortably in your RAM/VRAM budget, then step up until quality stops improving for your workload (summarization, long-form reasoning, code review, etc.). Also double-check the upstream model’s license and usage notes before you build anything on top of it — quant packs tend to inherit constraints from the original weights.
+
+Quick stats from the listing feed: pipeline: text-generation · 0 likes · 543 downloads.
+
+[View on Hugging Face](https://huggingface.co/mradermacher/Reasoner-Llama3.1-70B-V2-i1-GGUF)
+
+Source listing: https://huggingface.co/models?sort=modified
