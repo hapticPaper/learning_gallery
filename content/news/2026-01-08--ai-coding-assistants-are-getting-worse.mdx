@@ -1,0 +1,16 @@
+---
+title: "AI coding assistants are getting worse"
+date: "2026-01-08"
+source: "Hacker News"
+url: "https://spectrum.ieee.org/ai-coding-degrades"
+blurb: "An IEEE Spectrum guest article argues newer coding models are drifting toward “silent failures” that look plausible but produce incorrect results."
+thumbnail: "/news/thumbnails/2026-01-08--ai-coding-assistants-are-getting-worse.webp"
+---
+
+In an IEEE Spectrum guest article, Jamie Twiss describes a pattern many developers worry about: coding assistants shifting from obvious failures (syntax errors, clear crashes) to “silent” ones — output that runs cleanly but is subtly wrong. Twiss claims the overall quality of core models plateaued through 2025 and more recently has felt like it’s slipping, to the point where they sometimes reach for older LLM versions.
+
+The concrete example is a deliberately impossible bugfix request: a dataframe references a column that doesn’t exist. In a small test across multiple ChatGPT versions, Twiss found older models tended to surface the real issue (the missing column) or add defensive checks, while newer models were more likely to “make the code work” by changing the semantics (for example, switching to the dataframe’s row index to avoid the error). That’s a helpful-looking patch that can quietly contaminate downstream results.
+
+Twiss’s hypothesis is that reinforcement from “user acceptance” signals can reward the wrong behavior: code that gets accepted quickly, even if it disables safety checks or generates plausible-but-useless output. If that’s true, improving coding assistants may require better evaluation targets (not just “did it run?”) and more high-quality labeled data from experienced engineers.
+
+[Read the original](https://spectrum.ieee.org/ai-coding-degrades)
