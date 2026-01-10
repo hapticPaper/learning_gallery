@@ -1,0 +1,20 @@
+---
+title: "Sopro TTS"
+date: "2026-01-10"
+source: "Hugging Face"
+url: "https://huggingface.co/samuel-vitorino/sopro"
+modelId: "samuel-vitorino/sopro"
+pipelineTag: "text-to-speech"
+blurb: "169M English TTS with streaming + zero-shot voice cloning; runs on CPU, but long generations can hallucinate."
+thumbnail: "/models/thumbnails/2026-01-10--sopro-tts.png"
+---
+
+Sopro is a lightweight English text-to-speech model (169M parameters) that aims for decent quality while staying practical to run and tinker with. Instead of a fully Transformer-based stack, it uses dilated convolutions (WaveNet-style) plus lightweight cross-attention, and it’s built around a “streaming” synthesis workflow with optional zero-shot voice cloning (using a short reference clip).
+
+The author reports ~0.25 real-time factor on CPU (on an M3 base model), and suggests using ~3–12 seconds of reference audio for voice cloning. The documentation is unusually helpful for a side project: you can `pip install sopro`, use the `soprotts` CLI, or call `SoproTTS.from_pretrained()` in Python. It’s also candid about limitations: voice similarity depends heavily on recording quality, the streaming and non-streaming outputs won’t match bit-for-bit, and the author notes generation is effectively limited to ~32 seconds before the model starts to hallucinate. If you’re looking for a small, readable TTS codebase to experiment with streaming synthesis, voice conditioning, or model structure tradeoffs (especially on non-GPU hardware), this is a solid starting point.
+
+Quick stats from the listing feed: pipeline: text-to-speech · 20 likes · 280 downloads.
+
+[View on Hugging Face](https://huggingface.co/samuel-vitorino/sopro)
+
+Source listing: https://huggingface.co/models?sort=modified
