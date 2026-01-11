@@ -1,0 +1,20 @@
+---
+title: "StanislavKo28 music moods classification"
+date: "2026-01-11"
+source: "Hugging Face"
+url: "https://huggingface.co/StanislavKo28/music_moods_classification"
+modelId: "StanislavKo28/music_moods_classification"
+pipelineTag: "audio-classification"
+blurb: "An Apache-2.0 wav2vec2-based classifier that predicts 14 music moods from 30-second clips, with a public Kaggle dataset + notebooks and reported eval metrics."
+thumbnail: "/models/thumbnails/2026-01-11--stanislavko28-music-moods-classification.png"
+---
+
+This model is a straightforward “tag the vibe” classifier: given a ~30 second audio clip, it predicts one of 14 moods (e.g. angry, relaxing, romantic, scary, uplifting). Under the hood it’s a fine-tune of `facebook/wav2vec2-base-960h` for `audio-classification`, which makes it a practical starting point if you’re building playlist organization, search/filtering, or lightweight mood-based recommendations.
+
+The README is unusually concrete for a small model: it links to the training dataset (the HWNAS Kaggle dataset with 6,930 labeled clips evenly split across the 14 moods) and includes notebooks for both training and inference. It also reports evaluation metrics across epochs (with best F1 in the ~0.26 range and ROC-AUC ~0.84), which helps set expectations: this is more of a baseline classifier than a production-grade mood detector. If you want to try it quickly, run the linked inference notebook on a few clips you know well (including “hard” examples like mixed moods) and see which labels are consistently confused — that’s often the fastest way to decide whether you need more data, different labeling, or a different representation.
+
+Quick stats from the listing feed: pipeline: audio-classification · 1 like · 15 downloads.
+
+[View on Hugging Face](https://huggingface.co/StanislavKo28/music_moods_classification)
+
+Source listing: https://huggingface.co/models?sort=modified
