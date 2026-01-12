@@ -1,0 +1,16 @@
+---
+title: "Show HN: What if AI agents had Zodiac personalities?"
+date: "2026-01-11"
+source: "Hacker News"
+url: "https://github.com/baturyilmaz/what-if-ai-agents-had-zodiac-personalities"
+blurb: "A fun multi-agent demo: 12 zodiac personas answer 10 dilemmas with one shared LLM, showing how prompt-level personas can shift decisions."
+thumbnail: "/news/thumbnails/2026-01-11--show-hn-what-if-ai-agents-had-zodiac-personalities.png"
+---
+
+This repo is a playful but genuinely useful reminder that “agent personality” is often just prompt engineering. It defines 12 agents (one per zodiac sign) with different persona descriptions, then runs them through the same set of YES/NO dilemmas using one shared model (Gemini 3 Flash Preview).
+
+The value here isn’t astrology. It’s the methodology: by holding the LLM constant and varying only the personality prompt, you can see where “character sheets” predictably shift decisions (for example around loyalty, risk tolerance, and conflict). The README includes the full question set, a results table, and a short pattern analysis, so it’s easy to skim even if you don’t plan to run it.
+
+If you do want to try it yourself, the setup is straightforward: install dependencies, set `GEMINI_API_KEY`, then run in interactive mode to ask your own questions. As a template, it’s a nice starting point for multi-agent “advice panel” UX experiments, debate setups, or simulations where you need controlled variation rather than randomness.
+
+[Read the original](https://github.com/baturyilmaz/what-if-ai-agents-had-zodiac-personalities)
