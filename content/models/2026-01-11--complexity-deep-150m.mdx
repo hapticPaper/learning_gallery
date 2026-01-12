@@ -1,0 +1,22 @@
+---
+title: "Complexity Deep 150M"
+date: "2026-01-11"
+source: "Hugging Face"
+url: "https://huggingface.co/Pacific-Prime/pacific-prime"
+modelId: "Pacific-Prime/pacific-prime"
+pipelineTag: "text-generation"
+blurb: "An early 150M experimental LM exploring deterministic token-routed MoE and a robotics-inspired control layer; interesting ideas, but the authors say it’s not coherent yet."
+thumbnail: "/models/thumbnails/2026-01-11--complexity-deep-150m.png"
+---
+
+This is an experimental 150M-parameter causal LM that’s mostly worth reading for the architecture ideas rather than using for outputs today. The core pitch is “determinism as a feature”: instead of a learned MoE router, it assigns tokens to experts by token ID (modulo the number of experts). That means no routing network, no load-balancing loss, and perfectly predictable expert utilization — in exchange for giving up adaptive routing.
+
+The other interesting twist is an “INL Dynamics” layer between attention and MLP that borrows from control/robotics intuition (think momentum + correction toward an equilibrium). The authors argue this can smooth updates and improve stability. The implementation also uses modern attention choices (GQA, QK norm, SDPA/Flash attention) and publishes the basic configuration (12 layers, 768 hidden size, 2k context).
+
+The README is refreshingly explicit that this is an early checkpoint trained for ~100k steps and that the model “generates text but is not yet coherent,” so treat it as a research artifact. If you want to poke it anyway, the suggested path is to install the `complexity_deep` library and load `DeepForCausalLM.from_pretrained()`.
+
+Quick stats from the listing feed: pipeline: text-generation · 2 likes · 227 downloads.
+
+[View on Hugging Face](https://huggingface.co/Pacific-Prime/pacific-prime)
+
+Source listing: https://huggingface.co/models?sort=modified

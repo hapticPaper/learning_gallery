@@ -1,0 +1,20 @@
+---
+title: "Big GPT OSS i1 GGUF"
+date: "2026-01-11"
+source: "Hugging Face"
+url: "https://huggingface.co/mradermacher/big-gpt-oss-i1-GGUF"
+modelId: "mradermacher/big-gpt-oss-i1-GGUF"
+pipelineTag: "text-generation"
+blurb: "Imatrix-weighted GGUF quant set of `suayptalha/big-gpt-oss` for llama.cpp-style runtimes, including an imatrix file for making your own quants and recommended Q4_K_M/Q6_K options."
+thumbnail: "/models/thumbnails/2026-01-11--mradermacher-big-gpt-oss-i1-gguf.png"
+---
+
+This repo is a large GGUF “quant pack” for `suayptalha/big-gpt-oss`, published by `mradermacher` for use with `llama.cpp`-style runtimes (LM Studio, llama.cpp CLI/server, OpenWebUI, etc.). The distinctive thing here is that it includes imatrix-weighted quants (and the `.imatrix.gguf` file itself), which is useful if you’re chasing better quality at a given size or want to generate your own quant variants.
+
+It’s also a reminder that “GGUF” doesn’t automatically mean “small”: many of the published quant files are *huge* (100GB+), and some are split into multiple parts (e.g. `Q6_K` is shipped as 5 parts). The README calls out recommended options like `Q4_K_M` and `Q4_K_S` and links to background reading on quant tradeoffs. If you’re experimenting, the simplest path is to pick one quant that matches your RAM/VRAM budget, load it in your preferred runtime, and sanity-check perplexity/answer quality on a small prompt set before investing time in larger downloads.
+
+Quick stats from the listing feed: pipeline: text-generation · 256 downloads.
+
+[View on Hugging Face](https://huggingface.co/mradermacher/big-gpt-oss-i1-GGUF)
+
+Source listing: https://huggingface.co/models?sort=modified
