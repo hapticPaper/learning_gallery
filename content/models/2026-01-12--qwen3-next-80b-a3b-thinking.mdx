@@ -1,0 +1,22 @@
+---
+title: "Qwen3-Next 80B-A3B Thinking (GGUF)"
+date: "2026-01-12"
+source: "Hugging Face"
+url: "https://huggingface.co/unsloth/Qwen3-Next-80B-A3B-Thinking-GGUF"
+modelId: "unsloth/Qwen3-Next-80B-A3B-Thinking-GGUF"
+pipelineTag: "text-generation"
+blurb: "GGUF quant pack for Qwen3-Next-80B-A3B-Thinking: a high-sparsity MoE reasoning model (80B total / ~3B active) with 262k native context."
+thumbnail: "/models/thumbnails/2026-01-12--qwen3-next-80b-a3b-thinking.png"
+---
+
+This is a GGUF quant pack for `Qwen/Qwen3-Next-80B-A3B-Thinking`, published by Unsloth for `llama.cpp`-style runtimes. The underlying model is part of the Qwen3-Next line and is notable for mixing “big model capacity” with a very low MoE activation ratio: it’s listed as 80B parameters total with ~3B activated.
+
+Architecturally, the model card highlights hybrid attention (a combination of Gated DeltaNet and Gated Attention) plus a high-sparsity MoE setup aimed at making ultra-long context more practical. The base context length is listed as 262,144 tokens (with guidance on extending further via RoPE scaling), and this specific “Thinking” variant is described as supporting thinking mode only, targeting complex reasoning workloads.
+
+If you want to try it locally, start by choosing a smaller quant (to fit your available RAM/VRAM) and validate basic prompting and throughput before pushing context length. Long-context “thinking” models can be deceptively expensive: even if the weights fit, KV cache and output lengths can dominate memory and latency. For a first test, keep generations short, then scale up once you have stable settings.
+
+Quick stats from the listing feed: pipeline: text-generation · 59 likes · 38297 downloads.
+
+[View on Hugging Face](https://huggingface.co/unsloth/Qwen3-Next-80B-A3B-Thinking-GGUF)
+
+Source listing: https://huggingface.co/models?sort=modified
