@@ -1,0 +1,22 @@
+---
+title: "extBanglaT5 (BanglaT5 fine-tune)"
+date: "2026-01-12"
+source: "Hugging Face"
+url: "https://huggingface.co/101rakibulhasan/extBanglaT5"
+modelId: "101rakibulhasan/extBanglaT5"
+pipelineTag: "translation"
+blurb: "A lightweight BanglaT5 fine-tune for Bengali (bn) ↔ English (en) translation-style text2text tasks, published under Apache-2.0."
+thumbnail: "/models/thumbnails/2026-01-12--101rakibulhasan-extbanglat5.png"
+---
+
+`extBanglaT5` is a small, recently updated Bangla/Bengali-focused T5-style seq2seq checkpoint. The model card is sparse (it’s mostly just a “BanglaT5 Fine-tuned” header plus a training step count), but the repository metadata is still useful: it’s tagged for Bengali (`bn`) and English (`en`), and it’s labeled as `translation` / `text2text-generation`.
+
+In practice, that means it should behave like other T5-family models: you feed it a short instruction-style prompt and it generates a target string. If you’re evaluating it for translation, start with explicit prefixes like “translate English to Bengali:” / “translate Bengali to English:” and keep your sentences short at first. It’s also tagged with “classification,” which typically implies that some tasks may be framed as text-to-text labels (for example, generating a class name), but there aren’t published eval numbers or a recommended prompt format here.
+
+The good news is the licensing is clear (`apache-2.0`), so it’s easy to experiment with in commercial settings. The cautious note is that with limited documentation and no benchmarks, you should treat it as a checkpoint to validate on your own data (ideally with a small human eval) rather than a drop-in production translator.
+
+Quick stats from the listing feed: pipeline: translation · 501 downloads.
+
+[View on Hugging Face](https://huggingface.co/101rakibulhasan/extBanglaT5)
+
+Source listing: https://huggingface.co/models?sort=modified
