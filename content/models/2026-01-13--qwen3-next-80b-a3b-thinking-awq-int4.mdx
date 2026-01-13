@@ -1,0 +1,22 @@
+---
+title: "Qwen3-Next 80B-A3B Thinking (AWQ 4-bit)"
+date: "2026-01-13"
+source: "Hugging Face"
+url: "https://huggingface.co/cyankiwi/Qwen3-Next-80B-A3B-Thinking-AWQ-4bit"
+modelId: "cyankiwi/Qwen3-Next-80B-A3B-Thinking-AWQ-4bit"
+pipelineTag: "text-generation"
+blurb: "AWQ 4-bit quant of Qwen3-Next-80B-A3B-Thinking (80B total / ~3B active) cutting weight memory to ~46 GB for long-context reasoning."
+thumbnail: "/models/thumbnails/2026-01-13--qwen3-next-80b-a3b-thinking-awq-int4.png"
+---
+
+This is an AWQ 4-bit quantized release of `Qwen/Qwen3-Next-80B-A3B-Thinking`, aimed at making a very large, long-context reasoning model practical to run on a smaller number of GPUs. The model card reports a drop in weight memory from ~151.5 GB down to ~45.9 GB, which can be the difference between “needs a big multi-GPU box” and “fits on a few consumer/workstation cards.”
+
+The underlying Qwen3-Next line is interesting for its scaling-efficiency story: an MoE setup listed as 80B parameters total with ~3B active, plus hybrid attention designed to keep ultra-long context usable (262k native context is called out prominently). This “Thinking” variant is explicitly positioned for more complex reasoning, and the card includes vLLM-based serving examples.
+
+If you try it, start by validating basic throughput and output quality at a normal context length first, then scale up context and max output gradually. Even with quantized weights, long-context inference can get expensive quickly due to KV cache growth and “thinking mode” verbosity.
+
+Quick stats from the listing feed: pipeline: text-generation · 20 likes · 197157 downloads.
+
+[View on Hugging Face](https://huggingface.co/cyankiwi/Qwen3-Next-80B-A3B-Thinking-AWQ-4bit)
+
+Source listing: https://huggingface.co/models?sort=modified
