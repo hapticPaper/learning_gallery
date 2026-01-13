@@ -1,0 +1,20 @@
+---
+title: "LTXV2 for ComfyUI (video VAE fix)"
+date: "2026-01-13"
+source: "Hugging Face"
+url: "https://huggingface.co/Kijai/LTXV2_comfy"
+modelId: "Kijai/LTXV2_comfy"
+pipelineTag: "text-to-video"
+blurb: "ComfyUI-ready LTXV2 video model files plus a corrected video VAE that should improve detail vs earlier extracted checkpoints."
+thumbnail: "/models/thumbnails/2026-01-13--13th-of-january-2026-update-important.png"
+---
+
+This is a ComfyUI-focused packaging of the LTXV2 video model (listed as ~19B params) with GGUF files and supporting checkpoints intended to make local video generation workflows easier to wire up. The noteworthy update here is that the author replaced the previously shared “distilled” video VAE with a corrected version; if you tried this earlier and got softer / lower-detail results than expected, that VAE mismatch could have been a culprit.
+
+If you want to try it, make sure your ComfyUI install and custom nodes are up to date (the model card mentions needing an updated KJNodes `VAELoader`). Then start with a smaller quant to validate your pipeline end-to-end (load, prompt, decode, save) before scaling up resolution or clip length. For video models, the VAE + decode path is a common source of surprises, so it’s worth sanity-checking with a short, simple prompt first.
+
+Quick stats from the listing feed: pipeline: text-to-video · 219 likes · 26414 downloads.
+
+[View on Hugging Face](https://huggingface.co/Kijai/LTXV2_comfy)
+
+Source listing: https://huggingface.co/models?sort=modified
