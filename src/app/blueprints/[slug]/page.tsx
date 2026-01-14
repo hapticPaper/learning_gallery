@@ -3,12 +3,12 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { withBasePath } from "@/lib/basePath";
-import { getModelItem, getModelSlugs } from "@/lib/models";
+import { formatBlueprintDate, getBlueprintItem, getBlueprintSlugs } from "@/lib/blueprints";
 
 export const dynamicParams = false;
 
 export async function generateStaticParams() {
-  const slugs = await getModelSlugs();
+  const slugs = await getBlueprintSlugs();
   return slugs.map((slug) => ({ slug }));
 }
 
@@ -18,14 +18,14 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const item = await getModelItem(slug).catch((error) => {
-    console.warn(`Failed to load model item for metadata: ${slug}`, error);
+  const item = await getBlueprintItem(slug).catch((error) => {
+    console.warn(`Failed to load blueprint item for metadata: ${slug}`, error);
     return null;
   });
   if (!item) {
     return {
-      title: "Model not found",
-      description: "This model entry could not be loaded.",
+      title: "Blueprint not found",
+      description: "This blueprint entry could not be loaded.",
     };
   }
 
@@ -35,14 +35,14 @@ export async function generateMetadata({
   };
 }
 
-export default async function ModelItemPage({
+export default async function BlueprintItemPage({
   params,
 }: {
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
 
-  const item = await getModelItem(slug).catch(() => null);
+  const item = await getBlueprintItem(slug).catch(() => null);
   if (!item) {
     notFound();
   }
@@ -51,10 +51,10 @@ export default async function ModelItemPage({
     <article className="mx-auto w-full max-w-3xl">
       <div className="mb-8">
         <Link
-          href="/models"
+          href="/blueprints"
           className="text-sm text-zinc-600 hover:text-zinc-950 dark:text-zinc-300 dark:hover:text-zinc-50"
         >
-          ← Models
+          ← Blueprints
         </Link>
 
         <h1 className="mt-3 text-3xl font-semibold leading-tight tracking-tight sm:text-4xl">
@@ -64,9 +64,9 @@ export default async function ModelItemPage({
         <div className="mt-3 flex flex-wrap items-center gap-2 text-sm text-zinc-600 dark:text-zinc-300">
           <span>{item.meta.source}</span>
           <span aria-hidden="true">·</span>
-          <span>{formatDate(item.meta.date)}</span>
+          <span>{formatBlueprintDate(item.meta.date, "page")}</span>
           <span aria-hidden="true">·</span>
-          <span className="font-mono text-xs">{item.meta.modelId}</span>
+          <span className="font-mono text-xs">{item.meta.blueprintId}</span>
           <span aria-hidden="true">·</span>
           <a
             href={item.meta.url}
@@ -74,7 +74,7 @@ export default async function ModelItemPage({
             rel="noreferrer"
             className="text-zinc-600 underline decoration-zinc-300 underline-offset-4 hover:text-zinc-950 dark:text-zinc-300 dark:decoration-zinc-700 dark:hover:text-zinc-50"
           >
-            View on Hugging Face
+            View on NVIDIA Build
           </a>
         </div>
       </div>
@@ -88,10 +88,4 @@ export default async function ModelItemPage({
       <div className="prose prose-zinc max-w-none dark:prose-invert">{item.content}</div>
     </article>
   );
-}
-
-function formatDate(date: string) {
-  const parsed = new Date(date);
-  if (Number.isNaN(parsed.getTime())) return date;
-  return parsed.toLocaleDateString(undefined, { year: "numeric", month: "long", day: "2-digit" });
 }

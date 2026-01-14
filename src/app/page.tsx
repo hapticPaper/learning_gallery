@@ -1,21 +1,25 @@
 import Link from "next/link";
 
+import { BlueprintCard } from "@/components/BlueprintCard";
 import { ExperimentCard } from "@/components/ExperimentCard";
 import { ModelCard } from "@/components/ModelCard";
 import { NewsCard } from "@/components/NewsCard";
+import { getAllBlueprints } from "@/lib/blueprints";
 import { getAllExperiments } from "@/lib/experiments";
 import { getAllModels } from "@/lib/models";
 import { getAllNews } from "@/lib/news";
 
 export default async function Home() {
-  const [experiments, models, news] = await Promise.all([
+  const [experiments, models, blueprints, news] = await Promise.all([
     getAllExperiments(),
     getAllModels(),
+    getAllBlueprints(),
     getAllNews(),
   ]);
   const featured = experiments.slice(0, 3);
   const featuredNews = news.slice(0, 3);
   const featuredModels = models.slice(0, 3);
+  const featuredBlueprints = blueprints.slice(0, 3);
 
   return (
     <div className="space-y-10">
@@ -112,6 +116,30 @@ export default async function Home() {
         ) : (
           <p className="mt-3 text-sm text-zinc-600 dark:text-zinc-300">
             No model posts yet.
+          </p>
+        )}
+      </section>
+
+      <section>
+        <div className="flex items-end justify-between gap-4">
+          <h2 className="text-lg font-semibold tracking-tight">Blueprints</h2>
+          <Link
+            href="/blueprints"
+            className="text-sm text-zinc-600 hover:text-zinc-950 dark:text-zinc-300 dark:hover:text-zinc-50"
+          >
+            View all →
+          </Link>
+        </div>
+
+        {featuredBlueprints.length ? (
+          <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {featuredBlueprints.map((item) => (
+              <BlueprintCard key={item.slug} item={item} />
+            ))}
+          </div>
+        ) : (
+          <p className="mt-3 text-sm text-zinc-600 dark:text-zinc-300">
+            No blueprint posts yet.
           </p>
         )}
       </section>

@@ -10,6 +10,7 @@
     "typecheck": "tsc --noEmit",
     "news:fetch": "bun run src/scripts/fetch-news.ts",
     "models:fetch": "bun run src/scripts/fetch-models.ts",
+    "blueprints:fetch": "bun run src/scripts/fetch-blueprints.ts",
     "changelog:fetch": "bun run src/scripts/fetch-charlie-changelog.ts"
   },
   "dependencies": {
