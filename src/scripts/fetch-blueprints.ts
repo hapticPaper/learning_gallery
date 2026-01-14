@@ -154,18 +154,30 @@ async function fetchBlueprintFeed(): Promise<NvidiaBlueprintListingEntry[]> {
     });
   }
 
+  if (entries.size === 0) {
+    throw new Error(
+      "Failed to find any NVIDIA blueprint entries in the source feed. " +
+        "NVIDIA may have changed their page structure: " +
+        SOURCE_URL,
+    );
+  }
+
   return Array.from(entries.values());
 }
 
 function decodeListingText(value: string): string {
-  return value
-    .replace(/\\n/g, "\n")
-    .replace(/\\t/g, "\t")
-    .replace(/\\r/g, "\r")
-    .replace(/\\u003c/g, "<")
-    .replace(/\\u003e/g, ">")
-    .replace(/\\u0026/g, "&")
-    .trim();
+  try {
+    return JSON.parse('"' + value.replace(/"/g, '\\"') + '"').trim();
+  } catch {
+    return value
+      .replace(/\\n/g, "\n")
+      .replace(/\\t/g, "\t")
+      .replace(/\\r/g, "\r")
+      .replace(/\\u003c/g, "<")
+      .replace(/\\u003e/g, ">")
+      .replace(/\\u0026/g, "&")
+      .trim();
+  }
 }
 
 async function resolveBlueprint(candidate: NvidiaBlueprintListingEntry): Promise<ResolvedBlueprint | undefined> {
