@@ -24,7 +24,10 @@ export type BlueprintListItem = {
 
 export function formatBlueprintDate(date: string, variant: "card" | "page" = "card"): string {
   const parsed = new Date(date);
-  if (Number.isNaN(parsed.getTime())) return date;
+  if (Number.isNaN(parsed.getTime())) {
+    // If frontmatter contains a non-ISO date string, render it as-is rather than throwing.
+    return date;
+  }
 
   return parsed.toLocaleDateString(undefined, {
     year: "numeric",
