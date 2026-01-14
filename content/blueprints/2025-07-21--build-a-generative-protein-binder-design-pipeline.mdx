@@ -1,0 +1,19 @@
+---
+title: "Build a generative protein binder design pipeline"
+date: "2025-07-21"
+source: "NVIDIA Build"
+url: "https://build.nvidia.com/blueprints/protein-binder-design-for-drug-discovery"
+blueprintId: "protein-binder-design-for-drug-discovery"
+blurb: "A BioNeMo blueprint for designing peptide/protein binders from a target sequence using models like RFDiffusion, ProteinMPNN, and AlphaFold2 (including multimer), producing candidate binders and predicted complex structures in PDB format."
+thumbnail: "/blueprints/thumbnails/2025-07-21--build-a-generative-protein-binder-design-pipeline.jpg"
+---
+
+This BioNeMo blueprint is a full “binder design loop” for generating candidate protein/peptide binders to a target protein sequence. The workflow is designed to automate the typical in-silico pipeline: generate binder backbones, propose sequences, and then predict structures for both the binder and the binder–target complex so you can triage candidates before you ever touch a wet lab.
+
+The reference implementation explicitly chains together well-known components: RFDiffusion to propose binder backbones, ProteinMPNN to generate sequences for those backbones, and AlphaFold2 / AlphaFold2-Multimer to predict structures and complexes. The outputs are predicted multimer structures in PDB format, which can then be scored or inspected to shortlist binders that look promising.
+
+What to try first: run the notebook end-to-end on a small target sequence to understand the shape of the outputs and failure modes (e.g., unrealistic complexes or low-confidence structure predictions). Then experiment with how changing constraints (sequence length, scaffold choices, or selection thresholds) affects both runtime and candidate diversity. Be aware the blueprint is storage- and GPU-heavy; it’s intended for serious local infrastructure.
+
+[View on NVIDIA Build](https://build.nvidia.com/blueprints/protein-binder-design-for-drug-discovery)
+
+Source listing: https://build.nvidia.com/blueprints?filters=publisher%3Anvidia

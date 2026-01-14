@@ -1,0 +1,19 @@
+---
+title: "Build a Video Search and Summarization (VSS) Agent"
+date: "2025-07-22"
+source: "NVIDIA Build"
+url: "https://build.nvidia.com/blueprints/video-search-and-summarization"
+blueprintId: "video-search-and-summarization"
+blurb: "An NVIDIA blueprint for building a video analytics agent that can summarize and answer questions over large video libraries by ingesting frames + audio, generating dense captions, and indexing the results for context-aware RAG."
+thumbnail: "/blueprints/thumbnails/2025-07-22--build-a-video-search-and-summarization-vss-agent.jpg"
+---
+
+This blueprint is a reference architecture for a “video understanding agent” that can search, summarize, and answer questions over large volumes of video. The key idea is to treat a video like a multimodal document: break it into chunks, generate rich text descriptions of what’s happening, extract/transcribe audio, and then index the resulting timeline into retrieval systems that an LLM can query.
+
+The repository describes an ingestion pipeline that decodes video segments, selects frames, uses a vision-language model to produce dense captions, and extracts audio transcripts and computer-vision metadata. Those artifacts are indexed into both vector and graph databases, and the runtime uses a context-aware RAG module that can reason over time, do multi-hop queries, and preserve conversational context.
+
+What to try first: run the quickstart on a small, diverse set of videos (short clips with clear events) and test three workflows: (1) “summarize this video,” (2) “find the segment where X happens,” and (3) “answer a question that requires temporal reasoning.” Pay attention to where errors come from (caption quality, transcription noise, chunking strategy) before you spend time tuning the LLM.
+
+[View on NVIDIA Build](https://build.nvidia.com/blueprints/video-search-and-summarization)
+
+Source listing: https://build.nvidia.com/blueprints?filters=publisher%3Anvidia

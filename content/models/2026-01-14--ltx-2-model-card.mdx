@@ -1,0 +1,22 @@
+---
+title: "LTX-2 Model Card"
+date: "2026-01-14"
+source: "Hugging Face"
+url: "https://huggingface.co/Lightricks/LTX-2"
+modelId: "Lightricks/LTX-2"
+pipelineTag: "image-to-video"
+blurb: "LTX-2 is an open-weights diffusion (DiT) model for generating video with synchronized audio, with multiple checkpoints (full, fp8/fp4, distilled) plus spatial/temporal upscalers and ComfyUI/Diffusers integrations."
+thumbnail: "/models/thumbnails/2026-01-14--ltx-2-model-card.png"
+---
+
+`Lightricks/LTX-2` is an open-weights diffusion (DiT) foundation model that targets a full audio+video generation workflow, not just silent clips. The model card positions it as a joint audio-visual model (one model producing synchronized outputs) and points to both a research paper and a public codebase.
+
+The release is structured more like a toolkit than a single checkpoint: there are “full” 19B checkpoints (including fp8 and fp4 variants), a distilled version tuned for an 8-step generation flow, and separate spatial/temporal upscalers that can be used in multi-stage pipelines for higher resolution or higher FPS. That gives you multiple on-ramps depending on whether you care more about quality, speed, or local hardware constraints.
+
+What to try first: start with the distilled checkpoint to validate the end-to-end workflow (prompt → short clip → audio sync), then add upscalers incrementally. If you’re already in a node-based workflow, the model card explicitly recommends ComfyUI’s built-in LTXVideo nodes; otherwise, Diffusers support is called out for image-to-video.
+
+Quick stats from the listing feed: pipeline: image-to-video · 967 likes · 1064063 downloads.
+
+[View on Hugging Face](https://huggingface.co/Lightricks/LTX-2)
+
+Source listing: https://huggingface.co/models?sort=modified

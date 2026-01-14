@@ -1,0 +1,22 @@
+---
+title: "Kanana-2 30B-A3B Instruct"
+date: "2026-01-14"
+source: "Hugging Face"
+url: "https://huggingface.co/kakaocorp/kanana-2-30b-a3b-instruct"
+modelId: "kakaocorp/kanana-2-30b-a3b-instruct"
+pipelineTag: "text-generation"
+blurb: "Kakao’s Kanana-2 30B-A3B instruct model targets agentic use cases with stronger tool calling and reasoning, using an MoE design (30B total / ~3B active) and a native 32k context window."
+thumbnail: "/models/thumbnails/2026-01-14--kanana-2-highlights.png"
+---
+
+`kakaocorp/kanana-2-30b-a3b-instruct` is Kakao’s open model aimed at “agentic” workflows: tool calling, multi-step instruction following, and stronger reasoning. Architecturally it’s an MoE model listed as 30B parameters total with ~3B active, and it uses multi-head latent attention (MLA) to keep long-context performance practical.
+
+Two practical details stand out from the card: a native 32,768 token context window, and explicit multilingual coverage (Korean, English, Japanese, Chinese, Thai, and Vietnamese) backed by a newly trained tokenizer. Kakao also calls out a data provenance claim (“no Kakao user data” in pre- or post-training), which matters if you’re evaluating models for enterprise or regulated deployments.
+
+If you try it, start with a function-calling / tool-use harness (even a toy “search + summarize + cite” loop) and measure how often it produces well-formed tool arguments and clean follow-up reasoning. Then scale up to long-context tasks (multi-document QA or long meeting-note summarization) where MLA + a 32k window should make a noticeable difference.
+
+Quick stats from the listing feed: pipeline: text-generation · 26 likes · 2469 downloads.
+
+[View on Hugging Face](https://huggingface.co/kakaocorp/kanana-2-30b-a3b-instruct)
+
+Source listing: https://huggingface.co/models?sort=modified

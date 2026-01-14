@@ -1,0 +1,19 @@
+---
+title: "Cosmos Dataset Search"
+date: "2025-11-04"
+source: "NVIDIA Build"
+url: "https://build.nvidia.com/blueprints/cosmos-dataset-search"
+blueprintId: "cosmos-dataset-search"
+blurb: "Cosmos Dataset Search is a semantic search platform for large video datasets, supporting text-to-video and video-to-video queries by generating embeddings with Cosmos-embed and running fast similarity search in Milvus (cuVS-accelerated)."
+thumbnail: "/blueprints/thumbnails/2025-11-04--cosmos-dataset-search.jpg"
+---
+
+Cosmos Dataset Search (CDS) is an “index your video library, then query it semantically” blueprint. It’s built around a simple but powerful capability: put text and video into a shared embedding space (via the Cosmos-embed NIM), then use a vector database to retrieve similar segments quickly enough to power interactive exploration.
+
+The reference implementation includes both ingestion and serving. On ingestion, CDS extracts frames/metadata, generates embeddings on GPU, and writes vectors to Milvus (with NVIDIA cuVS acceleration for faster similarity search). On serving, you get a React UI for browsing results, plus an API and CLI for programmatic ingestion and search. The blueprint also calls out S3-compatible object storage support (LocalStack/MinIO/AWS S3), and deployment options ranging from Docker Compose to production Helm charts.
+
+What to try first: start with a small, well-labeled set of videos (so you can sanity-check retrieval quality), run a single ingestion pass, and then evaluate both text-to-video and video-to-video queries. Once you trust the basics, the most impactful tuning knobs are usually your chunking strategy (how you segment videos) and your embedding/query prompts.
+
+[View on NVIDIA Build](https://build.nvidia.com/blueprints/cosmos-dataset-search)
+
+Source listing: https://build.nvidia.com/blueprints?filters=publisher%3Anvidia
