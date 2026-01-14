@@ -127,11 +127,28 @@ async function fetchBlueprintFeed(): Promise<NvidiaBlueprintListingEntry[]> {
 
     if (!blueprintId || entries.has(blueprintId)) continue;
 
+    if (!title || !date) {
+      console.warn(`Skipping blueprint with missing fields: ${blueprintId}`, {
+        title: Boolean(title),
+        date: Boolean(date),
+      });
+      continue;
+    }
+
+    const dateOnly = date.slice(0, 10);
+    const parsedDate = Date.parse(dateOnly);
+    if (!Number.isFinite(parsedDate)) {
+      console.warn(`Skipping blueprint with invalid date: ${blueprintId}`, {
+        rawDate: date,
+      });
+      continue;
+    }
+
     entries.set(blueprintId, {
       blueprintId,
       title: decodeListingText(title),
       url: `https://build.nvidia.com/blueprints/${blueprintId}`,
-      date: date ? date.slice(0, 10) : "",
+      date: dateOnly,
       blurb: normalizeBlurb(decodeListingText(blurb)),
       thumbnailUrl,
     });
@@ -324,8 +341,22 @@ async function downloadThumbnail({
     throw new Error(`Unable to download thumbnail: ${candidate} (${response.status})`);
   }
 
-  const arrayBuffer = await response.arrayBuffer();
   const contentType = response.headers.get("content-type") ?? "";
+  if (!contentType.startsWith("image/")) {
+    if (candidate !== fallback) {
+      return downloadThumbnail({ slug, pageUrl, imageUrl: fallback });
+    }
+    throw new Error(`Thumbnail is not an image: ${candidate} (${contentType || "unknown"})`);
+  }
+
+  const arrayBuffer = await response.arrayBuffer();
+  if (arrayBuffer.byteLength < 512) {
+    if (candidate !== fallback) {
+      return downloadThumbnail({ slug, pageUrl, imageUrl: fallback });
+    }
+    throw new Error(`Thumbnail too small to be valid: ${candidate}`);
+  }
+
   const ext = guessImageExtension({ contentType, url: candidate });
 
   const fileName = `${slug}${ext}`;
@@ -398,14 +429,23 @@ function extractMetaTags(html: string): Record<string, string> {
   return tags;
 }
 
-function parseHtmlAttributes(tag: string): Record<string, string> {
-  const attrs: Record<string, string> = {};
+type MetaAttrs = {
+  name?: string;
+  property?: string;
+  content?: string;
+};
+
+function parseHtmlAttributes(tag: string): MetaAttrs {
+  const attrs: MetaAttrs = {};
   const matches = tag.matchAll(/([\w:-]+)\s*=\s*("[^"]*"|'[^']*')/g);
   for (const match of matches) {
     const key = match[1]?.toLowerCase();
     const raw = match[2];
     if (!key || !raw) continue;
-    attrs[key] = raw.slice(1, -1);
+    const value = raw.slice(1, -1);
+    if (key === "name") attrs.name = value;
+    if (key === "property") attrs.property = value;
+    if (key === "content") attrs.content = value;
   }
   return attrs;
 }
@@ -418,7 +458,12 @@ function decodeHtmlEntities(value: string): string {
     .replace(/&quot;/g, "\"")
     .replace(/&#39;/g, "'")
     .replace(/&#x27;/g, "'")
-    .replace(/&#x2F;/g, "/");
+    .replace(/&#x2F;/g, "/")
+    .replace(/&#(x?[0-9A-Fa-f]+);/g, (match, num: string) => {
+      const codePoint =
+        num.startsWith("x") || num.startsWith("X") ? parseInt(num.slice(1), 16) : parseInt(num, 10);
+      return Number.isFinite(codePoint) ? String.fromCodePoint(codePoint) : match;
+    });
 }
 
 main().catch((error) => {
