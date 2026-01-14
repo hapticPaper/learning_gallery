@@ -22,6 +22,17 @@ export type BlueprintListItem = {
   meta: BlueprintMeta;
 };
 
+export function formatBlueprintDate(date: string, variant: "card" | "page" = "card"): string {
+  const parsed = new Date(date);
+  if (Number.isNaN(parsed.getTime())) return date;
+
+  return parsed.toLocaleDateString(undefined, {
+    year: "numeric",
+    month: variant === "page" ? "long" : "short",
+    day: "2-digit",
+  });
+}
+
 function normalizeBlueprintMeta(slug: string, meta: Partial<BlueprintMeta>): BlueprintMeta {
   if (
     !meta.title ||

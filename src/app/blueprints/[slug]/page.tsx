@@ -3,7 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { withBasePath } from "@/lib/basePath";
-import { getBlueprintItem, getBlueprintSlugs } from "@/lib/blueprints";
+import { formatBlueprintDate, getBlueprintItem, getBlueprintSlugs } from "@/lib/blueprints";
 
 export const dynamicParams = false;
 
@@ -64,7 +64,7 @@ export default async function BlueprintItemPage({
         <div className="mt-3 flex flex-wrap items-center gap-2 text-sm text-zinc-600 dark:text-zinc-300">
           <span>{item.meta.source}</span>
           <span aria-hidden="true">·</span>
-          <span>{formatDate(item.meta.date)}</span>
+          <span>{formatBlueprintDate(item.meta.date, "page")}</span>
           <span aria-hidden="true">·</span>
           <span className="font-mono text-xs">{item.meta.blueprintId}</span>
           <span aria-hidden="true">·</span>
@@ -88,10 +88,4 @@ export default async function BlueprintItemPage({
       <div className="prose prose-zinc max-w-none dark:prose-invert">{item.content}</div>
     </article>
   );
-}
-
-function formatDate(date: string) {
-  const parsed = new Date(date);
-  if (Number.isNaN(parsed.getTime())) return date;
-  return parsed.toLocaleDateString(undefined, { year: "numeric", month: "long", day: "2-digit" });
 }

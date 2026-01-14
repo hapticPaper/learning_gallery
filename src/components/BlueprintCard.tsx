@@ -1,7 +1,7 @@
 import Link from "next/link";
 
 import { withBasePath } from "@/lib/basePath";
-import type { BlueprintListItem } from "@/lib/blueprints";
+import { formatBlueprintDate, type BlueprintListItem } from "@/lib/blueprints";
 
 export function BlueprintCard({ item }: { item: BlueprintListItem }) {
   return (
@@ -22,7 +22,7 @@ export function BlueprintCard({ item }: { item: BlueprintListItem }) {
               {item.meta.title}
             </div>
             <div className="mt-1 text-sm text-zinc-600 dark:text-zinc-300">
-              {item.meta.source} · {formatDate(item.meta.date)}
+              {item.meta.source} · {formatBlueprintDate(item.meta.date)}
             </div>
           </div>
           <span className="mt-1 text-zinc-400 transition group-hover:text-zinc-700 dark:text-zinc-500 dark:group-hover:text-zinc-200">
@@ -36,10 +36,4 @@ export function BlueprintCard({ item }: { item: BlueprintListItem }) {
       </div>
     </Link>
   );
-}
-
-function formatDate(date: string) {
-  const parsed = new Date(date);
-  if (Number.isNaN(parsed.getTime())) return date;
-  return parsed.toLocaleDateString(undefined, { year: "numeric", month: "short", day: "2-digit" });
 }
