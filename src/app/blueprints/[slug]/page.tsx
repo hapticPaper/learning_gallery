@@ -18,7 +18,10 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const item = await getBlueprintItem(slug).catch(() => null);
+  const item = await getBlueprintItem(slug).catch((error) => {
+    console.warn(`Failed to load blueprint item for metadata: ${slug}`, error);
+    return null;
+  });
   if (!item) {
     return {
       title: "Blueprint not found",
