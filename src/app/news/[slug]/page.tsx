@@ -18,7 +18,14 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const item = await getNewsItem(slug);
+  const item = await getNewsItem(slug).catch(() => null);
+  if (!item) {
+    return {
+      title: "News item not found",
+      description: "This news entry could not be loaded.",
+    };
+  }
+
   return {
     title: item.meta.title,
     description: item.meta.blurb,
