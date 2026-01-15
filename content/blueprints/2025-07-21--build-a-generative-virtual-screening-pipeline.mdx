@@ -1,0 +1,19 @@
+---
+title: "Build a generative virtual screening pipeline"
+date: "2025-07-21"
+source: "NVIDIA Build"
+url: "https://build.nvidia.com/blueprints/generative-virtual-screening-for-drug-discovery"
+blueprintId: "generative-virtual-screening-for-drug-discovery"
+blurb: "A BioNeMo blueprint for small-molecule discovery that combines GPU-accelerated protein structure prediction, generative molecule optimization, and docking (OpenFold2, GenMol, DiffDock) in a notebook-driven virtual screening workflow."
+thumbnail: "/blueprints/thumbnails/2025-07-21--build-a-generative-virtual-screening-pipeline.jpg"
+---
+
+This blueprint is a reference “virtual screening loop” for drug discovery: predict or refine a target protein structure, generate/optimize candidate molecules, and dock those molecules to evaluate plausible binding poses. NVIDIA frames it as an end-to-end workflow that you can adapt to other targets, with an example notebook centered on the SARS‑CoV‑2 main protease.
+
+The implementation stitches together several specialized components: MSA-search (MMSeqs2) to generate alignments, OpenFold2 for protein structure prediction, GenMol (a masked diffusion model) for molecule generation/optimization, and DiffDock (v2) for docking without requiring a predefined binding pocket. The “what’s new” notes emphasize that pieces have been split out and upgraded for better performance and modularity (e.g., MSA-search as a separate tool; OpenFold2 as a faster AlphaFold2-like option; GenMol replacing earlier molecule models).
+
+What to try first: run the notebook on the provided example to get a feel for runtime, intermediate artifacts, and the kinds of failures you need to watch for (bad alignments, low-confidence structures, unrealistic molecules, or unstable docking). This is a heavyweight workflow: it expects large MSA databases and multiple high-end GPUs, so it’s best treated as a reproducible reference architecture rather than a quick demo.
+
+[View on NVIDIA Build](https://build.nvidia.com/blueprints/generative-virtual-screening-for-drug-discovery)
+
+Source listing: https://build.nvidia.com/blueprints?filters=publisher%3Anvidia

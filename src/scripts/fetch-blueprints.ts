@@ -113,15 +113,17 @@ async function fetchBlueprintFeed(): Promise<NvidiaBlueprintListingEntry[]> {
 
   const entries = new Map<string, NvidiaBlueprintListingEntry>();
   const regex =
-    /\\"artifactType\\":\\"ENDPOINT\\",\\"name\\":\\"([^\\"]+)\\",\\"displayName\\":\\"([^\\"]+)\\",\\"publisher\\":\\"([^\\"]+)\\",\\"shortDescription\\":\\"([^\\"]*)\\",\\"logo\\":\\"([^\\"]+)\\"[\\s\\S]*?\\"updatedDate\\":\\"([^\\"]+)\\"/g;
+    /\\"artifactType\\":\\"ENDPOINT\\",\\"name\\":\\"([^\\"]+)\\",\\"displayName\\":\\"([^\\"]+)\\"[^]{0,20000}?\\"publisher\\":\\"([^\\"]+)\\",\\"shortDescription\\":\\"([^]{0,5000}?)\\",\\"logo\\":\\"([^\\"]+)\\"[^]{0,20000}?\\"updatedDate\\":\\"([^\\"]+)\\"/g;
 
   for (const match of html.matchAll(regex)) {
     const blueprintId = match[1];
     const title = match[2];
     const publisher = match[3];
-    const blurb = match[4];
+    const shortDescriptionRaw = match[4];
     const thumbnailUrl = match[5];
     const date = match[6];
+
+    const shortDescription = decodeListingText(shortDescriptionRaw ?? "");
 
     if (publisher !== "nvidia") continue;
 
@@ -149,7 +151,7 @@ async function fetchBlueprintFeed(): Promise<NvidiaBlueprintListingEntry[]> {
       title: decodeListingText(title),
       url: `https://build.nvidia.com/blueprints/${blueprintId}`,
       date: dateOnly,
-      blurb: normalizeBlurb(decodeListingText(blurb)),
+      blurb: normalizeBlurb(shortDescription),
       thumbnailUrl,
     });
   }

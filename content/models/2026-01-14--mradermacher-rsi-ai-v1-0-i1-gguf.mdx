@@ -1,0 +1,22 @@
+---
+title: "RSI-AI V1.0 (GGUF imatrix quants)"
+date: "2026-01-14"
+source: "Hugging Face"
+url: "https://huggingface.co/mradermacher/RSI-AI-V1.0-i1-GGUF"
+modelId: "mradermacher/RSI-AI-V1.0-i1-GGUF"
+pipelineTag: "text-generation"
+blurb: "This is a set of imatrix-weighted GGUF quantizations for `EpistemeAI/RSI-AI-V1.0`, intended for llama.cpp-style local inference with size/speed tradeoffs across many quant variants."
+thumbnail: "/models/thumbnails/2026-01-14--mradermacher-rsi-ai-v1-0-i1-gguf.png"
+---
+
+`mradermacher/RSI-AI-V1.0-i1-GGUF` is a GGUF quant pack built from `EpistemeAI/RSI-AI-V1.0`, with imatrix weighting applied to improve quality at lower bitrates. The upstream model card is sparse (it appears to be a fine-tune in the `gpt-oss-20b` family with an Apache-2.0 license), so the main value here is the packaging: a wide range of ready-to-run quant variants for llama.cpp-compatible tooling.
+
+The repository includes everything from “tiny but desperate” IQ1/IQ2 options to more practical mid-range quants. The author’s notes highlight Q4_K_S and Q4_K_M as good starting points, balancing speed, memory, and output quality. If you’re evaluating the model itself (not just the quantization), treat this as an experiment: establish a baseline on your prompts, then compare different quant types at the same approximate memory budget.
+
+What to try first: download a Q4_K_M (or Q4_K_S if you’re tighter on VRAM/RAM), run a short prompt suite that includes both factual and instruction-following tasks, and then only move to more aggressive quants once you know what quality loss looks like for your use case.
+
+Quick stats from the listing feed: 1603 downloads.
+
+[View on Hugging Face](https://huggingface.co/mradermacher/RSI-AI-V1.0-i1-GGUF)
+
+Source listing: https://huggingface.co/models?sort=modified

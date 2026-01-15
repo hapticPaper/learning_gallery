@@ -1,0 +1,19 @@
+---
+title: "Build an AI Agent for Enterprise Research"
+date: "2025-07-16"
+source: "NVIDIA Build"
+url: "https://build.nvidia.com/blueprints/aiq"
+blueprintId: "aiq"
+blurb: "AI-Q is a “deep research” agent blueprint that generates structured reports by preferring internal documents via RAG, falling back to web search when needed, and iterating with a plan/review loop plus optional human-in-the-loop edits."
+thumbnail: "/blueprints/thumbnails/2025-07-16--build-an-ai-agent-for-enterprise-research.jpg"
+---
+
+AI-Q is NVIDIA’s blueprint for building a “deep research” assistant that produces long-form reports with citations. The flow is intentionally plan-driven: given a topic and desired report structure, the agent drafts a plan, runs multiple research questions in parallel, writes a report, reflects on missing pieces, and iterates until it can finalize the output with a list of sources.
+
+The most interesting design choice is that it prioritizes your internal data first. Queries hit an on-prem RAG service (with a judge step to check whether retrieved results are relevant) and only fall back to web search if the agent can’t find enough signal. That’s a practical pattern for enterprise deployments where you want “use our docs” to be the default behavior, not a prompt-level suggestion.
+
+What to try first: deploy it against a small internal corpus (even a handful of PDFs) and give it a report outline you actually care about (e.g., “competitive landscape” + “key risks” + “recommendations”). Evaluate two things: whether it properly cites internal sources (and doesn’t hallucinate citations), and how often the reflect-and-research loop improves the report without drifting off-topic.
+
+[View on NVIDIA Build](https://build.nvidia.com/blueprints/aiq)
+
+Source listing: https://build.nvidia.com/blueprints?filters=publisher%3Anvidia
