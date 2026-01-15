@@ -1,0 +1,16 @@
+---
+title: "Raspberry Pi's New AI Hat Adds 8GB of RAM for Local LLMs"
+date: "2026-01-15"
+source: "Hacker News"
+url: "https://www.jeffgeerling.com/blog/2026/raspberry-pi-ai-hat-2/"
+blurb: "Raspberry Pi’s $130 AI HAT+ 2 pairs a 3W Hailo 10H NPU with 8GB RAM, but benchmarks show the Pi 5 CPU often wins on LLMs; the value is mainly low-power vision and mixed workloads."
+thumbnail: "/news/thumbnails/2026-01-15--raspberry-pis-new-ai-hat-adds-8gb-of-ram-for-local-llms.png"
+---
+
+Raspberry Pi launched the AI HAT+ 2: a $130 add-on board with a Hailo 10H accelerator and 8GB of onboard LPDDR4X. The marketing hook is that the extra RAM lets the HAT run LLM inference “standalone,” leaving the Pi’s CPU and system memory free.
+
+Jeff Geerling’s review is a lot more practical. In his benchmarks on an 8GB Pi 5, the Pi’s CPU often beats the Hailo 10H on LLM inference speed, with the Hailo’s main advantage being efficiency — it’s capped at ~3W while the Pi SoC can draw ~10W. That power cap makes the Hailo attractive for tight power budgets, but it also means it’s hard to justify if your goal is simply “run the best local model on a Pi.” In most cases, a 16GB Pi (or a different accelerator setup) looks like a better use of money.
+
+Where the board does make sense is computer vision and edge deployment: it can run vision models much faster than the CPU, and in theory it can combine vision + inference in a single low-power setup. The catch (at least today) is software maturity — mixed workloads were unstable in testing — so the HAT still feels like hardware-first and ecosystem-later.
+
+[Read the original](https://www.jeffgeerling.com/blog/2026/raspberry-pi-ai-hat-2/)
