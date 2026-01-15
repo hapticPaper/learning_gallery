@@ -1,0 +1,16 @@
+---
+title: "SkyPilot: One system to use and manage all AI compute (K8s, 20 clouds, Slurm)"
+date: "2026-01-13"
+source: "Hacker News"
+url: "https://github.com/skypilot-org/skypilot"
+blurb: "SkyPilot is an open-source control plane for running AI workloads across your own clusters, Kubernetes, Slurm, and 20+ clouds, with one interface for provisioning, queuing, and recovering jobs."
+thumbnail: "/news/thumbnails/2026-01-13--skypilot-one-system-to-use-and-manage-all-ai-compute-k8s-20-clouds-slu.png"
+---
+
+SkyPilot is an open-source system that tries to make “where do we run this model?” a boring question. Instead of wiring your training, fine-tuning, and batch inference scripts to a single cluster or cloud, SkyPilot provides a unified interface that can target Kubernetes, Slurm, on-prem GPU fleets, reserved instances, and 20+ public clouds.
+
+The pitch is two-sided: AI teams get a simple way to request resources (GPUs/TPUs/CPUs), launch jobs, and iterate quickly, while infra teams get a control plane for scheduling, scaling, and policy across heterogeneous hardware. The project emphasizes job management features like queuing, auto-recovery on failures, and “managed jobs” that can retry or fail over when capacity disappears. Newer features like pools aim to keep warm workers around for workloads like batch inference so you don’t pay the cold-start penalty every run.
+
+If you’ve ever maintained separate launch scripts for Kubernetes vs. a cloud provider vs. Slurm, SkyPilot is worth a look. A good first experiment is to take an existing training command, express it as a SkyPilot task, and compare how much “plumbing” you can delete while still keeping control over cost and placement.
+
+[Read the original](https://github.com/skypilot-org/skypilot)
