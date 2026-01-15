@@ -3,12 +3,28 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { withBasePath } from "@/lib/basePath";
-import { formatBlueprintDate, getBlueprintItem, getBlueprintSlugs } from "@/lib/blueprints";
+import {
+  formatBlueprintDate,
+  getBlueprintItem,
+  getBlueprintSlugs,
+  isMissingBlueprintSlug,
+  MISSING_BLUEPRINT_SLUG,
+} from "@/lib/blueprints";
 
 export const dynamicParams = false;
 
+const NOT_FOUND_METADATA = {
+  title: "Blueprint not found",
+  description: "This blueprint entry could not be loaded.",
+} satisfies Metadata;
+
 export async function generateStaticParams() {
   const slugs = await getBlueprintSlugs();
+
+  if (slugs.length === 0) {
+    return [{ slug: MISSING_BLUEPRINT_SLUG }];
+  }
+
   return slugs.map((slug) => ({ slug }));
 }
 
@@ -18,15 +34,17 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
+
+  if (isMissingBlueprintSlug(slug)) {
+    return NOT_FOUND_METADATA;
+  }
+
   const item = await getBlueprintItem(slug).catch((error) => {
     console.warn(`Failed to load blueprint item for metadata: ${slug}`, error);
     return null;
   });
   if (!item) {
-    return {
-      title: "Blueprint not found",
-      description: "This blueprint entry could not be loaded.",
-    };
+    return NOT_FOUND_METADATA;
   }
 
   return {
@@ -41,6 +59,10 @@ export default async function BlueprintItemPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
+
+  if (isMissingBlueprintSlug(slug)) {
+    notFound();
+  }
 
   const item = await getBlueprintItem(slug).catch(() => null);
   if (!item) {

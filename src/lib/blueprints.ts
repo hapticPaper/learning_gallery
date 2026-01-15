@@ -7,6 +7,12 @@ import { renderMdx } from "@/lib/mdx";
 
 const BLUEPRINTS_DIR = path.join(process.cwd(), "content", "blueprints");
 
+export const MISSING_BLUEPRINT_SLUG = "__missing__";
+
+export function isMissingBlueprintSlug(slug: string): boolean {
+  return slug === MISSING_BLUEPRINT_SLUG;
+}
+
 export type BlueprintMeta = {
   title: string;
   date: string;
