@@ -1,0 +1,19 @@
+---
+title: "Refine AI Agents through Continuous Model Distillation with Data Flywheels"
+date: "2025-07-01"
+source: "NVIDIA Build"
+url: "https://build.nvidia.com/blueprints/build-an-enterprise-data-flywheel"
+blueprintId: "build-an-enterprise-data-flywheel"
+blurb: "A production-grade “data flywheel” service built on NeMo microservices: turn real prompt/response logs into evals + LoRA fine-tunes, then surface cheaper models that still hit your quality targets."
+thumbnail: "/blueprints/thumbnails/2025-07-01--refine-ai-agents-through-continuous-model-distillation-with-data-flywh.jpg"
+---
+
+This blueprint is a reference implementation of a “data flywheel” for LLM applications: use the exhaust from production (prompt/response logs, feedback, and light labeling) to automatically generate datasets, run a batch of experiments, and then promote more efficient models that still meet your accuracy bar.
+
+The interesting part is that it’s not just a notebook or a one-off pipeline. The GitHub repo is built as a service with an orchestrator loop that can (1) pull traffic from a log store, (2) create stratified train/eval splits, (3) spin up NeMo microservices for fine-tuning and evaluation, and (4) score and rank results. The README calls out three experiment types it runs per candidate model: replay the base prompts, try ICL-style few-shot prompts built from traffic, and then evaluate a LoRA fine-tune.
+
+What to try first: instrument a small “real” workflow in your app with a stable `workload_id` (one per agent node / route), export a slice of logs, and run a flywheel pass to see whether it surfaces a smaller model that’s “good enough.” Even if you never auto-promote models, this is a strong pattern for turning ad-hoc offline evals into a repeatable, trackable system.
+
+[View on NVIDIA Build](https://build.nvidia.com/blueprints/build-an-enterprise-data-flywheel)
+
+Source listing: https://build.nvidia.com/blueprints?filters=publisher%3Anvidia

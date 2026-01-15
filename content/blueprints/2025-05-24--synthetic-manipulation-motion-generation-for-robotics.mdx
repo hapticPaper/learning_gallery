@@ -1,0 +1,19 @@
+---
+title: "Synthetic Manipulation Motion Generation for Robotics"
+date: "2025-05-24"
+source: "NVIDIA Build"
+url: "https://build.nvidia.com/blueprints/isaac-gr00t-synthetic-manipulation"
+blueprintId: "isaac-gr00t-synthetic-manipulation"
+blurb: "Generate exponentially large amounts of synthetic motion trajectories for robot manipulation from just a few human demonstrations."
+thumbnail: "/blueprints/thumbnails/2025-05-24--synthetic-manipulation-motion-generation-for-robotics.jpg"
+---
+
+This Isaac GR00T blueprint is a reference workflow for turning a small number of human demonstrations into a much larger synthetic dataset of robot manipulation trajectories. The core idea is straightforward: instead of collecting thousands of real-world rollouts, you use simulation and generative augmentation to create motion variants that cover more edge cases than your original demos.
+
+The implementation is packaged as a Docker-deployed Jupyter workflow built on NVIDIA Omniverse / Isaac tooling, with an explicit callout that Cosmos runs best on a separate, beefier node. The published prerequisites are not “toy” specs (Ubuntu 22.04, NVIDIA GPU, plus a separate H100-class GPU for Cosmos), which is a good signal that this is aimed at teams doing serious robotics dataset generation rather than quick demos.
+
+What to try first: run the notebook end-to-end once with the provided sample assets to see what the generated trajectories look like and where the workflow spends time (simulation vs. generation vs. post-processing). After that, the first useful customization is usually swapping in your own robot/task assets and tightening the success criteria so your synthetic data doesn’t drift away from the behaviors you actually want.
+
+[View on NVIDIA Build](https://build.nvidia.com/blueprints/isaac-gr00t-synthetic-manipulation)
+
+Source listing: https://build.nvidia.com/blueprints?filters=publisher%3Anvidia

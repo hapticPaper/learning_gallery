@@ -1,0 +1,19 @@
+---
+title: "Test Multi-Robot Fleets for Industrial Automation"
+date: "2025-06-02"
+source: "NVIDIA Build"
+url: "https://build.nvidia.com/blueprints/mega-multi-robot-fleets-for-industrial-automation"
+blueprintId: "mega-multi-robot-fleets-for-industrial-automation"
+blurb: "Simulate, test, and optimize physical AI and robotic fleets at scale in industrial digital twins before real-world deployment."
+thumbnail: "/blueprints/thumbnails/2025-06-02--test-multi-robot-fleets-for-industrial-automation.jpg"
+---
+
+This Omniverse-focused blueprint is about “fleet-scale” robotics validation: getting multiple robots, a realistic facility layout, and the surrounding automation logic into a digital twin so you can stress-test behavior before the first real deployment.
+
+At small scale, it’s easy to validate a single robot demo. The hard problems show up when you add concurrency: traffic jams, deadlocks, throughput bottlenecks, battery/charging constraints, and the awkward interactions between planning, perception, and the operational rules a factory actually follows. A digital twin gives you a way to run those scenarios repeatedly (and deterministically), measure KPIs, and iterate on policies without burning time on the physical floor.
+
+What to try first: pick one metric you care about (cycle time, throughput, mean time-to-recover, etc.), then run two deliberately “bad” scenarios (overcrowded aisles, blocked stations, forced reroutes) to see if the simulation environment is exposing the failures you see in reality. Once you trust the sim, the biggest practical win is parameter sweeps: vary robot count, shift schedules, and routing strategies and chart where performance falls off.
+
+[View on NVIDIA Build](https://build.nvidia.com/blueprints/mega-multi-robot-fleets-for-industrial-automation)
+
+Source listing: https://build.nvidia.com/blueprints?filters=publisher%3Anvidia

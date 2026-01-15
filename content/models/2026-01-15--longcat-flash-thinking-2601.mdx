@@ -1,0 +1,20 @@
+---
+title: "LongCat Flash Thinking 2601"
+date: "2026-01-15"
+source: "Hugging Face"
+url: "https://huggingface.co/meituan-longcat/LongCat-Flash-Thinking-2601"
+modelId: "meituan-longcat/LongCat-Flash-Thinking-2601"
+pipelineTag: "text-generation"
+blurb: "A MIT-licensed 560B MoE “thinking” model geared for agentic tool use, with a chat template that supports interleaved reasoning and function calling while keeping token budgets under control."
+thumbnail: "/models/thumbnails/2026-01-15--longcat-flash-thinking-2601.png"
+---
+
+LongCat-Flash-Thinking-2601 is a big, agent-oriented checkpoint from Meituan that’s explicitly designed around tool use and “thinking” traces. The headline number is the scale (reported as a 560B MoE model), but the more practical part is the interface: the model card includes a chat template that can interleave tool calls with reasoning, while optionally discarding prior reasoning history to avoid blowing up the context window.
+
+If you’ve tried to build tool-using agents with open models, you’ve probably run into a familiar failure mode: the model either dumps huge chains-of-thought (making multi-turn tool use expensive), or it loses critical tool-call context across turns. LongCat’s template is a concrete attempt to solve that: keep the tool calls + tool outputs, but drop old reasoning unless you explicitly choose to retain it.
+
+What to try first: follow the upstream `tokenizer.apply_chat_template(...)` examples with `enable_thinking=True`, then test a simple function-calling loop end-to-end. If you want to use it as a “reasoning engine” behind an agent, the `save_history_reasoning_content` toggle is the knob that will most directly affect cost and latency.
+
+[View on Hugging Face](https://huggingface.co/meituan-longcat/LongCat-Flash-Thinking-2601)
+
+Source listing: https://huggingface.co/models?sort=modified

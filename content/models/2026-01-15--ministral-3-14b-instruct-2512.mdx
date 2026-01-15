@@ -1,0 +1,20 @@
+---
+title: "Ministral 3 14B Instruct 2512"
+date: "2026-01-15"
+source: "Hugging Face"
+url: "https://huggingface.co/mistralai/Ministral-3-14B-Instruct-2512"
+modelId: "mistralai/Ministral-3-14B-Instruct-2512"
+pipelineTag: "text-generation"
+blurb: "Mistral’s edge-leaning 14B FP8 instruct model adds vision, function calling, and a 256k context window—strong chat/tool use that can fit in ~24GB VRAM (less with quantization)."
+thumbnail: "/models/thumbnails/2026-01-15--ministral-3-14b-instruct-2512.png"
+---
+
+Ministral 3 14B Instruct is Mistral’s largest “Ministral 3” checkpoint: an instruction-tuned 14B model in FP8 with a small vision encoder attached. The positioning is “edge-capable but not tiny”: it’s meant to be deployable on a single GPU while still handling serious assistant workloads (tool use, structured outputs, and long-context tasks).
+
+Two practical details make this one worth a look. First, the context window is huge (256k), so you can use it for document-heavy chat and agentic workflows without constantly rebuilding retrieval glue. Second, it’s designed for native function calling and JSON-style outputs, which is usually where smaller/open models fall down in real applications.
+
+What to try first: serve it with vLLM (the upstream docs recommend vLLM >= 0.12.0 with `tokenizer_mode mistral` / `tool-call-parser mistral`), then run a couple of “real” tool calls end-to-end (not just a chat demo). If you don’t need the full 256k window, cap `--max-model-len` early to keep memory usage sane.
+
+[View on Hugging Face](https://huggingface.co/mistralai/Ministral-3-14B-Instruct-2512)
+
+Source listing: https://huggingface.co/models?sort=modified
