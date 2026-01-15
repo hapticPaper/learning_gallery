@@ -8,6 +8,11 @@ import { formatBlueprintDate, getAllBlueprints, getBlueprintItem, getBlueprintSl
 
 export const dynamicParams = false;
 
+const BLUEPRINT_NOT_FOUND_METADATA = {
+  title: "Blueprint not found",
+  description: "This blueprint entry could not be loaded.",
+} satisfies Metadata;
+
 export async function generateStaticParams() {
   const slugs = await getBlueprintSlugs();
 
@@ -26,16 +31,11 @@ export async function generateMetadata({
   const segments = slug ?? [];
 
   if (segments.length === 0) {
-    return {
-      title: "Blueprints",
-    };
+    return { title: "Blueprints" };
   }
 
   if (segments.length !== 1) {
-    return {
-      title: "Blueprint not found",
-      description: "This blueprint entry could not be loaded.",
-    };
+    return BLUEPRINT_NOT_FOUND_METADATA;
   }
 
   const blueprintSlug = segments[0];
@@ -44,10 +44,7 @@ export async function generateMetadata({
     return null;
   });
   if (!item) {
-    return {
-      title: "Blueprint not found",
-      description: "This blueprint entry could not be loaded.",
-    };
+    return BLUEPRINT_NOT_FOUND_METADATA;
   }
 
   return {
@@ -101,8 +98,7 @@ export default async function BlueprintsRoute({
     notFound();
   }
 
-  const blueprintSlug = segments[0];
-  const item = await getBlueprintItem(blueprintSlug).catch(() => null);
+  const item = await getBlueprintItem(segments[0]).catch(() => null);
   if (!item) {
     notFound();
   }
