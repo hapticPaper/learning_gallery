@@ -2,49 +2,52 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { BlueprintCard } from "@/components/BlueprintCard";
 import { withBasePath } from "@/lib/basePath";
-import {
-  formatBlueprintDate,
-  getBlueprintItem,
-  getBlueprintSlugs,
-  isMissingBlueprintSlug,
-  MISSING_BLUEPRINT_SLUG,
-} from "@/lib/blueprints";
+import { formatBlueprintDate, getAllBlueprints, getBlueprintItem, getBlueprintSlugs } from "@/lib/blueprints";
 
 export const dynamicParams = false;
-
-const NOT_FOUND_METADATA = {
-  title: "Blueprint not found",
-  description: "This blueprint entry could not be loaded.",
-} satisfies Metadata;
 
 export async function generateStaticParams() {
   const slugs = await getBlueprintSlugs();
 
-  if (slugs.length === 0) {
-    return [{ slug: MISSING_BLUEPRINT_SLUG }];
-  }
-
-  return slugs.map((slug) => ({ slug }));
+  return [
+    { slug: [] as string[] },
+    ...slugs.map((slug) => ({ slug: [slug] })),
+  ];
 }
 
 export async function generateMetadata({
   params,
 }: {
-  params: Promise<{ slug: string }>;
+  params: Promise<{ slug?: string[] }>;
 }): Promise<Metadata> {
   const { slug } = await params;
+  const segments = slug ?? [];
 
-  if (isMissingBlueprintSlug(slug)) {
-    return NOT_FOUND_METADATA;
+  if (segments.length === 0) {
+    return {
+      title: "Blueprints",
+    };
   }
 
-  const item = await getBlueprintItem(slug).catch((error) => {
-    console.warn(`Failed to load blueprint item for metadata: ${slug}`, error);
+  if (segments.length !== 1) {
+    return {
+      title: "Blueprint not found",
+      description: "This blueprint entry could not be loaded.",
+    };
+  }
+
+  const blueprintSlug = segments[0];
+  const item = await getBlueprintItem(blueprintSlug).catch((error) => {
+    console.warn(`Failed to load blueprint item for metadata: ${blueprintSlug}`, error);
     return null;
   });
   if (!item) {
-    return NOT_FOUND_METADATA;
+    return {
+      title: "Blueprint not found",
+      description: "This blueprint entry could not be loaded.",
+    };
   }
 
   return {
@@ -53,18 +56,53 @@ export async function generateMetadata({
   };
 }
 
-export default async function BlueprintItemPage({
+export default async function BlueprintsRoute({
   params,
 }: {
-  params: Promise<{ slug: string }>;
+  params: Promise<{ slug?: string[] }>;
 }) {
   const { slug } = await params;
+  const segments = slug ?? [];
 
-  if (isMissingBlueprintSlug(slug)) {
+  if (segments.length === 0) {
+    const blueprints = await getAllBlueprints();
+
+    return (
+      <div className="space-y-6">
+        <div className="space-y-2">
+          <h1 className="text-2xl font-semibold tracking-tight">Blueprints</h1>
+          <p className="max-w-2xl text-sm leading-6 text-zinc-600 dark:text-zinc-300">
+            NVIDIA Build blueprints and workflow templates.
+          </p>
+          <a
+            className="inline-block text-sm font-medium text-zinc-950 hover:underline dark:text-zinc-50"
+            href="https://build.nvidia.com/blueprints?filters=publisher%3Anvidia"
+            target="_blank"
+            rel="noreferrer"
+          >
+            Browse the source feed →
+          </a>
+        </div>
+
+        {blueprints.length ? (
+          <div className="grid gap-4">
+            {blueprints.map((item) => (
+              <BlueprintCard key={item.slug} item={item} />
+            ))}
+          </div>
+        ) : (
+          <p className="text-sm text-zinc-600 dark:text-zinc-300">No blueprint posts yet.</p>
+        )}
+      </div>
+    );
+  }
+
+  if (segments.length !== 1) {
     notFound();
   }
 
-  const item = await getBlueprintItem(slug).catch(() => null);
+  const blueprintSlug = segments[0];
+  const item = await getBlueprintItem(blueprintSlug).catch(() => null);
   if (!item) {
     notFound();
   }
