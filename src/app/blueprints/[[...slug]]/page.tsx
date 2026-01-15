@@ -13,11 +13,11 @@ const BLUEPRINT_NOT_FOUND_METADATA = {
   description: "This blueprint entry could not be loaded.",
 } satisfies Metadata;
 
-export async function generateStaticParams() {
+export async function generateStaticParams(): Promise<Array<{ slug: string[] }>> {
   const slugs = await getBlueprintSlugs();
 
   return [
-    { slug: [] as string[] },
+    { slug: [] },
     ...slugs.map((slug) => ({ slug: [slug] })),
   ];
 }
