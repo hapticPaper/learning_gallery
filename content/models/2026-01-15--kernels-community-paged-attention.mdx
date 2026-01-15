@@ -1,0 +1,19 @@
+---
+title: "Paged Attention kernels (vLLM + mistral.rs)"
+date: "2026-01-15"
+source: "Hugging Face"
+url: "https://huggingface.co/kernels-community/paged-attention"
+modelId: "kernels-community/paged-attention"
+blurb: "A small but useful kernel drop: paged-attention implementations pulled from vLLM and mistral.rs, handy if you’re building or benchmarking your own GPU inference runtime."
+thumbnail: "/models/thumbnails/2026-01-15--kernels-community-paged-attention.png"
+---
+
+This isn’t a “model” in the usual sense — it’s a kernel repository — but it shows up in the Hugging Face models feed because it’s packaged like a model card. The repo collects implementations of **paged attention**, the memory management trick that makes long-context decoding practical by treating the KV cache like a paged allocator instead of a single giant contiguous buffer.
+
+The README calls out two sources: vLLM and `mistral.rs`. If you’re working on an inference backend, this is a handy reference point for comparing approaches (CUDA kernels, memory layouts, and the edge cases around long sequences and batching). Even if you’re not writing kernels yourself, it’s useful context for understanding why “long context” isn’t just a model-side feature — it’s also a runtime and memory system problem.
+
+What to try first: if you have an existing vLLM / llama.cpp / custom runtime benchmark harness, run the same long-context decode scenario with and without paged attention enabled (or against two backends) and measure both throughput and peak memory. That’s usually where the architectural differences become obvious.
+
+[View on Hugging Face](https://huggingface.co/kernels-community/paged-attention)
+
+Source listing: https://huggingface.co/models?sort=modified

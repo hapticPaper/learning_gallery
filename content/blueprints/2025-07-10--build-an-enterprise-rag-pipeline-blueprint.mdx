@@ -1,0 +1,19 @@
+---
+title: "Build an Enterprise RAG Pipeline Blueprint"
+date: "2025-07-10"
+source: "NVIDIA Build"
+url: "https://build.nvidia.com/blueprints/build-an-enterprise-rag-pipeline"
+blueprintId: "build-an-enterprise-rag-pipeline"
+blurb: "NVIDIA’s RAG reference stack: multimodal ingestion + hybrid retrieval + reranking + grounded generation, built from NIM microservices (NeMo Retriever + Nemotron) with deployable docker/k8s options."
+thumbnail: "/blueprints/thumbnails/2025-07-10--build-an-enterprise-rag-pipeline-blueprint.jpg"
+---
+
+This is NVIDIA’s “batteries included” Retrieval-Augmented Generation blueprint: a reference solution for grounding LLM answers in enterprise documents using a set of GPU-accelerated microservices (NIM) plus an orchestration layer.
+
+The GitHub repo is the interesting part. It’s decomposable (you can swap components) but comes with a working end-to-end pipeline: multimodal ingestion/extraction (including text, tables, charts, and other document structure), dense + sparse retrieval, reranking, optional query decomposition/reflection steps, and guarded answer generation. The included architecture also calls out operational concerns that many RAG demos skip: observability/telemetry, multiple deployment modes (local Docker and Kubernetes), and pluggable vector database options.
+
+What to try first: run the default setup against a small but “messy” internal dataset (PDFs with tables/charts are ideal), then compare three knobs: hybrid vs. dense-only retrieval, reranking on/off, and max context length passed into generation. Those three toggles usually explain 80% of the quality vs. latency tradeoff you’ll feel in production.
+
+[View on NVIDIA Build](https://build.nvidia.com/blueprints/build-an-enterprise-rag-pipeline)
+
+Source listing: https://build.nvidia.com/blueprints?filters=publisher%3Anvidia
