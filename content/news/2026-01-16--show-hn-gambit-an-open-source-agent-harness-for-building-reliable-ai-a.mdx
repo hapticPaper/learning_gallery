@@ -1,0 +1,16 @@
+---
+title: "Show HN: Gambit, an open-source agent harness for building reliable AI agents"
+date: "2026-01-16"
+source: "Hacker News"
+url: "https://github.com/bolt-foundry/gambit"
+blurb: "Gambit is a local-first CLI + TypeScript library for composing typed “decks” with schemas, traces, and a built-in debug UI for building reliable LLM workflows."
+thumbnail: "/news/thumbnails/2026-01-16--show-hn-gambit-an-open-source-agent-harness-for-building-reliable-ai-a.png"
+---
+
+Gambit is trying to turn “agent glue code” into something you can actually reason about. Instead of writing one huge prompt that calls a pile of tools, you build a tree of small, typed steps (“decks”) with explicit inputs/outputs and guardrails. Some decks call models, some are pure compute, and you can mix them in a single workflow.
+
+The most practical part is the local-first debugging story. Gambit can stream traces to a built-in Debug UI, persist state under `.gambit/`, and includes commands for running a deck once, iterating in a REPL, and even grading sessions. If you’ve ever struggled to reproduce “it worked yesterday” agent failures from provider logs, having deterministic local traces is a big upgrade.
+
+If you want to try it, the README suggests starting with `npx @bolt-foundry/gambit init`, then running an example deck via `repl` (terminal) or `serve` (browser). The project also exposes a TypeScript API (JSR import) where you can define `inputSchema`/`outputSchema` with Zod and implement compute steps alongside model calls.
+
+[Read the original](https://github.com/bolt-foundry/gambit)
