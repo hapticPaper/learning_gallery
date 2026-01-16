@@ -12,9 +12,7 @@ This Omniverse blueprint is framed as a reference workflow for commercial softwa
 
 If you’re coming from simulation tooling, the core value of a blueprint like this is the integration pattern: how to get data and geometry into a consistent USD-based scene graph, how to update it as you change inputs, and how to keep the rendering + interaction loop responsive even when the underlying simulation is expensive. If you’re coming from real-time 3D, it’s a reminder that the bottleneck is often data movement and representation, not rendering.
 
-What to try first: run the blueprint as-is and focus on the I/O boundaries — what goes in, what gets generated, and what gets visualized. Once you understand that, the easiest useful customization is usually swapping the example data for your own solver output (even a single timestep) so you can validate that your pipeline to USD + metadata works end-to-end before you worry about interactivity.
-
-What to try first: skim the prerequisites on the blueprint page, then follow the provided steps end-to-end once before customizing the workflow for your own data.
+What to try first: skim the prerequisites on the blueprint page, then run the blueprint as-is and focus on the I/O boundaries — what goes in, what gets generated, and what gets visualized. Once you understand that, swap the example data for your own solver output (even a single timestep) so you can validate that your pipeline to USD + metadata works end-to-end before you worry about interactivity.
 
 [View on NVIDIA Build](https://build.nvidia.com/blueprints/digital-twins-for-fluid-simulation)
 

@@ -12,9 +12,7 @@ This blueprint is about a common “genAI for marketing” problem: you want the
 
 From the NVIDIA Build metadata it’s positioned as an Omniverse workflow, and it references USD-oriented NIMs (`usdcode`, `usdsearch`). Even if you don’t use those exact components, the idea maps cleanly to other pipelines: use a canonical 3D scene graph as the source of truth, render out conditioning passes (depth/normal/albedo), then treat the generative model as an “artist” for everything that isn’t hard-locked.
 
-What to try first: pick a simple product scene you can render deterministically, then validate that your “don’t touch the hero asset” constraint actually holds across a few variations. If you can’t reliably preserve geometry and branding in the output, you probably need to add more conditioning (or stronger masking) before you scale this to production assets.
-
-What to try first: skim the prerequisites on the blueprint page, then follow the provided steps end-to-end once before customizing the workflow for your own data.
+What to try first: skim the prerequisites on the blueprint page, then pick a simple product scene you can render deterministically and validate that your “don’t touch the hero asset” constraint actually holds across a few variations. If you can’t reliably preserve geometry and branding in the output, you probably need to add more conditioning (or stronger masking) before you scale this to production assets.
 
 [View on NVIDIA Build](https://build.nvidia.com/blueprints/conditioning-for-precise-visual-generative-ai)
 

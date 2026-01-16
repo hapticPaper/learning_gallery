@@ -13,7 +13,7 @@ Most “AI detector” models operate at the document level: they answer “AI o
 
 According to the model card, it’s trained on the English + Russian portions of the LLMTrace Detection dataset, which includes human-written, fully AI-written, and mixed texts with character-level annotations. It also reports object-detection-style span metrics (mAP @ IoU=0.5 and mAP @ IoU=0.5:0.95), which is a nice change from the usual “single score” detector framing.
 
-What to try first: run inference on a few known-mixed documents and inspect how stable the span boundaries are as you change the confidence threshold. The authors also call out an important limitation: performance may degrade on models released after its training date (September 2025).
+What to try first: run inference on a few known-mixed documents and inspect how stable the span boundaries are as you change the confidence threshold. The authors also call out an important limitation: performance may degrade on models released after its training date (see the model card for details).
 
 [View on Hugging Face](https://huggingface.co/iitolstykh/GigaCheck-Detector-Multi)
 
