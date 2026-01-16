@@ -1,0 +1,20 @@
+---
+title: "SmolVLA Piper"
+date: "2026-01-16"
+source: "Hugging Face"
+url: "https://huggingface.co/ISdept/smolvla-piper"
+modelId: "ISdept/smolvla-piper"
+pipelineTag: "robotics"
+blurb: "A LeRobot-trained robotics policy built on SmolVLA, intended for a Piper arm setup and packaged as a ready-to-run vision-language-action checkpoint."
+thumbnail: "/models/thumbnails/2026-01-16--smolvla-piper.png"
+---
+
+SmolVLA Piper is a robotics policy checkpoint trained with Hugging Face’s LeRobot tooling. Under the hood it’s based on `lerobot/smolvla_base`, a compact vision-language-action (VLA) model designed to be efficient enough for consumer-grade hardware. This particular checkpoint is trained on a Piper arm dataset (`ISdept/piper_arm`), so the expectation is that it can map observations to control actions in that environment.
+
+The model card is intentionally minimal and points readers at the SmolVLA paper and the LeRobot docs for the full training/inference workflow. That’s actually useful if you’re evaluating VLA policies: it makes it clear that this repo is primarily a runnable artifact (weights + config) rather than a long narrative.
+
+What to try first: if you already have a LeRobot setup, run a short eval recording session (for example, `lerobot-record`) with a few episodes and inspect failure modes. If you don’t, treat this as a template repo for how to publish a robotics policy checkpoint (including license and metadata) so downstream users can load it with standard `transformers`/LeRobot tooling.
+
+[View on Hugging Face](https://huggingface.co/ISdept/smolvla-piper)
+
+Source listing: https://huggingface.co/models?sort=modified

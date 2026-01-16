@@ -1,0 +1,20 @@
+---
+title: "GigaCheck-Detector-Multi"
+date: "2026-01-16"
+source: "Hugging Face"
+url: "https://huggingface.co/iitolstykh/GigaCheck-Detector-Multi"
+modelId: "iitolstykh/GigaCheck-Detector-Multi"
+pipelineTag: "token-classification"
+blurb: "A multilingual, span-level AI text detector from the LLMTrace project, designed to localize which parts of a document look AI-written (not just classify the whole thing)."
+thumbnail: "/models/thumbnails/2026-01-16--gigacheck-detector-multi.png"
+---
+
+Most “AI detector” models operate at the document level: they answer “AI or human?” and stop there. GigaCheck-Detector-Multi is built for a more useful task: **AI interval detection**, where the output is a set of character spans that look AI-generated inside a mixed-authorship document. That makes it a better fit for workflows like academic integrity review, editing pipelines, or research into human/LLM collaboration.
+
+According to the model card, it’s trained on the English + Russian portions of the LLMTrace Detection dataset, which includes human-written, fully AI-written, and mixed texts with character-level annotations. It also reports object-detection-style span metrics (mAP @ IoU=0.5 and mAP @ IoU=0.5:0.95), which is a nice change from the usual “single score” detector framing.
+
+What to try first: run inference on a few known-mixed documents and inspect how stable the span boundaries are as you change the confidence threshold. The authors also call out an important limitation: performance may degrade on models released after its training date (September 2025).
+
+[View on Hugging Face](https://huggingface.co/iitolstykh/GigaCheck-Detector-Multi)
+
+Source listing: https://huggingface.co/models?sort=modified

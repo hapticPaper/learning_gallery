@@ -1,0 +1,21 @@
+---
+title: "3D Conditioning for Precise Visual Generative AI"
+date: "2025-05-22"
+source: "NVIDIA Build"
+url: "https://build.nvidia.com/blueprints/conditioning-for-precise-visual-generative-ai"
+blueprintId: "conditioning-for-precise-visual-generative-ai"
+blurb: "A 3D-first generative workflow: use real-time rendering as conditioning so you can iterate on backgrounds/lighting/styles without changing the hero product asset."
+thumbnail: "/blueprints/thumbnails/2025-05-22--3d-conditioning-for-precise-visual-generative-ai.jpg"
+---
+
+This blueprint is about a common “genAI for marketing” problem: you want the flexibility of generative iteration, but you can’t afford to accidentally change the *one thing that must remain correct* (a hero product, a vehicle, packaging text, etc.). The approach here is to lean on real-time 3D rendering as a control signal — generate from a composition that already encodes camera, geometry, and layout — then use generative AI to explore lighting, materials, and scene variations while keeping the hero asset stable.
+
+From the NVIDIA Build metadata it’s positioned as an Omniverse workflow, and it references USD-oriented NIMs (`usdcode`, `usdsearch`). Even if you don’t use those exact components, the idea maps cleanly to other pipelines: use a canonical 3D scene graph as the source of truth, render out conditioning passes (depth/normal/albedo), then treat the generative model as an “artist” for everything that isn’t hard-locked.
+
+What to try first: pick a simple product scene you can render deterministically, then validate that your “don’t touch the hero asset” constraint actually holds across a few variations. If you can’t reliably preserve geometry and branding in the output, you probably need to add more conditioning (or stronger masking) before you scale this to production assets.
+
+What to try first: skim the prerequisites on the blueprint page, then follow the provided steps end-to-end once before customizing the workflow for your own data.
+
+[View on NVIDIA Build](https://build.nvidia.com/blueprints/conditioning-for-precise-visual-generative-ai)
+
+Source listing: https://build.nvidia.com/blueprints?filters=publisher%3Anvidia

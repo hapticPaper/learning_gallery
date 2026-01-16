@@ -1,0 +1,20 @@
+---
+title: "Tiny Audio"
+date: "2026-01-16"
+source: "Hugging Face"
+url: "https://huggingface.co/mazesmazes/tiny-audio"
+modelId: "mazesmazes/tiny-audio"
+pipelineTag: "automatic-speech-recognition"
+blurb: "A lightweight “large audio model” aimed at practical ASR and audio captioning, with a dual-headed architecture (audio encoder + text decoder) and an MIT license."
+thumbnail: "/models/thumbnails/2026-01-16--tiny-audio.png"
+---
+
+Tiny Audio is positioned as a “lightweight large audio model”: a single model meant to cover common speech and audio understanding tasks without being huge or overly specialized. The model card describes a dual-headed transformer setup (an audio encoder plus a text decoder) and highlights two primary modes: **speech-to-text transcription** and **audio captioning**.
+
+One nice practical detail is that the repository leans into a simple “task token” interface (for example, a transcribe token vs a caption token), which makes it easy to build wrappers and batch jobs without maintaining separate pipelines per task. Licensing is also unusually friendly for audio models: it’s published under MIT.
+
+What to try first: take a few real recordings you care about (meeting audio, a podcast segment, a noisy voice memo) and compare Tiny Audio’s transcription against Whisper-small or distil-Whisper. Then flip to the captioning mode on the same clips and see whether you get useful scene-level descriptions (music, background noise, non-speech events) rather than just text.
+
+[View on Hugging Face](https://huggingface.co/mazesmazes/tiny-audio)
+
+Source listing: https://huggingface.co/models?sort=modified
