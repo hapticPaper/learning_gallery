@@ -1,0 +1,20 @@
+---
+title: "LightingRemap Alpha (Qwen Image Edit LoRA)"
+date: "2026-01-17"
+source: "Hugging Face"
+url: "https://huggingface.co/zooeyy/Qwen-Edit-2511_LightingRemap_Alpha0.2"
+modelId: "zooeyy/Qwen-Edit-2511_LightingRemap_Alpha0.2"
+pipelineTag: "text-to-image"
+blurb: "An alpha LoRA for Qwen Image Edit that relights an image using simple colored blocks as “virtual lights,” then removes the blocks in the final output (handy for quick cinematic lighting experiments)."
+thumbnail: "/models/thumbnails/2026-01-17--lightingremap-alpha.png"
+---
+
+This LoRA targets a surprisingly practical workflow: you “paint in” lighting direction and mood by placing solid color blocks near the edge of an image (think: a blue block for a cold key light, an orange block for sunset fill), then let the model relight the scene and remove the blocks in the output. It’s a nice middle ground between fully manual post-processing and prompt-only lighting requests that often drift.
+
+It’s designed for Qwen Image Edit (the `Qwen/Qwen-Image-Edit-2511` family) and the author shows it in a ComfyUI-style pipeline. The repo also calls out that this is an alpha release: in some cases the blocks may not be fully erased, and complex backgrounds can cause odd transitions. Still, if you want a fast way to iterate on “where is the light coming from?” without doing a full lighting-grade, this is an interesting knob to try.
+
+Quick stats from the listing feed: pipeline: text-to-image · 17 likes · 234 downloads.
+
+[View on Hugging Face](https://huggingface.co/zooeyy/Qwen-Edit-2511_LightingRemap_Alpha0.2)
+
+Source listing: https://huggingface.co/models?sort=modified
