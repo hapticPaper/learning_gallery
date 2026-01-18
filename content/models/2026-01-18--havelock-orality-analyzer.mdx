@@ -1,0 +1,20 @@
+---
+title: "Havelock Orality Analyzer (oral vs literate classifier)"
+date: "2026-01-18"
+source: "Hugging Face"
+url: "https://huggingface.co/thestalwart/havelock-orality"
+modelId: "thestalwart/havelock-orality"
+pipelineTag: "text-classification"
+blurb: "A BERT-based classifier that scores text on an oral→literate spectrum (Walter Ong), plus span-level marker classifiers for category/subtype labeling (MIT)."
+thumbnail: "/models/thumbnails/2026-01-18--havelock-orality-analyzer.png"
+---
+
+`thestalwart/havelock-orality` is a niche-but-fun text classifier that tries to quantify how “oral” a piece of writing feels (think speeches, sermons, epic poetry) versus “literate” (think academic prose or legal text). It frames the task using the orality/literacy taxonomy popularized by Walter Ong, and the model card is unusually concrete about what’s shipped: a document-level regressor that outputs a 0–1 score, plus two marker classifiers for span-level labeling (oral vs literate markers, and a more detailed subtype taxonomy).
+
+If you’re building writing analytics, rhetorical style tools, or just want a dataset-backed example of “cultural theory → ML task,” this is a solid artifact. The README also includes simple reference thresholds (e.g. what 0.9+ means) and a short description of the training data volume, which makes it easier to reason about where it’s likely to work well (short, strongly-styled text) versus where it might be noisy (technical docs, code-heavy content, or multilingual inputs).
+
+Quick stats from the listing feed: pipeline: text-classification · 1 like.
+
+[View on Hugging Face](https://huggingface.co/thestalwart/havelock-orality)
+
+Source listing: https://huggingface.co/models?sort=modified

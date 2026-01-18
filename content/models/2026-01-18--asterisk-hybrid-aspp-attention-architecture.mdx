@@ -1,0 +1,20 @@
+---
+title: "Asterisk (hybrid ASPP-attention SmolLM2)"
+date: "2026-01-18"
+source: "Hugging Face"
+url: "https://huggingface.co/NoesisLab/Asterisk"
+modelId: "NoesisLab/Asterisk"
+pipelineTag: "text-generation"
+blurb: "A small research LLM that mixes a graph-style ASPP operator with standard attention, aiming for better structured reasoning than plain SmolLM2-135M (Apache-2.0)."
+thumbnail: "/models/thumbnails/2026-01-18--asterisk-hybrid-aspp-attention-architecture.png"
+---
+
+`NoesisLab/Asterisk` is a researchy twist on the lightweight `SmolLM2-135M-Instruct` family: it adds an ASPP-style “parallel propagation” branch and fuses it with attention using a learned gate. The idea is to capture some benefits of local, iterative state evolution (which feels closer to graph/message passing) while keeping the global context modeling and token mixing that attention is good at.
+
+If you’re tracking experiments in “make small models reason a bit better,” this is a nice example because the model card includes a concrete architectural sketch (ASPP steps, gating, and where it plugs into the decoder layer) plus a quick set of benchmark numbers (HellaSwag / ARC / PIQA / WinoGrande). It’s unlikely to be a drop-in replacement for production assistants, but it *is* a useful reference if you’re building custom blocks or want to A/B “pure attention” vs “attention + extra operator” at small scale.
+
+Quick stats from the listing feed: pipeline: text-generation · 1 like.
+
+[View on Hugging Face](https://huggingface.co/NoesisLab/Asterisk)
+
+Source listing: https://huggingface.co/models?sort=modified
