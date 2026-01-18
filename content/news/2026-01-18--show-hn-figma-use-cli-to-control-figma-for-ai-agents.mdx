@@ -1,0 +1,14 @@
+---
+title: "Show HN: Figma-use – CLI to control Figma for AI agents"
+date: "2026-01-18"
+source: "Hacker News"
+url: "https://github.com/dannote/figma-use"
+blurb: "A CLI wrapper around the Figma API: read files, create/edit layers, tweak styles, and export images — useful as a “design tool driver” for AI agents."
+thumbnail: "/news/thumbnails/2026-01-18--show-hn-figma-use-cli-to-control-figma-for-ai-agents.png"
+---
+
+`figma-use` is a command-line interface for driving Figma through its API: reading a file’s structure, creating and editing layers, tweaking styles, and exporting images. That makes it a handy building block for “agentic” workflows where your LLM can propose UI changes, then apply them directly instead of asking a human to click around.
+
+The interesting part here isn’t just automation — it’s the scope: the project aims to expose a fairly complete set of primitives (components, text, shapes, constraints, exports) so you can build higher-level operations on top (e.g. “make this design more compact” or “generate three hero variants”). If you try it, treat access carefully: a Figma token with write permissions is effectively “production access” to your design system. For experimentation, it’s worth starting with a throwaway file and a token scoped to a test team/project.
+
+[Read the original](https://github.com/dannote/figma-use)
