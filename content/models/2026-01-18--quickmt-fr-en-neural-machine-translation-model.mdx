@@ -1,0 +1,20 @@
+---
+title: "QuickMT fr→en (fast CTranslate2 translation)"
+date: "2026-01-18"
+source: "Hugging Face"
+url: "https://huggingface.co/quickmt/quickmt-fr-en"
+modelId: "quickmt/quickmt-fr-en"
+pipelineTag: "translation"
+blurb: "A 200M-parameter French→English MT model exported to CTranslate2 for speed, with reported FLORES devtest metrics and a simple Python API via `quickmt`."
+thumbnail: "/models/thumbnails/2026-01-18--quickmt-fr-en-neural-machine-translation-model.png"
+---
+
+`quickmt/quickmt-fr-en` is a French→English neural machine translation model that’s explicitly packaged for fast inference. Instead of focusing on “big model” claims, the author emphasizes deployment ergonomics: the model is exported to CTranslate2 format, uses SentencePiece tokenizers, and ships with a small `quickmt` Python wrapper that can auto-detect GPU vs CPU.
+
+If you need a practical translation baseline inside a product (support tooling, doc ingestion, search, or eval pipelines), this is worth a look because it’s opinionated about throughput and includes comparative metrics against common alternatives (OpusMT, NLLB variants, etc.). The model card also calls out the training recipe and data sources (including back-translated corpora) so you can judge domain fit. A good “first try” is to run it on your real French texts with beam size 1 vs 5 and see whether you prefer speed or quality for your use case.
+
+Quick stats from the listing feed: pipeline: translation · 1 like · 4 downloads.
+
+[View on Hugging Face](https://huggingface.co/quickmt/quickmt-fr-en)
+
+Source listing: https://huggingface.co/models?sort=modified
