@@ -1,0 +1,14 @@
+---
+title: "Demystifying evals for AI agents"
+date: "2026-01-18"
+source: "Hacker News"
+url: "https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents"
+blurb: "A practical guide to evaluating AI agents: task suites, deterministic vs model graders, pass@k vs pass^k, and how to avoid brittle step-by-step checks."
+thumbnail: "/news/thumbnails/2026-01-18--demystifying-evals-for-ai-agents.png"
+---
+
+Agent performance is notoriously hard to measure: the same prompt can succeed once and fail the next run, and “the right answer” can depend on context (especially for research and assistant-style agents). This Anthropic engineering writeup breaks the problem down into the basics: collecting a small but representative task set from real failures, defining what “success” means *before* you start optimizing, and choosing graders that match the task. In practice that often means mixing deterministic checks (unit tests, structured output validation) with model-based graders for qualities like groundedness, completeness, and clarity.
+
+One especially useful framing is the difference between **pass@k** (“at least one success in k tries”) and **pass^k** (“success every time across k trials”). pass@k is a reasonable metric for tools where retries are acceptable; pass^k matters more for user-facing agents where reliability is the product. The piece also makes the case for grading outcomes instead of prescribing a brittle sequence of steps/tool calls — agents often find valid solutions you didn’t anticipate, and overly rigid evals can push you toward the wrong kind of optimization.
+
+[Read the original](https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents)
