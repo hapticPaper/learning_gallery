@@ -13,7 +13,7 @@ thumbnail: "/models/thumbnails/2026-01-19--mradermacher-wraith-8b-i1-gguf.png"
 
 The repository includes an imatrix file (useful if you want to generate your own quants) plus many prebuilt IQ* and Q* options (GGUF quant variants with different size/quality tradeoffs), with terse notes like “for the desperate” on the smallest ones. There’s also a link to a separate “static quants” repo and an external overview/download list.
 
-What to try first: start with a mid-range quant (Q4_K_M or Q4_K_S are usually good first checks), run a small prompt suite that includes both reasoning and instruction-following tasks, and then only move to more aggressive IQ2/IQ1 sizes once you’ve seen what quality loss looks like for your use case.
+What to try first: start with a mid-range quant (Q4_K_M or Q4_K_S are usually good first checks), run a small prompt suite that includes both reasoning and instruction-following tasks, and watch for increased hallucinations, failure to follow instructions, or brittle behavior on edge cases as you move to more aggressive IQ2/IQ1 sizes.
 
 Quick stats from the listing feed at the time of writing: 3 likes · 3111 downloads.
 
