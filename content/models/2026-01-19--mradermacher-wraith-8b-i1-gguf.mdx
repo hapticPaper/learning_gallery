@@ -1,0 +1,22 @@
+---
+title: "Wraith 8B (GGUF imatrix quants)"
+date: "2026-01-19"
+source: "Hugging Face"
+url: "https://huggingface.co/mradermacher/wraith-8b-i1-GGUF"
+modelId: "mradermacher/wraith-8b-i1-GGUF"
+pipelineTag: "text-generation"
+blurb: "Imatrix-weighted GGUF quant pack for `vanta-research/wraith-8b`, with many IQ/Q* variants for llama.cpp-style local inference across different memory/quality tradeoffs."
+thumbnail: "/models/thumbnails/2026-01-19--mradermacher-wraith-8b-i1-gguf.png"
+---
+
+`mradermacher/wraith-8b-i1-GGUF` is an **imatrix-weighted GGUF quant pack** built from `vanta-research/wraith-8b`. If you’re running llama.cpp-compatible tooling (or anything that consumes GGUF), the value here is packaging: a wide menu of ready-to-download quant variants so you can trade memory for speed and quality without doing your own conversion.
+
+The repository includes an imatrix file (useful if you want to generate your own quants) plus many prebuilt IQ* and Q* options, with terse notes like “for the desperate” on the smallest ones. There’s also a link to a separate “static quants” repo and an external overview/download list.
+
+What to try first: start with a mid-range quant (Q4_K_M or Q4_K_S are usually good first checks), run a small prompt suite that includes both reasoning and instruction-following tasks, and then only move to more aggressive IQ2/IQ1 sizes once you’ve seen what quality loss looks like for your use case.
+
+Quick stats from the listing feed: 3 likes · 3111 downloads.
+
+[View on Hugging Face](https://huggingface.co/mradermacher/wraith-8b-i1-GGUF)
+
+Source listing: https://huggingface.co/models?sort=modified
