@@ -1,0 +1,14 @@
+---
+title: "Weight Transfer for RL Post-Training in under 2 seconds"
+date: "2026-01-19"
+source: "Hacker News"
+url: "https://research.perplexity.ai/articles/weight-transfer-for-rl-post-training-in-under-2-seconds"
+blurb: "Perplexity describes 1.3-second cross-machine weight updates for a 1T-parameter RL fine-tuning loop using RDMA WRITE, a static schedule, and pipelined execution."
+thumbnail: "/news/thumbnails/2026-01-19--weight-transfer-for-rl-post-training-in-under-2-seconds.jpg"
+---
+
+Asynchronous RL post-training splits work across two fleets: training GPUs do the learning step, while separate inference GPUs generate rollouts using the *latest* policy weights. That architecture only works if you can push new weights to the inference side quickly; at trillion-parameter scale, “update weights” can become a multi-second (or multi-minute) tax that dominates iteration time. Perplexity reports hitting ~**1.3 seconds** for cross-machine updates on Kimi-K2 (1T parameters), transferring weights from 256 training GPUs (BF16) to 128 inference GPUs (FP8).
+
+The core idea is to treat weight sync as a data-plane problem: use **one-sided RDMA WRITE** so training nodes can write directly into inference GPU memory without RPCs or modifications to the inference engine. A controller collects parameter metadata once, computes a static transfer schedule mapping tensors to senders/receivers, and then each iteration replays that plan. Transfers are pipelined (CPU→GPU memcpy when needed, FSDP `full_tensor()` reconstruction, projection/quantization, RDMA) and organized into disjoint mesh groups with barriers to keep ordering predictable without serializing everything through a rank-0 bottleneck. If you’re building large-scale RLHF-style systems, this is a concrete example of the kind of “boring infrastructure” optimization that can unlock materially faster training loops.
+
+[Read the original](https://research.perplexity.ai/articles/weight-transfer-for-rl-post-training-in-under-2-seconds)
