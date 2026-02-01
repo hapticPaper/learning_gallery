@@ -1,0 +1,20 @@
+---
+title: "Thai Wav2Vec2 with CommonVoice V8 (newmm tokenizer) + language model"
+date: "2026-02-01"
+source: "Hugging Face"
+url: "https://huggingface.co/wannaphong/wav2vec2-large-xlsr-53-th-cv8-newmm"
+modelId: "wannaphong/wav2vec2-large-xlsr-53-th-cv8-newmm"
+pipelineTag: "automatic-speech-recognition"
+blurb: "A Thai ASR wav2vec2-large-xlsr-53 fine-tune using Common Voice V8 (+ earlier Thai CV splits), with reported WER/CER and a language model that materially improves decoding quality."
+thumbnail: "/models/thumbnails/2026-02-01--thai-wav2vec2-with-commonvoice-v8-newmm-tokenizer-language-model.png"
+---
+
+`wannaphong/wav2vec2-large-xlsr-53-th-cv8-newmm` is a Thai automatic speech recognition model built by fine-tuning `facebook/wav2vec2-large-xlsr-53` on Thai Common Voice data. It’s positioned as a “CV8 refresh” of earlier Thai wav2vec2 work: the author describes re-splitting the V8 dataset, reusing earlier V7 splits, and publishing results for both tokenization schemes (`newmm` and `deepcut`).
+
+The model card is worth reading because it includes concrete error rates and shows how much a language model helps for Thai decoding. On the Common Voice V8 test set, the reported WER drops from ~16–17% to ~12.6% (newmm) when adding the LM, and the CV7 benchmark numbers show a similar pattern. If you’re building Thai transcription (customer support calls, media indexing, captions), a good first try is to run decoding both with and without the language model and compare the kinds of mistakes you get—Thai word segmentation choices can move WER a lot even when the underlying audio model is the same.
+
+Quick stats from the listing feed: pipeline: automatic-speech-recognition · 4 likes · 2272 downloads.
+
+[View on Hugging Face](https://huggingface.co/wannaphong/wav2vec2-large-xlsr-53-th-cv8-newmm)
+
+Source listing: https://huggingface.co/models?sort=modified
