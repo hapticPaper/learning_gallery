@@ -1,0 +1,20 @@
+---
+title: "MiniMax-M2.1-REAP-30 (imatrix GGUF quants)"
+date: "2026-02-01"
+source: "Hugging Face"
+url: "https://huggingface.co/mradermacher/MiniMax-M2.1-REAP-30-i1-GGUF"
+modelId: "mradermacher/MiniMax-M2.1-REAP-30-i1-GGUF"
+pipelineTag: "text-generation"
+blurb: "A llama.cpp-friendly set of GGUF quants (plus an imatrix file) for `0xSero/MiniMax-M2.1-REAP-30`, with practical guidance on which IQ/Q4/Q6 quant types to try first."
+thumbnail: "/models/thumbnails/2026-02-01--mradermacher-minimax-m2-1-reap-30-i1-gguf.png"
+---
+
+`mradermacher/MiniMax-M2.1-REAP-30-i1-GGUF` is a packaging-and-deployment release: it’s not a new base model, but a curated set of GGUF quantizations for `0xSero/MiniMax-M2.1-REAP-30`, intended for llama.cpp-style runtimes. The distinguishing feature here is the use of an importance matrix (“imatrix”) to produce weighted quants that can preserve quality better than naïve quantization at the same size.
+
+The model card is practical: it lists many quant variants (including IQ quants), provides an imatrix file you can use to roll your own, and calls out recommendations like Q4_K_S/Q4_K_M as good size/speed/quality tradeoffs. If you want to try it quickly, pick a single quant (start at Q4_K_M if your machine can handle it), run it in your preferred GGUF runner, and compare against a static-quant baseline. If the outputs degrade too much, step up to Q6_K; if you’re memory-bound, try IQ variants and see whether they retain enough quality for your workload.
+
+Quick stats from the listing feed: pipeline: text-generation · 2 likes · 1957 downloads.
+
+[View on Hugging Face](https://huggingface.co/mradermacher/MiniMax-M2.1-REAP-30-i1-GGUF)
+
+Source listing: https://huggingface.co/models?sort=modified

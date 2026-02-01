@@ -1,0 +1,20 @@
+---
+title: "MewZoom 4X (super-resolution)"
+date: "2026-02-01"
+source: "Hugging Face"
+url: "https://huggingface.co/andrewdalpino/MewZoom-4X"
+modelId: "andrewdalpino/MewZoom-4X"
+pipelineTag: "image-to-image"
+blurb: "A lightweight 4× super-resolution model that upscales while deblurring/denoising, with a Python package (`ultrazoom`) and optional “control” variants to tune enhancement strength."
+thumbnail: "/models/thumbnails/2026-02-01--mewzoom.png"
+---
+
+`andrewdalpino/MewZoom-4X` is a super-resolution model that targets a common “real-world” upscaling need: not just increasing resolution, but also removing blur, noise, and compression artifacts along the way. The project is packaged like a small library (the `ultrazoom` Python package), and the model card is unusually concrete about how to load weights, run inference, and reproduce its examples.
+
+What makes it worth a look is the combination of deployment ergonomics and controllability. In addition to standard 2×/3×/4×/8× checkpoints, the project includes “control” variants where you pass a small vector describing the expected degradation (blur/noise/JPEG). That gives you a useful knob for dialing down over-sharpening on clean inputs, or pushing harder on low-quality images. A good first test is to run the non-control and control versions on a handful of your own images (especially ones with visible compression artifacts) and see whether the controlled enhancements improve perceived detail without inventing textures.
+
+Quick stats from the listing feed: pipeline: image-to-image · 9 likes · 17 downloads.
+
+[View on Hugging Face](https://huggingface.co/andrewdalpino/MewZoom-4X)
+
+Source listing: https://huggingface.co/models?sort=modified
