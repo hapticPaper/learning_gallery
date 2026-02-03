@@ -1,0 +1,20 @@
+---
+title: "MiniCPM-o 4.5 (9B full-duplex omnimodal)"
+date: "2026-02-03"
+source: "Hugging Face"
+url: "https://huggingface.co/openbmb/MiniCPM-o-4_5"
+modelId: "openbmb/MiniCPM-o-4_5"
+pipelineTag: "any-to-any"
+blurb: "An end-to-end 9B vision+speech model that can see, listen, and speak in real time (full-duplex), with demos for continuous audio/video streaming and multiple deployment paths like vLLM, SGLang, Ollama, and llama.cpp."
+thumbnail: "/models/thumbnails/2026-02-03--minicpm-o-4-5.png"
+---
+
+`openbmb/MiniCPM-o-4_5` is a compact “omnimodal” model that tries to make real-time interaction feel more like a call and less like turn-taking chat. The headline feature is full-duplex streaming: the model can process continuous audio/video input while generating text and speech output at the same time (no “wait for the user to stop talking” behavior). The model card also claims proactive interaction — the ability to comment or remind based on what it’s seeing and hearing.
+
+What’s especially notable is the packaging and deployment story. It’s described as an end-to-end stack built on top of components like SigLip2 (vision), Whisper (ASR), CosyVoice2 (TTS), and a Qwen3-8B text backbone. And unlike many multimodal releases, it’s explicitly positioned to run locally: there are guides for llama.cpp and Ollama, plus quantized variants (including GGUF) and higher-throughput options like vLLM and SGLang. A good first experiment is to try the WebRTC streaming demo to understand latency and interruption behavior, then replicate the same “talk over it” scenario locally with a smaller quant.
+
+Quick stats from the listing feed: pipeline: any-to-any · 42 likes · 0 downloads.
+
+[View on Hugging Face](https://huggingface.co/openbmb/MiniCPM-o-4_5)
+
+Source listing: https://huggingface.co/models?sort=modified

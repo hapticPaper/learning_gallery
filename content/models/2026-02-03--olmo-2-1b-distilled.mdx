@@ -1,0 +1,20 @@
+---
+title: "OLMo-2 1B Distilled (reasoning traces)"
+date: "2026-02-03"
+source: "Hugging Face"
+url: "https://huggingface.co/hbfreed/Olmo-2-1B-Distilled"
+modelId: "hbfreed/Olmo-2-1B-Distilled"
+pipelineTag: "text-generation"
+blurb: "A 1B-parameter OLMo-2 model trained via on-policy distillation to emit `<think>...</think>` reasoning traces, using `allenai/Olmo-3-7B-Think` as a teacher for token-level supervision."
+thumbnail: "/models/thumbnails/2026-02-03--olmo-2-1b-distilled.png"
+---
+
+`hbfreed/Olmo-2-1B-Distilled` is a small (1B parameter) text model that’s explicitly trained to produce reasoning traces. Rather than being a generic instruct checkpoint, it’s positioned as an experiment in “reasoning distillation”: the model learns to emit an internal `<think>...</think>` block before the final answer.
+
+The model card gives a concrete training story. It starts from `allenai/OLMo-2-0425-1B-Instruct`, does an SFT stage on examples in the `<think>` format, then runs an on-policy distillation loop where the student generates rollouts and a larger teacher (`allenai/Olmo-3-7B-Think`) provides token-level supervision (reverse KL). If you’re evaluating small models for agent-like tasks, this is a nice checkpoint to test because it makes multi-step behavior visible: try prompting for step-by-step reasoning on a few math/logic questions, then compare output stability and verbosity against a “plain” 1B instruct model.
+
+Quick stats from the listing feed: pipeline: text-generation · 0 likes · 211 downloads.
+
+[View on Hugging Face](https://huggingface.co/hbfreed/Olmo-2-1B-Distilled)
+
+Source listing: https://huggingface.co/models?sort=modified

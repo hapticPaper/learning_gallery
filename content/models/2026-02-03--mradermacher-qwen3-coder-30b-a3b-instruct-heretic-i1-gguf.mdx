@@ -1,0 +1,20 @@
+---
+title: "Qwen3-Coder 30B-A3B Heretic (imatrix GGUF)"
+date: "2026-02-03"
+source: "Hugging Face"
+url: "https://huggingface.co/mradermacher/Qwen3-Coder-30B-A3B-Instruct-Heretic-i1-GGUF"
+modelId: "mradermacher/Qwen3-Coder-30B-A3B-Instruct-Heretic-i1-GGUF"
+pipelineTag: "text-generation"
+blurb: "An imatrix-weighted GGUF quant pack for `dpankros/Qwen3-Coder-30B-A3B-Instruct-Heretic`, with IQ and Q*K variants intended for llama.cpp-style runners and a downloadable `.imatrix.gguf` for producing your own quants."
+thumbnail: "/models/thumbnails/2026-02-03--mradermacher-qwen3-coder-30b-a3b-instruct-heretic-i1-gguf.png"
+---
+
+This entry is less about a new base model and more about practical deployment: `mradermacher/Qwen3-Coder-30B-A3B-Instruct-Heretic-i1-GGUF` is a GGUF quant collection (plus the imatrix file) for a coder-focused Qwen3 mixture-of-experts model. If you run models via llama.cpp (or any GGUF-compatible stack), “imatrix” packs are often worth a look because they use an importance matrix to preserve higher-value weights during quantization, which can improve quality at the same size compared to purely static quants.
+
+The model card includes a quant table spanning very small IQ variants up through the more commonly useful options. If you just want a sane starting point on consumer GPUs, the listed Q4_K_M / Q4_K_S variants are typically the best first try, then move up to Q6_K if you have headroom and want extra quality. It also ships an `*.imatrix.gguf` so you can generate your own quant variants if you have specific performance constraints.
+
+Quick stats from the listing feed: pipeline: text-generation · 1 like · 12,856 downloads.
+
+[View on Hugging Face](https://huggingface.co/mradermacher/Qwen3-Coder-30B-A3B-Instruct-Heretic-i1-GGUF)
+
+Source listing: https://huggingface.co/models?sort=modified
