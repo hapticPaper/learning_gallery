@@ -295,8 +295,10 @@ async function getGoogleNewsCandidates(dateRange: DateRange): Promise<StoryDraft
     if (seen.has(link)) continue;
     seen.add(link);
 
-    const pubDate = pubDateRaw ? new Date(pubDateRaw) : new Date();
-    const date = pubDate.toISOString().slice(0, 10);
+    const pubDate = parseRssDate(pubDateRaw);
+    if (!pubDate) continue;
+    const date = formatDateOnly(pubDate);
+    if (!dateRangeIncludesDateOnly(dateRange, date)) continue;
 
     const source = publisherName ? `${publisherName} (via Google News)` : "Google News";
 
@@ -362,15 +364,39 @@ function formatDateOnly(date: Date): string {
   return date.toISOString().slice(0, 10);
 }
 
+function parseRssDate(value: string): Date | undefined {
+  if (!value) return undefined;
+  const parsed = new Date(value);
+  if (!Number.isFinite(parsed.getTime())) {
+    if (NEWS_DEBUG_FILTERS) {
+      console.log(JSON.stringify({ event: "invalid_rss_date", raw: value }));
+    }
+    return undefined;
+  }
+  return parsed;
+}
+
 function parseDateRange({ start, end }: { start?: string; end?: string }): DateRange {
   if (!start && !end) return {};
 
   const parsedStart = parseDateOnly(start);
   const parsedEnd = parseDateOnly(end);
+  const strict = process.env.NEWS_STRICT_DATE_RANGE === "1";
 
   if (!parsedStart || !parsedEnd || parsedStart > parsedEnd) {
+    const message =
+      "Invalid NEWS_START_DATE/NEWS_END_DATE configuration. Expected YYYY-MM-DD and start <= end.";
+    if (strict) throw new Error(message);
+    console.error(`${message} Falling back to non-range mode.`);
+    return {};
+  }
+
+  const maxRangeDays = parsePositiveInt(process.env.NEWS_MAX_DATE_RANGE_DAYS) ?? 31;
+  const rangeDays =
+    Math.floor((parsedEnd.getTime() - parsedStart.getTime()) / (24 * 60 * 60 * 1000)) + 1;
+  if (rangeDays > maxRangeDays) {
     throw new Error(
-      "Invalid NEWS_START_DATE/NEWS_END_DATE configuration. Expected YYYY-MM-DD and start <= end.",
+      `NEWS_START_DATE/NEWS_END_DATE span ${rangeDays} days, which exceeds NEWS_MAX_DATE_RANGE_DAYS=${maxRangeDays}.`,
     );
   }
 
