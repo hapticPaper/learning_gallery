@@ -10,6 +10,7 @@ type StoryDraft = {
   thumbnailUrl?: string;
   publisherName?: string;
   publisherUrl?: string;
+  score?: number;
 };
 
 type ResolvedStory = {
@@ -125,10 +126,20 @@ async function getRunCandidates(dateRange: DateRange): Promise<StoryDraft[]> {
 
   const interleaved = interleaveCandidates([hn, yt, google]);
   if (!dateRange.start || !dateRange.endExclusive) return interleaved;
-  return interleaved.sort((a, b) => Date.parse(a.date) - Date.parse(b.date));
+
+  const sorted = interleaved.sort((a, b) => Date.parse(a.date) - Date.parse(b.date));
+  return spreadCandidatesAcrossRange(sorted, Math.min(sorted.length, RUN_LIMIT * 10));
 }
 
 async function getHackerNewsCandidates(dateRange: DateRange): Promise<StoryDraft[]> {
+  type HackerNewsHit = {
+    title: string;
+    url: string | null;
+    created_at_i: number;
+    points: number;
+    num_comments: number;
+  };
+
   const url = new URL("https://hn.algolia.com/api/v1/search_by_date");
   url.searchParams.set("query", "AI");
   url.searchParams.set("tags", "story");
@@ -136,27 +147,39 @@ async function getHackerNewsCandidates(dateRange: DateRange): Promise<StoryDraft
   url.searchParams.set("numericFilters", buildHackerNewsNumericFilters(dateRange));
   url.searchParams.set("restrictSearchableAttributes", "title");
 
-  const data = await fetchJson<{ hits: Array<{ title: string; url: string | null; created_at_i: number }> }>(
-    url.toString(),
-  );
+  const firstPage = await fetchJson<{ hits: HackerNewsHit[]; nbPages?: number }>(url.toString());
+  const nbPages = Math.min(firstPage.nbPages ?? 1, 30);
+
+  const pages: HackerNewsHit[][] = [firstPage.hits];
+  for (let page = 1; page < nbPages; page++) {
+    const pageUrl = new URL(url);
+    pageUrl.searchParams.set("page", String(page));
+    const response = await fetchJson<{ hits: HackerNewsHit[] }>(pageUrl.toString());
+    pages.push(response.hits);
+  }
 
   const seen = new Set<string>();
-  const picked: StoryDraft[] = [];
+  const candidates: StoryDraft[] = [];
 
-  for (const hit of data.hits) {
+  for (const hit of pages.flat()) {
     if (!hit.url || !hit.title) continue;
     if (seen.has(hit.url)) continue;
     seen.add(hit.url);
 
-    picked.push({
+    candidates.push({
       title: hit.title,
       url: hit.url,
       source: "Hacker News",
       date: formatDateFromUnixSeconds(hit.created_at_i),
+      score: hit.points + hit.num_comments,
     });
   }
 
-  return picked;
+  const keepCount = dateRange.start && dateRange.endExclusive ? Math.max(RUN_LIMIT * 50, 500) : Math.max(RUN_LIMIT * 20, 200);
+  return candidates
+    .sort((a, b) => (b.score ?? 0) - (a.score ?? 0))
+    .slice(0, keepCount)
+    .sort((a, b) => Date.parse(a.date) - Date.parse(b.date));
 }
 
 async function getYouTubeCandidates(dateRange: DateRange): Promise<StoryDraft[]> {
@@ -205,6 +228,8 @@ async function getGoogleNewsCandidates(dateRange: DateRange): Promise<StoryDraft
     const rawTitle = decodeXmlEntities(stripCdata(getXmlTag(item, "title") ?? ""));
     const link = stripCdata(getXmlTag(item, "link") ?? "");
     const pubDateRaw = stripCdata(getXmlTag(item, "pubDate") ?? "");
+
+    if (link.startsWith("https://news.google.com/rss/articles/")) continue;
 
     const { publisherName, publisherUrl } = parseGoogleNewsSource(item);
 
@@ -333,6 +358,24 @@ function parsePositiveInt(value: string | undefined): number | undefined {
   if (!Number.isFinite(parsed)) return undefined;
   if (parsed <= 0) return undefined;
   return parsed;
+}
+
+function spreadCandidatesAcrossRange(candidates: StoryDraft[], bucketCount: number): StoryDraft[] {
+  if (bucketCount <= 1 || candidates.length <= 1) return candidates;
+  if (bucketCount >= candidates.length) return candidates;
+
+  const pickedIndices = new Set<number>();
+  const spread: StoryDraft[] = [];
+
+  for (let bucket = 0; bucket < bucketCount; bucket++) {
+    const idx = Math.round((bucket * (candidates.length - 1)) / (bucketCount - 1));
+    if (pickedIndices.has(idx)) continue;
+    pickedIndices.add(idx);
+    spread.push(candidates[idx]);
+  }
+
+  const remainder = candidates.filter((_, idx) => !pickedIndices.has(idx));
+  return [...spread, ...remainder];
 }
 
 function interleaveCandidates(groups: StoryDraft[][]): StoryDraft[] {

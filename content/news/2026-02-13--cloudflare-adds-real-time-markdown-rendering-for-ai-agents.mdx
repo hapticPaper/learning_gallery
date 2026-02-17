@@ -1,0 +1,14 @@
+---
+title: "Cloudflare adds real-time Markdown rendering for AI agents"
+date: "2026-02-13"
+source: "Hacker News"
+url: "https://blog.cloudflare.com/markdown-for-agents/"
+blurb: "Cloudflare’s “Markdown for Agents” uses content negotiation to serve text/markdown versions of pages, reducing token waste and making docs easier for agents to ingest."
+thumbnail: "/news/thumbnails/2026-02-13--cloudflare-adds-real-time-markdown-rendering-for-ai-agents.webp"
+---
+
+Cloudflare’s “Markdown for Agents” is basically an edge-side HTML→Markdown transformer wired into standard HTTP content negotiation. If an agent (or any client) requests a page with an `Accept: text/markdown` header, Cloudflare can return a Markdown rendering instead of full HTML.
+
+This is a small feature with a useful effect: agents often pay a big token tax to parse navigation, scripts, and layout-heavy markup. Serving a clean Markdown representation makes scraping more reliable, cheaper, and easier to cache. If you maintain docs or marketing pages and you’re thinking about “AI-native” discovery, this is one of the simplest levers: keep the human page as-is, but provide a deterministic, low-noise representation for machine readers.
+
+[Read the original](https://blog.cloudflare.com/markdown-for-agents/)

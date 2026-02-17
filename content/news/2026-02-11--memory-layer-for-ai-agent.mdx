@@ -1,0 +1,14 @@
+---
+title: "Memory Layer for AI Agent"
+date: "2026-02-11"
+source: "Hacker News"
+url: "https://github.com/obicho/mem"
+blurb: "An open-source memory service for AI agents: store, search, and retrieve long-term context (REST API + Chroma-backed embeddings, with multimodal support)."
+thumbnail: "/news/thumbnails/2026-02-11--memory-layer-for-ai-agent.png"
+---
+
+`mem` is a small, open-source “memory layer” you can put next to an agent so it can persist context across sessions and projects. Instead of stuffing everything into a prompt, you write memories (notes, facts, decisions, artifacts) into a store that supports similarity search and structured metadata, then retrieve only what’s relevant for a given task.
+
+The project ships as a FastAPI service with a Chroma-backed vector index, plus optional multimodal indexing (e.g., generating image captions so screenshots can be searched like text). The README includes a simple Streamlit UI and a LangChain integration example. If you want to try it quickly, the fastest path is to run the server, add a handful of “project memories” (requirements, constraints, links), and then wire up your agent so every session starts with a retrieval step.
+
+[Read the original](https://github.com/obicho/mem)
