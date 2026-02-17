@@ -1,0 +1,18 @@
+---
+title: "MiniMax-M2.5 (EXL3 quant pack)"
+date: "2026-02-17"
+source: "Hugging Face"
+url: "https://huggingface.co/NeuroSenko/MiniMax-M2.5-exl3"
+modelId: "NeuroSenko/MiniMax-M2.5-exl3"
+pipelineTag: "text-generation"
+blurb: "EXL3 quant pack for MiniMax-M2.5 (2–8 bpw), built with ExLlamaV3 for fast GPU inference and easy quality/VRAM tradeoffs."
+thumbnail: "/models/thumbnails/2026-02-17--neurosenko-minimax-m2-5-exl3.png"
+---
+
+This is a set of EXL3 quants of `MiniMaxAI/MiniMax-M2.5`, intended for running the model efficiently on consumer GPUs via ExLlamaV3. Instead of picking a single “best” quant, the repo provides a range of bit-per-weight options (2.0 → 8.0 bpw) so you can tune for VRAM and speed while still tracking quality. The README includes a small evaluation table (KL-divergence, perplexity, top-k agreement) that helps you sanity-check which sizes are worth using.
+
+What to try first: start with a mid-range quant (around 4–6 bpw) if you’re aiming for a general-purpose setup, then move down toward 3 bpw if you need to fit a smaller GPU, or up toward 7–8 bpw if you’re benchmarking quality and have headroom. If you already use an ExLlamaV3-backed stack, this is an easy way to experiment with MiniMax-M2.5 without committing to full-precision weights.
+
+[View on Hugging Face](https://huggingface.co/NeuroSenko/MiniMax-M2.5-exl3)
+
+Source listing: https://huggingface.co/models?sort=modified

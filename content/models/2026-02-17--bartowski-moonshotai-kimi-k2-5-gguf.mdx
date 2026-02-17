@@ -1,0 +1,20 @@
+---
+title: "Kimi K2.5 (GGUF imatrix quants)"
+date: "2026-02-17"
+source: "Hugging Face"
+url: "https://huggingface.co/bartowski/moonshotai_Kimi-K2.5-GGUF"
+modelId: "bartowski/moonshotai_Kimi-K2.5-GGUF"
+pipelineTag: "text-generation"
+blurb: "GGUF imatrix quant pack of moonshotai/Kimi-K2.5 for llama.cpp-style runners (LM Studio, KoboldCpp, etc.)."
+thumbnail: "/models/thumbnails/2026-02-17--bartowski-moonshotai-kimi-k2-5-gguf.png"
+---
+
+This repo packages `moonshotai/Kimi-K2.5` into a large set of GGUF files, quantized with llama.cpp using the imatrix workflow. Practically, it’s meant to make Kimi K2.5 usable in the ecosystem of “GGUF-first” runtimes (llama.cpp, LM Studio, KoboldCpp, text-generation-webui, etc.) without needing to do your own conversions. The author provides many quant variants, ranging from higher-quality but heavy options (Q6/Q8) down to more compact ones (Q4, IQ*), plus notes about online repacking behavior on ARM/AVX CPUs.
+
+What to try first: pick a mid-range quant (often a Q4_K_M/Q5-style file if you have the VRAM/RAM) and download only that specific file or folder with `huggingface-cli --include` instead of cloning the whole repo. If you’re not sure what your runner supports yet, check the original model page and your tool’s “supported models” list first—new architectures often require a recent llama.cpp build.
+
+Quick stats from the listing feed: pipeline: text-generation · 6 likes · 7453 downloads.
+
+[View on Hugging Face](https://huggingface.co/bartowski/moonshotai_Kimi-K2.5-GGUF)
+
+Source listing: https://huggingface.co/models?sort=modified

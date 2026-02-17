@@ -1,0 +1,20 @@
+---
+title: "SoulX-FlashHead 1.3B (real-time talking heads)"
+date: "2026-02-17"
+source: "Hugging Face"
+url: "https://huggingface.co/Soul-AILab/SoulX-FlashHead-1_3B"
+modelId: "Soul-AILab/SoulX-FlashHead-1_3B"
+pipelineTag: "image-to-video"
+blurb: "Talking-head generator aimed at real-time streaming; ships Lite/Pro checkpoints plus an open dataset (VividHead) and inference code."
+thumbnail: "/models/thumbnails/2026-02-17--soulx-flashhead-1-3b.png"
+---
+
+SoulX-FlashHead is a talking-head generation model that focuses on real-time (or near real-time) streaming. The authors publish two distilled checkpoints: a “Lite” variant optimized for throughput, and a “Pro” variant optimized for quality. The model card includes concrete speed claims on modern GPUs and links out to a technical report, a project page, an open dataset (VividHead), and a GitHub repository with inference code.
+
+What to try first: start with the Lite checkpoint and run the upstream inference script end-to-end on a short clip to validate your environment (CUDA, ffmpeg, and any attention kernels the repo expects). Once you have the baseline working, compare Lite vs. Pro on the same input and decide whether your target deployment cares more about absolute quality or latency. If you plan to build a streaming avatar workflow, it’s also worth testing how the model behaves under long-running generation (drift, identity stability, and lip-sync consistency).
+
+Quick stats from the listing feed: pipeline: image-to-video · 19 likes.
+
+[View on Hugging Face](https://huggingface.co/Soul-AILab/SoulX-FlashHead-1_3B)
+
+Source listing: https://huggingface.co/models?sort=modified
