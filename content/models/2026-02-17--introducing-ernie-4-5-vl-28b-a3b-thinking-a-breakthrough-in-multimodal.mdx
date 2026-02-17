@@ -1,0 +1,20 @@
+---
+title: "ERNIE-4.5-VL 28B-A3B Thinking"
+date: "2026-02-17"
+source: "Hugging Face"
+url: "https://huggingface.co/baidu/ERNIE-4.5-VL-28B-A3B-Thinking"
+modelId: "baidu/ERNIE-4.5-VL-28B-A3B-Thinking"
+pipelineTag: "image-text-to-text"
+blurb: "Apache-2.0 multimodal MoE model focused on visual reasoning, grounding, and tool use, with a Transformers quickstart."
+thumbnail: "/models/thumbnails/2026-02-17--introducing-ernie-4-5-vl-28b-a3b-thinking-a-breakthrough-in-multimodal.png"
+---
+
+ERNIE-4.5-VL 28B-A3B Thinking is an Apache-2.0 multimodal model from Baidu that’s positioned around visual-language reasoning: chart and diagram understanding, STEM-style problems from screenshots/photos, and more structured visual grounding. The model card frames it as an MoE architecture where only a smaller subset of parameters is activated at inference time, and it highlights mid-training plus reinforcement-learning style tuning on verifiable tasks.
+
+What to try first: run the provided Transformers quickstart on a small “describe/ground this image” prompt, then try a tougher input like a multi-step chart question or a geometry problem from a photo. If your workflow depends on tool use (for example, image search or zoom/crop flows), the model card explicitly calls out those behaviors—so it’s worth testing whether they work end-to-end in your own wrapper before committing to a larger integration.
+
+Quick stats from the listing feed: pipeline: image-text-to-text · 518 likes · 1048 downloads.
+
+[View on Hugging Face](https://huggingface.co/baidu/ERNIE-4.5-VL-28B-A3B-Thinking)
+
+Source listing: https://huggingface.co/models?sort=modified

@@ -27,14 +27,29 @@ const CONTENT_DIR = path.join(process.cwd(), "content", "blueprints");
 const THUMBNAILS_DIR = path.join(process.cwd(), "public", "blueprints", "thumbnails");
 
 const SOURCE_URL = "https://build.nvidia.com/blueprints?filters=publisher%3Anvidia";
-const RUN_LIMIT = 5;
+const DEFAULT_RUN_LIMIT = 5;
+
+type DateRange = {
+  start?: Date;
+  endExclusive?: Date;
+};
+
+const RUN_LIMIT = parsePositiveInt(process.env.BLUEPRINTS_RUN_LIMIT) ?? DEFAULT_RUN_LIMIT;
+const RUN_DATE_RANGE = parseDateRange({
+  start: process.env.BLUEPRINTS_START_DATE,
+  end: process.env.BLUEPRINTS_END_DATE,
+});
 
 async function main() {
   await fs.mkdir(CONTENT_DIR, { recursive: true });
   await fs.mkdir(THUMBNAILS_DIR, { recursive: true });
 
   const existing = await listExistingBlueprintIds();
-  const candidates = await getRunCandidates({ existingBlueprintIds: existing, limit: RUN_LIMIT });
+  const candidates = await getRunCandidates({
+    existingBlueprintIds: existing,
+    limit: RUN_LIMIT,
+    dateRange: RUN_DATE_RANGE,
+  });
   if (!candidates.length) {
     console.log("No candidates found.");
     return;
@@ -94,15 +109,18 @@ async function listExistingBlueprintIds(): Promise<Set<string>> {
 async function getRunCandidates({
   existingBlueprintIds,
   limit,
+  dateRange,
 }: {
   existingBlueprintIds: Set<string>;
   limit: number;
+  dateRange: DateRange;
 }): Promise<NvidiaBlueprintListingEntry[]> {
   const listings = await fetchBlueprintFeed();
 
   const sorted = listings
     .filter((entry) => entry.blueprintId && entry.title && entry.date && entry.url)
     .filter((entry) => !existingBlueprintIds.has(entry.blueprintId))
+    .filter((entry) => dateRangeIncludesDateOnly(dateRange, entry.date))
     .sort((a, b) => Date.parse(b.date) - Date.parse(a.date));
 
   return sorted.slice(0, limit);
@@ -478,6 +496,53 @@ function decodeHtmlEntities(value: string): string {
         num.startsWith("x") || num.startsWith("X") ? parseInt(num.slice(1), 16) : parseInt(num, 10);
       return Number.isFinite(codePoint) ? String.fromCodePoint(codePoint) : match;
     });
+}
+
+function dateRangeIncludesDateOnly(range: DateRange, dateOnly: string): boolean {
+  if (!range.start || !range.endExclusive) return true;
+  const date = parseDateOnly(dateOnly);
+  if (!date) return false;
+  return date >= range.start && date < range.endExclusive;
+}
+
+function parseDateRange({ start, end }: { start?: string; end?: string }): DateRange {
+  const hasStart = Boolean(start);
+  const hasEnd = Boolean(end);
+  if (!hasStart && !hasEnd) return {};
+
+  if (!hasStart || !hasEnd) {
+    throw new Error(
+      "BLUEPRINTS_START_DATE and BLUEPRINTS_END_DATE must both be set as YYYY-MM-DD when using date range filtering.",
+    );
+  }
+
+  const parsedStart = parseDateOnly(start);
+  const parsedEnd = parseDateOnly(end);
+  if (!parsedStart || !parsedEnd || parsedStart > parsedEnd) {
+    throw new Error("Invalid blueprint date range: ensure dates are valid YYYY-MM-DD and start <= end.");
+  }
+
+  return {
+    start: parsedStart,
+    endExclusive: new Date(parsedEnd.getTime() + 24 * 60 * 60 * 1000),
+  };
+}
+
+function parseDateOnly(value: string | undefined): Date | undefined {
+  if (!value) return undefined;
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return undefined;
+
+  const parsed = new Date(`${value}T00:00:00.000Z`);
+  if (!Number.isFinite(parsed.getTime())) return undefined;
+  return parsed;
+}
+
+function parsePositiveInt(value: string | undefined): number | undefined {
+  if (!value) return undefined;
+  const parsed = Number.parseInt(value, 10);
+  if (!Number.isFinite(parsed)) return undefined;
+  if (parsed <= 0) return undefined;
+  return parsed;
 }
 
 main().catch((error) => {

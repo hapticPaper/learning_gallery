@@ -38,12 +38,13 @@ const CONTENT_DIR = path.join(process.cwd(), "content", "models");
 const THUMBNAILS_DIR = path.join(process.cwd(), "public", "models", "thumbnails");
 
 const SOURCE_URL = "https://huggingface.co/models?sort=modified";
-const RUN_LIMIT = 3;
+const DEFAULT_RUN_LIMIT = 3;
+const RUN_LIMIT = parsePositiveInt(process.env.MODELS_RUN_LIMIT) ?? DEFAULT_RUN_LIMIT;
 const CANDIDATE_MULTIPLIER = 8;
 
 // Grab enough recently-modified models to find 3 high-signal candidates without having to
 // crawl deeply into the feed.
-const API_FETCH_LIMIT = 240;
+const API_FETCH_LIMIT = parsePositiveInt(process.env.MODELS_API_FETCH_LIMIT) ?? 240;
 
 async function main() {
   await fs.mkdir(CONTENT_DIR, { recursive: true });
@@ -729,6 +730,14 @@ function decodeHtmlEntities(value: string): string {
     .replace(/&#39;/g, "'")
     .replace(/&#x27;/g, "'")
     .replace(/&#x2F;/g, "/");
+}
+
+function parsePositiveInt(value: string | undefined): number | undefined {
+  if (!value) return undefined;
+  const parsed = Number.parseInt(value, 10);
+  if (!Number.isFinite(parsed)) return undefined;
+  if (parsed <= 0) return undefined;
+  return parsed;
 }
 
 main().catch((error) => {

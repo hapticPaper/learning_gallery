@@ -1,0 +1,20 @@
+---
+title: "Xoron-Dev MultiMoe (multimodal MoE)"
+date: "2026-02-17"
+source: "Hugging Face"
+url: "https://huggingface.co/Backup-bdg/Xoron-Dev-MultiMoe"
+modelId: "Backup-bdg/Xoron-Dev-MultiMoe"
+pipelineTag: "any-to-any"
+blurb: "Ambitious multimodal MoE claiming unified text/image/video/audio generation plus tool use; useful as a research reference even if early."
+thumbnail: "/models/thumbnails/2026-02-17--xoron-dev-state-of-the-art-multimodal-moe.png"
+---
+
+Xoron-Dev MultiMoe is an “any-to-any” multimodal model card that aims to unify text, images, video, and audio under a single Mixture-of-Experts backbone. The README is more of an ambitious research blueprint than a minimal model card: it describes a long-context MoE core, distinct encoders/tokenizers for images and video, flow-matching generation components, and claims around tool use and agentic behavior.
+
+What to try first: treat it as an experimental artifact. Start by checking whether the repo includes runnable weights and an inference path for a single modality (text-only or image+text) before attempting the full “any-to-any” surface area. If it does run, focus your first evaluation on a narrow task (for example, captioning + follow-up Q&A on an image) and measure basic reliability and latency before expanding to video/audio workflows.
+
+Quick stats from the listing feed: pipeline: any-to-any · 1 like · 259 downloads.
+
+[View on Hugging Face](https://huggingface.co/Backup-bdg/Xoron-Dev-MultiMoe)
+
+Source listing: https://huggingface.co/models?sort=modified
