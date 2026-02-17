@@ -140,6 +140,10 @@ async function getHackerNewsCandidates(dateRange: DateRange): Promise<StoryDraft
     num_comments: number;
   };
 
+  function isValidHit(hit: HackerNewsHit): hit is HackerNewsHit & { url: string } {
+    return Boolean(hit.url && hit.title);
+  }
+
   const url = new URL("https://hn.algolia.com/api/v1/search_by_date");
   url.searchParams.set("query", "AI");
   url.searchParams.set("tags", "story");
@@ -152,7 +156,7 @@ async function getHackerNewsCandidates(dateRange: DateRange): Promise<StoryDraft
   if (!isRangeMode) {
     const { hits } = await fetchJson<{ hits: HackerNewsHit[] }>(url.toString());
     return hits
-      .filter((hit) => hit.url && hit.title)
+      .filter(isValidHit)
       .map((hit) => ({
         title: hit.title,
         url: hit.url,
