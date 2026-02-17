@@ -506,19 +506,25 @@ function dateRangeIncludesDateOnly(range: DateRange, dateOnly: string): boolean 
 }
 
 function parseDateRange({ start, end }: { start?: string; end?: string }): DateRange {
+  const hasStart = Boolean(start);
+  const hasEnd = Boolean(end);
+  if (!hasStart && !hasEnd) return {};
+
+  if (!hasStart || !hasEnd) {
+    throw new Error(
+      "BLUEPRINTS_START_DATE and BLUEPRINTS_END_DATE must both be set as YYYY-MM-DD when using date range filtering.",
+    );
+  }
+
   const parsedStart = parseDateOnly(start);
   const parsedEnd = parseDateOnly(end);
-
-  if (!parsedStart && !parsedEnd) return {};
-
-  const startDate = parsedStart ?? parsedEnd;
-  const endDate = parsedEnd ?? parsedStart;
-  if (!startDate || !endDate) return {};
-  if (startDate > endDate) return {};
+  if (!parsedStart || !parsedEnd || parsedStart > parsedEnd) {
+    throw new Error("Invalid blueprint date range: ensure dates are valid YYYY-MM-DD and start <= end.");
+  }
 
   return {
-    start: startDate,
-    endExclusive: new Date(endDate.getTime() + 24 * 60 * 60 * 1000),
+    start: parsedStart,
+    endExclusive: new Date(parsedEnd.getTime() + 24 * 60 * 60 * 1000),
   };
 }
 
