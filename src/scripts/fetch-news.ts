@@ -127,8 +127,7 @@ async function getRunCandidates(dateRange: DateRange, runLimit: number): Promise
   const interleaved = interleaveCandidates([hn, yt, google]);
   if (!dateRange.start || !dateRange.endExclusive) return interleaved;
 
-  const sorted = interleaved.sort((a, b) => Date.parse(a.date) - Date.parse(b.date));
-  return prioritizeCandidatesAcrossRange(sorted, Math.min(sorted.length, runLimit * 10));
+  return prioritizeCandidatesAcrossRange(interleaved, Math.min(interleaved.length, runLimit * 10));
 }
 
 async function getHackerNewsCandidates(dateRange: DateRange, runLimit: number): Promise<StoryDraft[]> {
@@ -392,13 +391,16 @@ function parseDateRange({ start, end }: { start?: string; end?: string }): DateR
     return {};
   }
 
-  const maxRangeDays = parsePositiveInt(process.env.NEWS_MAX_DATE_RANGE_DAYS) ?? 31;
+  const rawMaxRangeDays = parsePositiveInt(process.env.NEWS_MAX_DATE_RANGE_DAYS);
+  const maxRangeDays = rawMaxRangeDays ?? 31;
   const rangeDays =
     Math.floor((parsedEnd.getTime() - parsedStart.getTime()) / (24 * 60 * 60 * 1000)) + 1;
-  if (rangeDays > maxRangeDays) {
-    throw new Error(
-      `NEWS_START_DATE/NEWS_END_DATE span ${rangeDays} days, which exceeds NEWS_MAX_DATE_RANGE_DAYS=${maxRangeDays}.`,
-    );
+
+  if (maxRangeDays > 0 && rangeDays > maxRangeDays) {
+    const message = `NEWS_START_DATE/NEWS_END_DATE span ${rangeDays} days, which exceeds NEWS_MAX_DATE_RANGE_DAYS=${maxRangeDays}.`;
+    if (strict) throw new Error(message);
+    console.error(`${message} Falling back to non-range mode.`);
+    return {};
   }
 
   return {
@@ -426,32 +428,24 @@ function parsePositiveInt(value: string | undefined): number | undefined {
 
 // Reorder candidates so the first N picks cover the full date range, while still keeping the
 // remainder as a fallback if earlier candidates fail to resolve.
-//
-// IMPORTANT: `candidates` must be pre-sorted by ascending `date`.
 function prioritizeCandidatesAcrossRange(candidates: StoryDraft[], bucketCount: number): StoryDraft[] {
   if (bucketCount <= 1 || candidates.length <= 1) return candidates;
 
-  if (NEWS_DEBUG_FILTERS) {
-    for (let i = 1; i < Math.min(candidates.length, 50); i++) {
-      if (Date.parse(candidates[i].date) < Date.parse(candidates[i - 1].date)) {
-        throw new Error("prioritizeCandidatesAcrossRange expects candidates sorted by ascending date");
-      }
-    }
-  }
+  const sorted = [...candidates].sort((a, b) => Date.parse(a.date) - Date.parse(b.date));
 
-  const count = Math.min(bucketCount, candidates.length);
-  if (count >= candidates.length) return candidates;
+  const count = Math.min(bucketCount, sorted.length);
+  if (count >= sorted.length) return sorted;
 
   const pickedIndices = new Set<number>();
   const spread: StoryDraft[] = [];
 
   for (let bucket = 0; bucket < count; bucket++) {
-    const idx = Math.floor((bucket * (candidates.length - 1)) / (count - 1));
+    const idx = Math.floor((bucket * (sorted.length - 1)) / (count - 1));
     pickedIndices.add(idx);
-    spread.push(candidates[idx]);
+    spread.push(sorted[idx]);
   }
 
-  const remainder = candidates.filter((_, idx) => !pickedIndices.has(idx));
+  const remainder = sorted.filter((_, idx) => !pickedIndices.has(idx));
   return [...spread, ...remainder];
 }
 
