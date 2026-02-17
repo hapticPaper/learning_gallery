@@ -168,9 +168,10 @@ async function getHackerNewsCandidates(dateRange: DateRange, runLimit: number): 
   }
 
   const firstPage = await fetchJson<{ hits: HackerNewsHit[]; nbPages?: number }>(url.toString());
-  const keepCount = Math.max(runLimit * 20, 200);
+  const keepCountCap = parsePositiveInt(process.env.NEWS_HN_KEEP_COUNT_CAP) ?? 500;
+  const keepCount = Math.min(Math.max(runLimit * 20, 200), keepCountCap);
   const maxPages = 15;
-  const maxHits = keepCount * 2;
+  const maxHits = parsePositiveInt(process.env.NEWS_HN_MAX_HITS) ?? keepCount * 2;
   const nbPages = Math.min(firstPage.nbPages ?? 1, maxPages);
 
   const pages: HackerNewsHit[][] = [firstPage.hits];
@@ -425,8 +426,18 @@ function parsePositiveInt(value: string | undefined): number | undefined {
 
 // Reorder candidates so the first N picks cover the full date range, while still keeping the
 // remainder as a fallback if earlier candidates fail to resolve.
+//
+// IMPORTANT: `candidates` must be pre-sorted by ascending `date`.
 function prioritizeCandidatesAcrossRange(candidates: StoryDraft[], bucketCount: number): StoryDraft[] {
   if (bucketCount <= 1 || candidates.length <= 1) return candidates;
+
+  if (NEWS_DEBUG_FILTERS) {
+    for (let i = 1; i < Math.min(candidates.length, 50); i++) {
+      if (Date.parse(candidates[i].date) < Date.parse(candidates[i - 1].date)) {
+        throw new Error("prioritizeCandidatesAcrossRange expects candidates sorted by ascending date");
+      }
+    }
+  }
 
   const count = Math.min(bucketCount, candidates.length);
   if (count >= candidates.length) return candidates;
