@@ -35,12 +35,6 @@ type DateRange = {
   endExclusive?: Date;
 };
 
-const RUN_LIMIT = parsePositiveInt(process.env.NEWS_RUN_LIMIT) ?? DEFAULT_RUN_LIMIT;
-const RUN_DATE_RANGE = parseDateRange({
-  start: process.env.NEWS_START_DATE,
-  end: process.env.NEWS_END_DATE,
-});
-
 // Comma-separated, case-insensitive substrings matched against Google News publisher names.
 // Use `NEWS_DEBUG_FILTERS=1` to log details when items are filtered.
 const BLOCKED_GOOGLE_NEWS_PUBLISHER_SUBSTRINGS = (process.env.NEWS_BLOCKED_PUBLISHERS ?? "motley fool")
@@ -69,6 +63,12 @@ async function main() {
   await fs.mkdir(CONTENT_DIR, { recursive: true });
   await fs.mkdir(THUMBNAILS_DIR, { recursive: true });
 
+  const runLimit = parsePositiveInt(process.env.NEWS_RUN_LIMIT) ?? DEFAULT_RUN_LIMIT;
+  const runDateRange = parseDateRange({
+    start: process.env.NEWS_START_DATE,
+    end: process.env.NEWS_END_DATE,
+  });
+
   if (NEWS_DEBUG_FILTERS) {
     console.log(
       JSON.stringify({
@@ -80,7 +80,7 @@ async function main() {
   }
 
   const existingUrls = await listExistingUrls();
-  const candidates = await getRunCandidates(RUN_DATE_RANGE);
+  const candidates = await getRunCandidates(runDateRange, runLimit);
   if (!candidates.length) {
     console.log("No candidates found.");
     return;
@@ -89,11 +89,11 @@ async function main() {
   const nextStories: ResolvedStory[] = [];
   const batchSize = 4;
 
-  for (let i = 0; i < candidates.length && nextStories.length < RUN_LIMIT; i += batchSize) {
+  for (let i = 0; i < candidates.length && nextStories.length < runLimit; i += batchSize) {
     const batch = candidates.slice(i, i + batchSize);
     const results = await Promise.allSettled(batch.map(async (story) => resolveStory(story, existingUrls)));
 
-    for (let j = 0; j < results.length && nextStories.length < RUN_LIMIT; j += 1) {
+    for (let j = 0; j < results.length && nextStories.length < runLimit; j += 1) {
       const story = batch[j];
       const result = results[j];
 
@@ -117,9 +117,9 @@ async function main() {
   console.log(`Created ${created} news item(s).`);
 }
 
-async function getRunCandidates(dateRange: DateRange): Promise<StoryDraft[]> {
+async function getRunCandidates(dateRange: DateRange, runLimit: number): Promise<StoryDraft[]> {
   const [hn, yt, google] = await Promise.all([
-    getHackerNewsCandidates(dateRange),
+    getHackerNewsCandidates(dateRange, runLimit),
     getYouTubeCandidates(dateRange),
     getGoogleNewsCandidates(dateRange),
   ]);
@@ -128,10 +128,10 @@ async function getRunCandidates(dateRange: DateRange): Promise<StoryDraft[]> {
   if (!dateRange.start || !dateRange.endExclusive) return interleaved;
 
   const sorted = interleaved.sort((a, b) => Date.parse(a.date) - Date.parse(b.date));
-  return prioritizeCandidatesAcrossRange(sorted, Math.min(sorted.length, RUN_LIMIT * 10));
+  return prioritizeCandidatesAcrossRange(sorted, Math.min(sorted.length, runLimit * 10));
 }
 
-async function getHackerNewsCandidates(dateRange: DateRange): Promise<StoryDraft[]> {
+async function getHackerNewsCandidates(dateRange: DateRange, runLimit: number): Promise<StoryDraft[]> {
   type HackerNewsHit = {
     title: string;
     url: string | null;
@@ -168,8 +168,9 @@ async function getHackerNewsCandidates(dateRange: DateRange): Promise<StoryDraft
   }
 
   const firstPage = await fetchJson<{ hits: HackerNewsHit[]; nbPages?: number }>(url.toString());
+  const keepCount = Math.max(runLimit * 50, 500);
   const maxPages = 30;
-  const maxHits = Math.max(RUN_LIMIT * 200, 2000);
+  const maxHits = keepCount * 2;
   const nbPages = Math.min(firstPage.nbPages ?? 1, maxPages);
 
   const pages: HackerNewsHit[][] = [firstPage.hits];
@@ -199,7 +200,6 @@ async function getHackerNewsCandidates(dateRange: DateRange): Promise<StoryDraft
     });
   }
 
-  const keepCount = Math.max(RUN_LIMIT * 50, 500);
   return candidates
     .sort((a, b) => (b.score ?? 0) - (a.score ?? 0))
     .slice(0, keepCount)
@@ -321,6 +321,8 @@ async function getGoogleNewsCandidates(dateRange: DateRange): Promise<StoryDraft
 
 function buildGoogleNewsRssUrl(dateRange: DateRange): string {
   const base = new URL("https://news.google.com/rss/search");
+  // NOTE: Google News supports `after:`/`before:` in the query string, but the semantics can
+  // be fuzzy around time zones. We still filter the parsed RSS `pubDate` locally.
   const query = (() => {
     if (!dateRange.start || !dateRange.endExclusive) return "artificial intelligence when:1d";
 
@@ -365,10 +367,9 @@ function parseDateRange({ start, end }: { start?: string; end?: string }): DateR
   const parsedEnd = parseDateOnly(end);
 
   if (!parsedStart || !parsedEnd || parsedStart > parsedEnd) {
-    console.error(
-      "Invalid NEWS_START_DATE/NEWS_END_DATE configuration; ignoring date range. Expected YYYY-MM-DD and start <= end.",
+    throw new Error(
+      "Invalid NEWS_START_DATE/NEWS_END_DATE configuration. Expected YYYY-MM-DD and start <= end.",
     );
-    return {};
   }
 
   return {
@@ -398,14 +399,15 @@ function parsePositiveInt(value: string | undefined): number | undefined {
 // remainder as a fallback if earlier candidates fail to resolve.
 function prioritizeCandidatesAcrossRange(candidates: StoryDraft[], bucketCount: number): StoryDraft[] {
   if (bucketCount <= 1 || candidates.length <= 1) return candidates;
-  if (bucketCount >= candidates.length) return candidates;
+
+  const count = Math.min(bucketCount, candidates.length);
+  if (count >= candidates.length) return candidates;
 
   const pickedIndices = new Set<number>();
   const spread: StoryDraft[] = [];
 
-  for (let bucket = 0; bucket < bucketCount; bucket++) {
-    const idx = Math.round((bucket * (candidates.length - 1)) / (bucketCount - 1));
-    if (pickedIndices.has(idx)) continue;
+  for (let bucket = 0; bucket < count; bucket++) {
+    const idx = Math.floor((bucket * (candidates.length - 1)) / (count - 1));
     pickedIndices.add(idx);
     spread.push(candidates[idx]);
   }
