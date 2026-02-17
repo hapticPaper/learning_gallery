@@ -128,7 +128,7 @@ async function getRunCandidates(dateRange: DateRange): Promise<StoryDraft[]> {
   if (!dateRange.start || !dateRange.endExclusive) return interleaved;
 
   const sorted = interleaved.sort((a, b) => Date.parse(a.date) - Date.parse(b.date));
-  return spreadCandidatesAcrossRange(sorted, Math.min(sorted.length, RUN_LIMIT * 10));
+  return prioritizeCandidatesAcrossRange(sorted, Math.min(sorted.length, RUN_LIMIT * 10));
 }
 
 async function getHackerNewsCandidates(dateRange: DateRange): Promise<StoryDraft[]> {
@@ -147,15 +147,35 @@ async function getHackerNewsCandidates(dateRange: DateRange): Promise<StoryDraft
   url.searchParams.set("numericFilters", buildHackerNewsNumericFilters(dateRange));
   url.searchParams.set("restrictSearchableAttributes", "title");
 
+  const isRangeMode = Boolean(dateRange.start && dateRange.endExclusive);
+
+  if (!isRangeMode) {
+    const { hits } = await fetchJson<{ hits: HackerNewsHit[] }>(url.toString());
+    return hits
+      .filter((hit) => hit.url && hit.title)
+      .map((hit) => ({
+        title: hit.title,
+        url: hit.url,
+        source: "Hacker News",
+        date: formatDateFromUnixSeconds(hit.created_at_i),
+        score: hit.points + hit.num_comments,
+      }))
+      .sort((a, b) => (b.score ?? 0) - (a.score ?? 0));
+  }
+
   const firstPage = await fetchJson<{ hits: HackerNewsHit[]; nbPages?: number }>(url.toString());
-  const nbPages = Math.min(firstPage.nbPages ?? 1, 30);
+  const maxPages = 30;
+  const maxHits = Math.max(RUN_LIMIT * 200, 2000);
+  const nbPages = Math.min(firstPage.nbPages ?? 1, maxPages);
 
   const pages: HackerNewsHit[][] = [firstPage.hits];
-  for (let page = 1; page < nbPages; page++) {
+  let hitCount = firstPage.hits.length;
+  for (let page = 1; page < nbPages && hitCount < maxHits; page++) {
     const pageUrl = new URL(url);
     pageUrl.searchParams.set("page", String(page));
     const response = await fetchJson<{ hits: HackerNewsHit[] }>(pageUrl.toString());
     pages.push(response.hits);
+    hitCount += response.hits.length;
   }
 
   const seen = new Set<string>();
@@ -175,7 +195,7 @@ async function getHackerNewsCandidates(dateRange: DateRange): Promise<StoryDraft
     });
   }
 
-  const keepCount = dateRange.start && dateRange.endExclusive ? Math.max(RUN_LIMIT * 50, 500) : Math.max(RUN_LIMIT * 20, 200);
+  const keepCount = Math.max(RUN_LIMIT * 50, 500);
   return candidates
     .sort((a, b) => (b.score ?? 0) - (a.score ?? 0))
     .slice(0, keepCount)
@@ -223,13 +243,17 @@ async function getGoogleNewsCandidates(dateRange: DateRange): Promise<StoryDraft
   const items = xml.match(/<item>[\s\S]*?<\/item>/g) ?? [];
   const picked: StoryDraft[] = [];
   const seen = new Set<string>();
+  let skippedRedirectLinks = 0;
 
   for (const item of items.slice(0, 25)) {
     const rawTitle = decodeXmlEntities(stripCdata(getXmlTag(item, "title") ?? ""));
     const link = stripCdata(getXmlTag(item, "link") ?? "");
     const pubDateRaw = stripCdata(getXmlTag(item, "pubDate") ?? "");
 
-    if (link.startsWith("https://news.google.com/rss/articles/")) continue;
+    if (link.startsWith("https://news.google.com/rss/articles/")) {
+      skippedRedirectLinks++;
+      continue;
+    }
 
     const { publisherName, publisherUrl } = parseGoogleNewsSource(item);
 
@@ -284,6 +308,10 @@ async function getGoogleNewsCandidates(dateRange: DateRange): Promise<StoryDraft
     });
   }
 
+  if (skippedRedirectLinks) {
+    console.log(`Skipped ${skippedRedirectLinks} Google News redirect-style link(s).`);
+  }
+
   return picked;
 }
 
@@ -327,19 +355,21 @@ function formatDateOnly(date: Date): string {
 }
 
 function parseDateRange({ start, end }: { start?: string; end?: string }): DateRange {
+  if (!start && !end) return {};
+
   const parsedStart = parseDateOnly(start);
   const parsedEnd = parseDateOnly(end);
 
-  if (!parsedStart && !parsedEnd) return {};
-
-  const startDate = parsedStart ?? parsedEnd;
-  const endDate = parsedEnd ?? parsedStart;
-  if (!startDate || !endDate) return {};
-  if (startDate > endDate) return {};
+  if (!parsedStart || !parsedEnd || parsedStart > parsedEnd) {
+    console.error(
+      "Invalid NEWS_START_DATE/NEWS_END_DATE configuration; ignoring date range. Expected YYYY-MM-DD and start <= end.",
+    );
+    return {};
+  }
 
   return {
-    start: startDate,
-    endExclusive: new Date(endDate.getTime() + 24 * 60 * 60 * 1000),
+    start: parsedStart,
+    endExclusive: new Date(parsedEnd.getTime() + 24 * 60 * 60 * 1000),
   };
 }
 
@@ -360,7 +390,9 @@ function parsePositiveInt(value: string | undefined): number | undefined {
   return parsed;
 }
 
-function spreadCandidatesAcrossRange(candidates: StoryDraft[], bucketCount: number): StoryDraft[] {
+// Reorder candidates so the first N picks cover the full date range, while still keeping the
+// remainder as a fallback if earlier candidates fail to resolve.
+function prioritizeCandidatesAcrossRange(candidates: StoryDraft[], bucketCount: number): StoryDraft[] {
   if (bucketCount <= 1 || candidates.length <= 1) return candidates;
   if (bucketCount >= candidates.length) return candidates;
 
