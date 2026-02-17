@@ -168,8 +168,8 @@ async function getHackerNewsCandidates(dateRange: DateRange, runLimit: number): 
   }
 
   const firstPage = await fetchJson<{ hits: HackerNewsHit[]; nbPages?: number }>(url.toString());
-  const keepCount = Math.max(runLimit * 50, 500);
-  const maxPages = 30;
+  const keepCount = Math.max(runLimit * 20, 200);
+  const maxPages = 15;
   const maxHits = keepCount * 2;
   const nbPages = Math.min(firstPage.nbPages ?? 1, maxPages);
 
@@ -248,13 +248,15 @@ async function getGoogleNewsCandidates(dateRange: DateRange): Promise<StoryDraft
   const picked: StoryDraft[] = [];
   const seen = new Set<string>();
   let skippedRedirectLinks = 0;
+  const skipRedirectLinks =
+    Boolean(dateRange.start && dateRange.endExclusive) || process.env.NEWS_SKIP_GOOGLE_REDIRECT_LINKS === "1";
 
   for (const item of items.slice(0, 25)) {
     const rawTitle = decodeXmlEntities(stripCdata(getXmlTag(item, "title") ?? ""));
     const link = stripCdata(getXmlTag(item, "link") ?? "");
     const pubDateRaw = stripCdata(getXmlTag(item, "pubDate") ?? "");
 
-    if (link.startsWith("https://news.google.com/rss/articles/")) {
+    if (skipRedirectLinks && link.startsWith("https://news.google.com/rss/articles/")) {
       skippedRedirectLinks++;
       continue;
     }
