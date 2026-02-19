@@ -1,0 +1,18 @@
+---
+title: "DualTowerVLM bootstrap checkpoint (dual-tower VLM)"
+date: "2026-02-19"
+source: "Hugging Face"
+url: "https://huggingface.co/patrickamadeus/dualtower-full-kv-bootstrap-step-200"
+modelId: "patrickamadeus/dualtower-full-kv-bootstrap-step-200"
+pipelineTag: "image-text-to-text"
+blurb: "An early DualTowerVLM checkpoint: separate vision and text towers, fused later for multimodal generation. Interesting if you’re experimenting with VLM architecture and representation fusion."
+thumbnail: "/models/thumbnails/2026-02-19--dualtower-full-kv-bootstrap-step-200.png"
+---
+
+DualTowerVLM is a vision-language model layout that explicitly keeps image and text processing separate for most of the forward pass (two “towers”), then combines the representations later for multimodal outputs. The appeal is conceptual clarity: you can reason about where fusion happens, swap tower backbones, and compare “late fusion” behavior against the more common single-stream approaches. It’s also a nice setup for ablations, because you can change one tower without rewriting the whole model.
+
+This particular repo is labeled as a bootstrap checkpoint (step 200), so the value here is less “download it for production” and more “use it as a runnable artifact while you explore the codebase.” Expect quality to be rough, but that’s fine if your goal is architecture learning. If you want a first experiment, try a simple image+prompt generation task and then modify one variable at a time (vision encoder, fusion layer, or prompt format) to see which parts move the needle. The model card includes a minimal Python snippet to load the checkpoint via `from_pretrained`.
+
+[View on Hugging Face](https://huggingface.co/patrickamadeus/dualtower-full-kv-bootstrap-step-200)
+
+Source listing: https://huggingface.co/models?sort=modified

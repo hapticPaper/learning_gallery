@@ -1,0 +1,17 @@
+---
+title: "Charformer Turkish base model (character-level T5)"
+date: "2026-02-19"
+source: "Hugging Face"
+url: "https://huggingface.co/orkungedik/charformer-turkish-base"
+modelId: "orkungedik/charformer-turkish-base"
+blurb: "A Turkish encoder-decoder model that operates at the character level (Charformer-style), skipping tokenizers. Potentially useful for noisy text and spelling variations, but still marked as in-development."
+thumbnail: "/models/thumbnails/2026-02-19--charformer-turkish-base-model.png"
+---
+
+Most Turkish-language models you’ll see are subword-tokenizer-based. This one takes a different route: it’s an encoder-decoder (T5-style) transformer that works directly on characters, with a fixed char→id mapping (`vocab.json`) instead of a learned BPE/unigram tokenizer. That can be a good fit for messy inputs (typos, mixed casing, slang, OCR artifacts) where subword segmentations get brittle. The author also links the architecture back to the Charformer paper, which is essentially about making character-level transformers practical with lightweight downsampling.
+
+The author notes it’s still in active development, with weights updating regularly. So treat it as a “try it and see” research artifact rather than a stable dependency. A reasonable first experiment is to use it for a simple text-to-text task like normalization (cleaning up noisy Turkish text) or short summarization, and then compare outputs against a tokenizer-based baseline on the same prompts to see where character-level modeling helps or hurts. If you decide to push further, keep a small evaluation set of deliberately misspelled or code-mixed inputs — that’s where character-level approaches tend to have the most obvious upside.
+
+[View on Hugging Face](https://huggingface.co/orkungedik/charformer-turkish-base)
+
+Source listing: https://huggingface.co/models?sort=modified
