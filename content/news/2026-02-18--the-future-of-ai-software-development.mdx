@@ -1,0 +1,14 @@
+---
+title: "The Future of AI Software Development"
+date: "2026-02-18"
+source: "Hacker News"
+url: "https://martinfowler.com/fragments/2026-02-18.html"
+blurb: "Martin Fowler’s retreat notes argue AI is changing the delivery loop: tests become the spec, risk tiering becomes core engineering work, and platform teams need fast-but-safe ‘bullet trains.’"
+thumbnail: "/news/thumbnails/2026-02-18--the-future-of-ai-software-development.png"
+---
+
+These notes collect takeaways from a Thoughtworks “Future of Software Development” retreat about how AI changes the shape of day-to-day engineering. A recurring theme is that many workflows, practices, and organizational structures were designed for human-only development — and they’re starting to break in predictable ways when you add coding agents and AI-assisted changes at scale. The replacements are emerging, but they’re still immature.
+
+The most actionable ideas are less about “write code faster” and more about guardrails for delegation: a *supervisory* “middle loop” of reviewing and steering agent output, risk tiering as an explicit discipline (what can ship quickly vs what needs deeper review), and a renewed emphasis on tests. Fowler frames TDD as a strong form of “prompt engineering” because it turns intent into executable constraints that an agent can’t easily hand-wave. If you want a concrete experiment, try treating your test suite and CI as the contract you hand to an agent: give it a small slice, insist on green tests, and iterate in short cycles — then scale that pattern with platform tooling that makes the secure, compliant path the easiest path.
+
+[Read the original](https://martinfowler.com/fragments/2026-02-18.html)
