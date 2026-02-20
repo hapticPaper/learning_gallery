@@ -1,0 +1,18 @@
+---
+title: "Cirilla 0.3B 4E (tiny MoE Witcher lore model)"
+date: "2026-02-19"
+source: "Hugging Face"
+url: "https://huggingface.co/AnthonyPa57/Cirilla-0.3B-4E"
+modelId: "AnthonyPa57/Cirilla-0.3B-4E"
+pipelineTag: "text-generation"
+blurb: "A 229M-parameter sparse MoE model trained on Witcher lore and synthetic instruction data. Not compatible with vanilla Transformers; it runs via the author’s `cirilla` Python package."
+thumbnail: "/models/thumbnails/2026-02-19--cirilla-0-3b-4e.png"
+---
+
+Cirilla is a tiny “domain LLM” built around a sparse Mixture-of-Experts design (4 experts, with only a subset active per token) to keep inference cheap while still giving the model room to specialize. The author positions it as a budget-friendly model that can answer Witcher-universe questions (characters, places, events) after being mid-trained on summarized fandom-wiki pages and then pushed toward chat-style behavior with synthetic multi-turn Q&A.
+
+The main “gotcha” is that this repo doesn’t run through stock `transformers` — it uses a custom architecture and requires the author’s `cirilla` package and tokenizer. If you want to try it, start with a few questions that have crisp factual answers (relationships, timeline events, item stats) and then move to “explain why” prompts to see where it hallucinates. The model card also includes example prompts and a minimal code path for loading from the Hub.
+
+[View on Hugging Face](https://huggingface.co/AnthonyPa57/Cirilla-0.3B-4E)
+
+Source listing: https://huggingface.co/models?sort=modified
