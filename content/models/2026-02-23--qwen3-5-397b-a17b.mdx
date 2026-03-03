@@ -1,0 +1,26 @@
+---
+title: "Qwen3.5 397B-A17B"
+date: "2026-02-23"
+source: "Hugging Face"
+url: "https://huggingface.co/Qwen/Qwen3.5-397B-A17B"
+modelId: "Qwen/Qwen3.5-397B-A17B"
+pipelineTag: "image-text-to-text"
+blurb: "Qwen’s flagship 397B MoE multimodal model (Apache-2.0), shipped in Transformers format and designed to run on common inference stacks like vLLM/SGLang."
+thumbnail: "/models/thumbnails/2026-02-23--qwen3-5-397b-a17b.png"
+---
+
+Qwen3.5-397B-A17B is a very large Mixture-of-Experts (MoE) foundation model release from the Qwen team, published in a standard Hugging Face Transformers format (and explicitly called out as compatible with vLLM, SGLang, and similar runtimes). The “A17B” naming highlights that it’s an MoE-style model where only a subset of parameters are active per token.
+
+The model card emphasizes three broad themes:
+
+- **Vision + language unification:** an early-fusion approach meant to make the same base model strong at both text-only and multimodal tasks.
+- **Efficiency-minded architecture:** sparse MoE plus additional architectural tricks intended to keep throughput reasonable for its size.
+- **Large-scale RL post-training:** reinforcement learning tuned across diverse tasks (reasoning, coding, agents, and visual understanding).
+
+If you’re evaluating it, the fastest “first try” is to benchmark your existing prompt suite (text + a couple real images) and then test tool use / structured outputs, since that’s where big general models often feel most different in practice.
+
+Quick stats from the listing feed: pipeline: image-text-to-text · 1197 likes · 1245204 downloads.
+
+[View on Hugging Face](https://huggingface.co/Qwen/Qwen3.5-397B-A17B)
+
+Source listing: https://huggingface.co/models?sort=modified

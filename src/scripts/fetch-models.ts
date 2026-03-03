@@ -42,9 +42,22 @@ const DEFAULT_RUN_LIMIT = 3;
 const RUN_LIMIT = parsePositiveInt(process.env.MODELS_RUN_LIMIT) ?? DEFAULT_RUN_LIMIT;
 const CANDIDATE_MULTIPLIER = 8;
 
-// Grab enough recently-modified models to find 3 high-signal candidates without having to
-// crawl deeply into the feed.
+type DateRange = {
+  start?: Date;
+  endExclusive?: Date;
+};
+
+// Hugging Face's API caps `limit` to 1000 and returns pagination via a `Link` header cursor.
+// In backfill mode, we page until we cover the requested date range (bounded by MODELS_API_MAX_PAGES).
 const API_FETCH_LIMIT = parsePositiveInt(process.env.MODELS_API_FETCH_LIMIT) ?? 240;
+const RUN_DATE_RANGE = parseDateRange({
+  start: process.env.MODELS_START_DATE,
+  end: process.env.MODELS_END_DATE,
+});
+
+const API_MAX_PAGES =
+  parsePositiveInt(process.env.MODELS_API_MAX_PAGES) ??
+  (RUN_DATE_RANGE.start && RUN_DATE_RANGE.endExclusive ? 100 : 1);
 
 async function main() {
   await fs.mkdir(CONTENT_DIR, { recursive: true });
@@ -133,6 +146,83 @@ function getFamilyKeyFromModelId(modelId: string): string {
   return owner ? `${owner}/${gensyn}` : gensyn;
 }
 
+async function fetchHfModelFeed({
+  pageSize,
+  maxPages,
+  dateRange,
+}: {
+  pageSize: number;
+  maxPages: number;
+  dateRange: DateRange;
+}): Promise<HfModelEntry[]> {
+  const feed: HfModelEntry[] = [];
+  let cursor: string | undefined;
+
+  for (let page = 0; page < maxPages; page += 1) {
+    const { items, nextCursor } = await fetchHfModelPage({ pageSize, cursor });
+    if (!items.length) break;
+    feed.push(...items);
+
+    if (dateRange.start) {
+      const oldest = getOldestLastModified(items);
+      if (oldest && oldest < dateRange.start) break;
+    }
+
+    if (!nextCursor) break;
+    cursor = nextCursor;
+  }
+
+  return feed;
+}
+
+async function fetchHfModelPage({
+  pageSize,
+  cursor,
+}: {
+  pageSize: number;
+  cursor?: string;
+}): Promise<{ items: HfModelEntry[]; nextCursor?: string }> {
+  const url = new URL("https://huggingface.co/api/models");
+  url.searchParams.set("sort", "lastModified");
+  url.searchParams.set("direction", "-1");
+  url.searchParams.set("limit", String(pageSize));
+  if (cursor) url.searchParams.set("cursor", cursor);
+
+  const response = await fetchWithTimeout(url.toString(), { headers: { "user-agent": "learning-gallery-models-bot" } });
+  if (!response.ok) {
+    throw new Error(`Request failed: ${url} (${response.status})`);
+  }
+
+  const items = (await response.json()) as HfModelEntry[];
+  const nextCursor = parseNextCursor(response.headers.get("link"));
+  return { items, nextCursor };
+}
+
+function parseNextCursor(linkHeader: string | null): string | undefined {
+  if (!linkHeader) return undefined;
+  const match = linkHeader.match(/<([^>]+)>;\s*rel="next"/);
+  const url = match?.[1];
+  if (!url) return undefined;
+
+  try {
+    const next = new URL(url);
+    return next.searchParams.get("cursor") ?? undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+function getOldestLastModified(items: HfModelEntry[]): Date | undefined {
+  for (let i = items.length - 1; i >= 0; i -= 1) {
+    const value = items[i]?.lastModified;
+    if (!value) continue;
+    const parsed = new Date(value);
+    if (!Number.isFinite(parsed.getTime())) continue;
+    return parsed;
+  }
+  return undefined;
+}
+
 async function getRunCandidates({
   existingModelIds,
   existingFamilyKeys,
@@ -142,15 +232,15 @@ async function getRunCandidates({
   existingFamilyKeys: Set<string>;
   limit: number;
 }): Promise<ModelDraft[]> {
-  const url = new URL("https://huggingface.co/api/models");
-  url.searchParams.set("sort", "lastModified");
-  url.searchParams.set("direction", "-1");
-  url.searchParams.set("limit", String(API_FETCH_LIMIT));
-
-  const data = await fetchJson<HfModelEntry[]>(url.toString());
+  const data = await fetchHfModelFeed({
+    pageSize: Math.min(API_FETCH_LIMIT, 1000),
+    maxPages: API_MAX_PAGES,
+    dateRange: RUN_DATE_RANGE,
+  });
 
   const candidates = data
     .filter((model) => model.modelId && model.lastModified)
+    .filter((model) => dateRangeIncludesDateOnly(RUN_DATE_RANGE, model.lastModified.slice(0, 10)))
     .filter((model) => !existingModelIds.has(model.modelId))
     .filter((model) => {
       const familyKey = getFamilyKeyFromModelId(model.modelId);
@@ -160,11 +250,13 @@ async function getRunCandidates({
     .filter((model) => isInterestingCandidate(model))
     .sort((a, b) => scoreCandidate(b) - scoreCandidate(a));
 
+  const orderedCandidates = prioritizeCandidatesAcrossRange(candidates, RUN_DATE_RANGE);
+
   const picked: ModelDraft[] = [];
   const familyCounts = new Map<string, number>();
   const targetCount = limit * CANDIDATE_MULTIPLIER;
 
-  for (const candidate of candidates) {
+  for (const candidate of orderedCandidates) {
     if (picked.length >= targetCount) break;
 
     const familyKey = getFamilyKey(candidate);
@@ -189,7 +281,7 @@ async function getRunCandidates({
 
   // If the feed is dominated by one model family, allow duplicates to pad the candidate list.
   if (picked.length < targetCount) {
-    for (const candidate of candidates) {
+    for (const candidate of orderedCandidates) {
       if (picked.length >= targetCount) break;
       if (picked.some((item) => item.modelId === candidate.modelId)) continue;
 
@@ -654,15 +746,6 @@ function guessImageExtension({ contentType, url }: { contentType: string; url: s
   return ".jpg";
 }
 
-async function fetchJson<T>(url: string): Promise<T> {
-  const response = await fetchWithTimeout(url, { headers: { "user-agent": "learning-gallery-models-bot" } });
-  if (!response.ok) {
-    throw new Error(`Request failed: ${url} (${response.status})`);
-  }
-
-  return (await response.json()) as T;
-}
-
 async function fetchText(url: string, opts?: { accept?: string }): Promise<string> {
   const response = await fetchWithTimeout(url, {
     headers: {
@@ -730,6 +813,98 @@ function decodeHtmlEntities(value: string): string {
     .replace(/&#39;/g, "'")
     .replace(/&#x27;/g, "'")
     .replace(/&#x2F;/g, "/");
+}
+
+function dateRangeIncludesDateOnly(range: DateRange, dateOnly: string): boolean {
+  if (!range.start || !range.endExclusive) return true;
+  const parsed = parseDateOnly(dateOnly);
+  if (!parsed) return false;
+  return parsed >= range.start && parsed < range.endExclusive;
+}
+
+function prioritizeCandidatesAcrossRange(candidates: HfModelEntry[], dateRange: DateRange): HfModelEntry[] {
+  if (!dateRange.start || !dateRange.endExclusive) return candidates;
+
+  const buckets = new Map<string, HfModelEntry[]>();
+  for (const candidate of candidates) {
+    const date = candidate.lastModified.slice(0, 10);
+    if (!dateRangeIncludesDateOnly(dateRange, date)) continue;
+    const existing = buckets.get(date);
+    if (existing) {
+      existing.push(candidate);
+    } else {
+      buckets.set(date, [candidate]);
+    }
+  }
+
+  const datesAsc = Array.from(buckets.keys()).sort((a, b) => a.localeCompare(b));
+  const dateOrder = buildAlternatingDateOrder(datesAsc);
+  const prioritized: HfModelEntry[] = [];
+  let progressed = true;
+
+  while (progressed) {
+    progressed = false;
+    for (const date of dateOrder) {
+      const next = buckets.get(date)?.shift();
+      if (!next) continue;
+      prioritized.push(next);
+      progressed = true;
+    }
+  }
+
+  return prioritized;
+}
+
+function buildAlternatingDateOrder(datesAsc: string[]): string[] {
+  const ordered: string[] = [];
+  let left = 0;
+  let right = datesAsc.length - 1;
+
+  while (left <= right) {
+    const start = datesAsc[left];
+    if (start) ordered.push(start);
+    if (left === right) break;
+    const end = datesAsc[right];
+    if (end) ordered.push(end);
+    left += 1;
+    right -= 1;
+  }
+
+  return ordered;
+}
+
+// Treats START/END as an inclusive UTC date range: [start, end].
+// Internally this is represented as [start, endExclusive) where endExclusive is end + 1 day.
+function parseDateRange({ start, end }: { start?: string; end?: string }): DateRange {
+  const hasStart = Boolean(start);
+  const hasEnd = Boolean(end);
+  if (!hasStart && !hasEnd) return {};
+
+  if (!hasStart || !hasEnd) {
+    throw new Error(
+      "MODELS_START_DATE and MODELS_END_DATE must both be set as YYYY-MM-DD when using date range filtering.",
+    );
+  }
+
+  const parsedStart = parseDateOnly(start);
+  const parsedEnd = parseDateOnly(end);
+  if (!parsedStart || !parsedEnd || parsedStart > parsedEnd) {
+    throw new Error("Invalid models date range: ensure dates are valid YYYY-MM-DD and start <= end.");
+  }
+
+  return {
+    start: parsedStart,
+    endExclusive: new Date(parsedEnd.getTime() + 24 * 60 * 60 * 1000),
+  };
+}
+
+function parseDateOnly(value: string | undefined): Date | undefined {
+  if (!value) return undefined;
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return undefined;
+
+  const parsed = new Date(`${value}T00:00:00.000Z`);
+  if (!Number.isFinite(parsed.getTime())) return undefined;
+  return parsed;
 }
 
 function parsePositiveInt(value: string | undefined): number | undefined {

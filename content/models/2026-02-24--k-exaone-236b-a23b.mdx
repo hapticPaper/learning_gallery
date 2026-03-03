@@ -1,0 +1,25 @@
+---
+title: "K-EXAONE-236B-A23B"
+date: "2026-02-24"
+source: "Hugging Face"
+url: "https://huggingface.co/LGAI-EXAONE/K-EXAONE-236B-A23B"
+modelId: "LGAI-EXAONE/K-EXAONE-236B-A23B"
+pipelineTag: "text-generation"
+blurb: "LG AI Research’s 236B MoE multilingual LLM (23B active), with a 256K context window and multi-token prediction for faster decoding."
+thumbnail: "/models/thumbnails/2026-02-24--k-exaone-236b-a23b.png"
+---
+
+K-EXAONE-236B-A23B is LG AI Research’s large Mixture-of-Experts (MoE) multilingual model: 236B total parameters with 23B active per token at inference. The model card positions it as a strong “generalist” with emphasis on reasoning/agentic tasks and long-context document workflows.
+
+Two details that make it worth a look if you care about deployment (not just benchmarks):
+
+- **256K context support:** the card claims native long-context handling via a hybrid-attention setup plus a sliding window to keep memory under control.
+- **Multi-token prediction (MTP):** used for a self-speculative decoding approach that aims to increase throughput without changing your application-level prompting.
+
+If you’re evaluating it, the most revealing tests tend to be long-context tasks: multi-document QA with “needle in a haystack” prompts, or agentic-style planning where the model has to keep constraints straight over a long transcript.
+
+Quick stats from the listing feed: pipeline: text-generation · 549 likes · 23251 downloads.
+
+[View on Hugging Face](https://huggingface.co/LGAI-EXAONE/K-EXAONE-236B-A23B)
+
+Source listing: https://huggingface.co/models?sort=modified

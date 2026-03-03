@@ -1,0 +1,25 @@
+---
+title: "MonkeyOCR (document parsing)"
+date: "2026-03-03"
+source: "Hugging Face"
+url: "https://huggingface.co/echo840/MonkeyOCR"
+modelId: "echo840/MonkeyOCR"
+pipelineTag: "image-text-to-text"
+blurb: "Document OCR/parsing model built around a Structure–Recognition–Relation (SRR) paradigm, aiming to replace brittle multi-tool pipelines with a single model."
+thumbnail: "/models/thumbnails/2026-03-03--monkeyocr-document-parsing.png"
+---
+
+MonkeyOCR is an OCR/document-parsing model that’s trying to solve a common “real world OCR” problem: you don’t just want text, you want *structure* (headers, tables, reading order, relationships) in a form that downstream systems can use.
+
+The model card frames its approach as a Structure–Recognition–Relation (SRR) triplet paradigm. The practical takeaway is: instead of stitching together a pipeline of detectors, layout models, OCR engines, and post-processing heuristics, it aims to do more of the work in one place while still being smaller/faster than a giant general VLM for full-page processing.
+
+If you want to try it quickly, pick one messy PDF page (tables + mixed fonts + a few graphics) and see whether you can get:
+
+- a structured JSON output (sections, table rows/cols), and
+- stable reading order across re-runs.
+
+The simplest comparison is against your current OCR stack: if you already have a good extractor, test whether MonkeyOCR reduces post-processing code (regex cleanups, table heuristics) while keeping error rates acceptable.
+
+Quick stats from the listing feed: pipeline: image-text-to-text · 514 likes · 307 downloads.
+
+[View on Hugging Face](https://huggingface.co/echo840/MonkeyOCR)

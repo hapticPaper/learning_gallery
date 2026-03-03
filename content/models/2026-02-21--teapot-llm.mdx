@@ -1,0 +1,22 @@
+---
+title: "Teapot LLM (on-device RAG + extraction)"
+date: "2026-02-21"
+source: "Hugging Face"
+url: "https://huggingface.co/teapotai/teapotllm"
+modelId: "teapotai/teapotllm"
+pipelineTag: "text-generation"
+blurb: "An ~0.8B local model tuned for document-grounded Q&A: RAG-style answers, JSON extraction, and \"use the provided context\" behavior to reduce hallucinations."
+thumbnail: "/models/thumbnails/2026-02-21--teapot-llm.png"
+---
+
+TeapotLLM is positioned as a “small-but-useful” model for running locally: roughly 800M parameters, tuned on synthetic QA/chat data, and optimized for constrained devices (CPU-first and even mobile-style deployments). The key behavioral constraint is that it’s trained to answer *from provided context* rather than freelancing, which is a good fit for RAG-style workflows.
+
+In practice, the most interesting use cases are the boring-but-valuable ones: take a short document chunk (policy, contract excerpt, product FAQ), ask targeted questions, and get an answer plus a structured extraction (JSON fields, normalized values, citations back to the source text). If you’re evaluating it, start by testing failure modes: missing context, contradictory passages, and adversarial instructions inside the retrieved text.
+
+Because it’s a small model, you’ll usually get better results by keeping context windows tight (a few paragraphs, not a whole manual) and by being explicit about the output schema. A good sanity check is to ask it to quote the exact sentence it used for each extracted field.
+
+Quick stats from the listing feed: pipeline: text-generation · 182 likes · 216 downloads.
+
+[View on Hugging Face](https://huggingface.co/teapotai/teapotllm)
+
+Source listing: https://huggingface.co/models?sort=modified

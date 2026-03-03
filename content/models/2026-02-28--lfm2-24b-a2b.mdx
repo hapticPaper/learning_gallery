@@ -1,0 +1,27 @@
+---
+title: "LFM2-24B-A2B"
+date: "2026-02-28"
+source: "Hugging Face"
+url: "https://huggingface.co/LiquidAI/LFM2-24B-A2B"
+modelId: "LiquidAI/LFM2-24B-A2B"
+pipelineTag: "text-generation"
+blurb: "Liquid AI’s edge-oriented 24B MoE model with ~2B active parameters per token, aiming for strong quality while fitting into ~32GB RAM deployments."
+thumbnail: "/models/thumbnails/2026-02-28--lfm2-24b-a2b.png"
+---
+
+LFM2-24B-A2B is Liquid AI’s largest LFM2 model release, framed explicitly as an “on-device” / edge deployment model rather than a cloud-only foundation model. Architecturally it’s described as an MoE-style setup where only ~2B parameters are active per token, which is the key trick for keeping inference costs reasonable at a 24B total size.
+
+The model card calls out two practical, deployment-oriented claims:
+
+- **Memory footprint:** intended to fit in roughly 32GB RAM-class machines.
+- **Runtime support:** “day one” compatibility targets common stacks like `llama.cpp`, vLLM, and SGLang.
+
+One caveat: Liquid AI models have their own license terms (not a default permissive open-weight license), so it’s worth checking the usage constraints before you build something customer-facing on top of it.
+
+If you’re deciding whether it’s worth trying, treat it like a “local assistant baseline”: run your normal instruction-following prompts plus a handful of longer-context tasks (multi-doc summarization, structured extraction) and see whether the quality/latency tradeoff beats your current smaller local model.
+
+Quick stats from the listing feed: pipeline: text-generation · 246 likes · 11897 downloads.
+
+[View on Hugging Face](https://huggingface.co/LiquidAI/LFM2-24B-A2B)
+
+Source listing: https://huggingface.co/models?sort=modified
