@@ -27,7 +27,18 @@ const CONTENT_DIR = path.join(process.cwd(), "content", "news");
 const THUMBNAILS_DIR = path.join(process.cwd(), "public", "news", "thumbnails");
 
 const YOUTUBE_CHANNEL_ID = "UCIgnGlGkVRhd4qNFcEwLL4A";
-const RUN_LIMIT = 3;
+const DEFAULT_RUN_LIMIT = 3;
+
+type DateRange = {
+  start?: Date;
+  endExclusive?: Date;
+};
+
+const RUN_LIMIT = parsePositiveInt(process.env.NEWS_RUN_LIMIT) ?? DEFAULT_RUN_LIMIT;
+const RUN_DATE_RANGE = parseDateRange({
+  start: process.env.NEWS_START_DATE,
+  end: process.env.NEWS_END_DATE,
+});
 
 // Comma-separated, case-insensitive substrings matched against Google News publisher names.
 // Use `NEWS_DEBUG_FILTERS=1` to log details when items are filtered.
@@ -112,16 +123,30 @@ async function getRunCandidates(): Promise<StoryDraft[]> {
     getGoogleNewsCandidates(),
   ]);
 
-  return interleaveCandidates([hn, yt, google]);
+  const interleaved = interleaveCandidates([hn, yt, google]);
+  return prioritizeCandidatesAcrossRange(interleaved, RUN_DATE_RANGE);
 }
 
 async function getHackerNewsCandidates(): Promise<StoryDraft[]> {
+  const hasRange = Boolean(RUN_DATE_RANGE.start && RUN_DATE_RANGE.endExclusive);
   const oneDayAgo = Math.floor(Date.now() / 1000 - 60 * 60 * 24);
-  const url = new URL("https://hn.algolia.com/api/v1/search");
+  const url = new URL(
+    hasRange ? "https://hn.algolia.com/api/v1/search_by_date" : "https://hn.algolia.com/api/v1/search",
+  );
   url.searchParams.set("query", "AI");
   url.searchParams.set("tags", "story");
-  url.searchParams.set("hitsPerPage", "25");
-  url.searchParams.set("numericFilters", `created_at_i>${oneDayAgo}`);
+  url.searchParams.set(
+    "hitsPerPage",
+    String(parsePositiveInt(process.env.NEWS_HN_HITS_PER_PAGE) ?? (hasRange ? 100 : 25)),
+  );
+
+  if (hasRange) {
+    const start = Math.floor((RUN_DATE_RANGE.start?.getTime() ?? 0) / 1000);
+    const end = Math.floor((RUN_DATE_RANGE.endExclusive?.getTime() ?? 0) / 1000);
+    url.searchParams.set("numericFilters", `created_at_i>=${start},created_at_i<${end}`);
+  } else {
+    url.searchParams.set("numericFilters", `created_at_i>${oneDayAgo}`);
+  }
   url.searchParams.set("restrictSearchableAttributes", "title");
 
   const data = await fetchJson<{ hits: Array<{ title: string; url: string | null; created_at_i: number }> }>(
@@ -155,7 +180,11 @@ async function getYouTubeCandidates(): Promise<StoryDraft[]> {
   const picked: StoryDraft[] = [];
   const seen = new Set<string>();
 
-  for (const entry of entries.slice(0, 10)) {
+  const maxEntries =
+    parsePositiveInt(process.env.NEWS_YOUTUBE_MAX_ENTRIES) ??
+    (RUN_DATE_RANGE.start && RUN_DATE_RANGE.endExclusive ? 30 : 10);
+
+  for (const entry of entries.slice(0, maxEntries)) {
     const title = getXmlTag(entry, "title");
     const videoId = getXmlTag(entry, "yt:videoId");
     const published = getXmlTag(entry, "published");
@@ -166,6 +195,7 @@ async function getYouTubeCandidates(): Promise<StoryDraft[]> {
     seen.add(videoId);
 
     const publishedDate = published.slice(0, 10);
+    if (!dateRangeIncludesDateOnly(RUN_DATE_RANGE, publishedDate)) continue;
 
     picked.push({
       title,
@@ -181,15 +211,27 @@ async function getYouTubeCandidates(): Promise<StoryDraft[]> {
 }
 
 async function getGoogleNewsCandidates(): Promise<StoryDraft[]> {
-  const rssUrl =
-    "https://news.google.com/rss/search?q=artificial%20intelligence%20when:1d&hl=en-US&gl=US&ceid=US:en";
+  const maxRangeDays = parsePositiveInt(process.env.NEWS_GOOGLE_MAX_RANGE_DAYS) ?? 30;
+  const rangeDays =
+    RUN_DATE_RANGE.start && RUN_DATE_RANGE.endExclusive
+      ? Math.ceil(
+          (RUN_DATE_RANGE.endExclusive.getTime() - RUN_DATE_RANGE.start.getTime()) / (24 * 60 * 60 * 1000),
+        )
+      : 1;
+  const whenDays = Math.max(1, Math.min(rangeDays, maxRangeDays));
+
+  const rssUrl = `https://news.google.com/rss/search?q=artificial%20intelligence%20when:${whenDays}d&hl=en-US&gl=US&ceid=US:en`;
   const xml = await fetchText(rssUrl);
 
   const items = xml.match(/<item>[\s\S]*?<\/item>/g) ?? [];
   const picked: StoryDraft[] = [];
   const seen = new Set<string>();
 
-  for (const item of items.slice(0, 25)) {
+  const maxItems =
+    parsePositiveInt(process.env.NEWS_GOOGLE_MAX_ITEMS) ??
+    (RUN_DATE_RANGE.start && RUN_DATE_RANGE.endExclusive ? 75 : 25);
+
+  for (const item of items.slice(0, maxItems)) {
     const rawTitle = decodeXmlEntities(stripCdata(getXmlTag(item, "title") ?? ""));
     const link = stripCdata(getXmlTag(item, "link") ?? "");
     const pubDateRaw = stripCdata(getXmlTag(item, "pubDate") ?? "");
@@ -228,8 +270,10 @@ async function getGoogleNewsCandidates(): Promise<StoryDraft[]> {
     if (seen.has(link)) continue;
     seen.add(link);
 
-    const pubDate = pubDateRaw ? new Date(pubDateRaw) : new Date();
+    const pubDate = pubDateRaw ? new Date(pubDateRaw) : null;
+    if (!pubDate || !Number.isFinite(pubDate.getTime())) continue;
     const date = pubDate.toISOString().slice(0, 10);
+    if (!dateRangeIncludesDateOnly(RUN_DATE_RANGE, date)) continue;
 
     const source = publisherName ? `${publisherName} (via Google News)` : "Google News";
 
@@ -262,6 +306,56 @@ function interleaveCandidates(groups: StoryDraft[][]): StoryDraft[] {
   }
 
   return interleaved;
+}
+
+function prioritizeCandidatesAcrossRange(candidates: StoryDraft[], dateRange: DateRange): StoryDraft[] {
+  if (!dateRange.start || !dateRange.endExclusive) return candidates;
+
+  const buckets = new Map<string, StoryDraft[]>();
+  for (const candidate of candidates) {
+    if (!dateRangeIncludesDateOnly(dateRange, candidate.date)) continue;
+    const existing = buckets.get(candidate.date);
+    if (existing) {
+      existing.push(candidate);
+    } else {
+      buckets.set(candidate.date, [candidate]);
+    }
+  }
+
+  const datesAsc = Array.from(buckets.keys()).sort((a, b) => a.localeCompare(b));
+  const dateOrder = buildAlternatingDateOrder(datesAsc);
+  const prioritized: StoryDraft[] = [];
+  let progressed = true;
+
+  while (progressed) {
+    progressed = false;
+    for (const date of dateOrder) {
+      const next = buckets.get(date)?.shift();
+      if (!next) continue;
+      prioritized.push(next);
+      progressed = true;
+    }
+  }
+
+  return prioritized;
+}
+
+function buildAlternatingDateOrder(datesAsc: string[]): string[] {
+  const ordered: string[] = [];
+  let left = 0;
+  let right = datesAsc.length - 1;
+
+  while (left <= right) {
+    const start = datesAsc[left];
+    if (start) ordered.push(start);
+    if (left === right) break;
+    const end = datesAsc[right];
+    if (end) ordered.push(end);
+    left += 1;
+    right -= 1;
+  }
+
+  return ordered;
 }
 
 async function resolveStory(
@@ -457,6 +551,53 @@ function normalizeSummaryBody(value: string): string {
 
 function normalizeText(value: string): string {
   return value.replace(/\s+/g, " ").trim();
+}
+
+function dateRangeIncludesDateOnly(range: DateRange, dateOnly: string): boolean {
+  if (!range.start || !range.endExclusive) return true;
+  const parsed = parseDateOnly(dateOnly);
+  if (!parsed) return false;
+  return parsed >= range.start && parsed < range.endExclusive;
+}
+
+function parseDateRange({ start, end }: { start?: string; end?: string }): DateRange {
+  const hasStart = Boolean(start);
+  const hasEnd = Boolean(end);
+  if (!hasStart && !hasEnd) return {};
+
+  if (!hasStart || !hasEnd) {
+    throw new Error(
+      "NEWS_START_DATE and NEWS_END_DATE must both be set as YYYY-MM-DD when using date range filtering.",
+    );
+  }
+
+  const parsedStart = parseDateOnly(start);
+  const parsedEnd = parseDateOnly(end);
+  if (!parsedStart || !parsedEnd || parsedStart > parsedEnd) {
+    throw new Error("Invalid news date range: ensure dates are valid YYYY-MM-DD and start <= end.");
+  }
+
+  return {
+    start: parsedStart,
+    endExclusive: new Date(parsedEnd.getTime() + 24 * 60 * 60 * 1000),
+  };
+}
+
+function parseDateOnly(value: string | undefined): Date | undefined {
+  if (!value) return undefined;
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return undefined;
+
+  const parsed = new Date(`${value}T00:00:00.000Z`);
+  if (!Number.isFinite(parsed.getTime())) return undefined;
+  return parsed;
+}
+
+function parsePositiveInt(value: string | undefined): number | undefined {
+  if (!value) return undefined;
+  const parsed = Number.parseInt(value, 10);
+  if (!Number.isFinite(parsed)) return undefined;
+  if (parsed <= 0) return undefined;
+  return parsed;
 }
 
 async function getPageDescription(url: string): Promise<string | undefined> {
