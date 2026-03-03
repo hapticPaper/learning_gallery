@@ -64,6 +64,16 @@ if (RUN_DATE_RANGE.start && RUN_DATE_RANGE.endExclusive && !process.env.MODELS_A
   );
 }
 
+if (RUN_DATE_RANGE.start && RUN_DATE_RANGE.endExclusive) {
+  const pageSize = Math.min(API_FETCH_LIMIT, 1000);
+  const theoreticalMax = API_MAX_PAGES * pageSize;
+  if (theoreticalMax < 2000) {
+    console.warn(
+      `MODELS_API_MAX_PAGES * MODELS_API_FETCH_LIMIT = ${theoreticalMax}, which is probably too small for a backfill; increase MODELS_API_MAX_PAGES to reduce the risk of missing days.`,
+    );
+  }
+}
+
 async function main() {
   await fs.mkdir(CONTENT_DIR, { recursive: true });
   await fs.mkdir(THUMBNAILS_DIR, { recursive: true });
@@ -163,6 +173,7 @@ async function fetchHfModelFeed({
   const feed: HfModelEntry[] = [];
   let cursor: string | undefined;
   let previousOldest: Date | undefined;
+  let nonMonotonic = false;
 
   for (let page = 0; page < maxPages; page += 1) {
     const { items, nextCursor } = await fetchHfModelPage({ pageSize, cursor });
@@ -172,12 +183,13 @@ async function fetchHfModelFeed({
     if (dateRange.start) {
       const oldest = getOldestLastModified(items);
       if (oldest && previousOldest && oldest > previousOldest) {
+        nonMonotonic = true;
         console.warn(
           `Non-monotonic Hugging Face feed ordering detected (oldest=${oldest.toISOString()} prev=${previousOldest.toISOString()}).`,
         );
       }
       previousOldest = oldest;
-      if (oldest && oldest < dateRange.start) break;
+      if (!nonMonotonic && oldest && oldest < dateRange.start) break;
     }
 
     if (!nextCursor) break;
@@ -205,7 +217,13 @@ async function fetchHfModelPage({
     throw new Error(`Request failed: ${url} (${response.status})`);
   }
 
-  const items = (await response.json()) as HfModelEntry[];
+  let items: HfModelEntry[];
+  try {
+    const raw = await response.text();
+    items = JSON.parse(raw) as HfModelEntry[];
+  } catch (err) {
+    throw new Error(`Failed to parse Hugging Face response as JSON for ${url}: ${String(err)}`);
+  }
   const nextCursor = parseNextCursor(response.headers.get("link"));
   return { items, nextCursor };
 }
@@ -837,6 +855,10 @@ function dateRangeIncludesDateOnly(range: DateRange, dateOnly: string): boolean 
 function prioritizeCandidatesAcrossRange(candidates: HfModelEntry[], dateRange: DateRange): HfModelEntry[] {
   if (!dateRange.start || !dateRange.endExclusive) return candidates;
 
+  // `candidates` must be pre-sorted by descending desirability (scoreCandidate).
+  // This function preserves ordering *within* each date bucket while interleaving days so that when we
+  // only consume a prefix, we still cover both early and late days in the backfill range.
+
   const buckets = new Map<string, HfModelEntry[]>();
   for (const candidate of candidates) {
     const date = candidate.lastModified.slice(0, 10);
@@ -867,6 +889,8 @@ function prioritizeCandidatesAcrossRange(candidates: HfModelEntry[], dateRange: 
 }
 
 function buildAlternatingDateOrder(datesAsc: string[]): string[] {
+  // Given dates sorted ascending, return an order that alternates from the start and end
+  // of the range: [d1, dN, d2, dN-1, ...].
   const ordered: string[] = [];
   let left = 0;
   let right = datesAsc.length - 1;
@@ -892,17 +916,15 @@ function parseDateRange({ start, end }: { start?: string; end?: string }): DateR
   if (!hasStart && !hasEnd) return {};
 
   if (!hasStart || !hasEnd) {
-    console.warn(
-      "MODELS_START_DATE and MODELS_END_DATE must both be set as YYYY-MM-DD when using date range filtering; ignoring date range.",
+    throw new Error(
+      "MODELS_START_DATE and MODELS_END_DATE must both be set as YYYY-MM-DD when using date range filtering.",
     );
-    return {};
   }
 
   const parsedStart = parseDateOnly(start);
   const parsedEnd = parseDateOnly(end);
   if (!parsedStart || !parsedEnd || parsedStart > parsedEnd) {
-    console.warn("Invalid models date range; ignoring date range.");
-    return {};
+    throw new Error("Invalid models date range: ensure dates are valid YYYY-MM-DD and start <= end.");
   }
 
   return {

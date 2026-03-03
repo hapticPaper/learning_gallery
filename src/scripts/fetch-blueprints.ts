@@ -129,6 +129,18 @@ async function getRunCandidates({
 async function fetchBlueprintFeed(): Promise<NvidiaBlueprintListingEntry[]> {
   const html = await fetchText(SOURCE_URL);
 
+  const allowedArtifactTypes = new Set(["BLUEPRINT", "ENDPOINT"]);
+  const observedArtifactTypes = new Set<string>();
+  for (const match of html.matchAll(/\\"artifactType\\":\\"([A-Z_]+)\\"/g)) {
+    const value = match[1];
+    if (value) observedArtifactTypes.add(value);
+  }
+  for (const artifactType of observedArtifactTypes) {
+    if (!allowedArtifactTypes.has(artifactType)) {
+      console.warn(`Unexpected NVIDIA artifactType in listing payload: ${artifactType}`);
+    }
+  }
+
   const entries = new Map<string, NvidiaBlueprintListingEntry>();
   // NVIDIA's listing payload currently labels these items as `BLUEPRINT` artifacts.
   // Some older payloads used `ENDPOINT`; we accept both to reduce the chance of silently missing items.
