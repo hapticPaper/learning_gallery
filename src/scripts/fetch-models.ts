@@ -58,9 +58,9 @@ const RUN_DATE_RANGE = parseDateRange({
 const API_MAX_PAGES =
   parsePositiveInt(process.env.MODELS_API_MAX_PAGES) ?? 1;
 
-if (RUN_DATE_RANGE.start && RUN_DATE_RANGE.endExclusive && !process.env.MODELS_API_MAX_PAGES) {
-  console.warn(
-    "MODELS_START_DATE/MODELS_END_DATE set without MODELS_API_MAX_PAGES; only the first page of the feed will be scanned.",
+if (RUN_DATE_RANGE.start && RUN_DATE_RANGE.endExclusive && !parsePositiveInt(process.env.MODELS_API_MAX_PAGES)) {
+  throw new Error(
+    "MODELS_START_DATE/MODELS_END_DATE require MODELS_API_MAX_PAGES to be set (positive int) to bound feed paging.",
   );
 }
 
@@ -172,25 +172,11 @@ async function fetchHfModelFeed({
 }): Promise<HfModelEntry[]> {
   const feed: HfModelEntry[] = [];
   let cursor: string | undefined;
-  let previousOldest: Date | undefined;
-  let nonMonotonic = false;
 
   for (let page = 0; page < maxPages; page += 1) {
     const { items, nextCursor } = await fetchHfModelPage({ pageSize, cursor });
     if (!items.length) break;
     feed.push(...items);
-
-    if (dateRange.start) {
-      const oldest = getOldestLastModified(items);
-      if (oldest && previousOldest && oldest > previousOldest) {
-        nonMonotonic = true;
-        console.warn(
-          `Non-monotonic Hugging Face feed ordering detected (oldest=${oldest.toISOString()} prev=${previousOldest.toISOString()}).`,
-        );
-      }
-      previousOldest = oldest;
-      if (!nonMonotonic && oldest && oldest < dateRange.start) break;
-    }
 
     if (!nextCursor) break;
     cursor = nextCursor;
@@ -240,17 +226,6 @@ function parseNextCursor(linkHeader: string | null): string | undefined {
   } catch {
     return undefined;
   }
-}
-
-function getOldestLastModified(items: HfModelEntry[]): Date | undefined {
-  for (let i = items.length - 1; i >= 0; i -= 1) {
-    const value = items[i]?.lastModified;
-    if (!value) continue;
-    const parsed = new Date(value);
-    if (!Number.isFinite(parsed.getTime())) continue;
-    return parsed;
-  }
-  return undefined;
 }
 
 async function getRunCandidates({
