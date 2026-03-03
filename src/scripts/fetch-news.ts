@@ -171,7 +171,6 @@ async function getHackerNewsCandidates(): Promise<StoryDraft[]> {
       allHits.push(hit);
     }
 
-    if (!hasRange) break;
   }
 
   const picked: StoryDraft[] = [];
