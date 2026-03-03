@@ -40,6 +40,10 @@ const RUN_DATE_RANGE = parseDateRange({
   end: process.env.NEWS_END_DATE,
 });
 
+// Note: NEWS_RUN_LIMIT remains a global cap even when a date range is set.
+// In range mode, candidates are reordered to better spread across dates, but this does not guarantee
+// at least one story per day when the range spans more days than NEWS_RUN_LIMIT.
+
 // Comma-separated, case-insensitive substrings matched against Google News publisher names.
 // Use `NEWS_DEBUG_FILTERS=1` to log details when items are filtered.
 const BLOCKED_GOOGLE_NEWS_PUBLISHER_SUBSTRINGS = (process.env.NEWS_BLOCKED_PUBLISHERS ?? "motley fool")
@@ -130,36 +134,50 @@ async function getRunCandidates(): Promise<StoryDraft[]> {
 async function getHackerNewsCandidates(): Promise<StoryDraft[]> {
   const hasRange = Boolean(RUN_DATE_RANGE.start && RUN_DATE_RANGE.endExclusive);
   const oneDayAgo = Math.floor(Date.now() / 1000 - 60 * 60 * 24);
-  const url = new URL(
-    hasRange ? "https://hn.algolia.com/api/v1/search_by_date" : "https://hn.algolia.com/api/v1/search",
-  );
-  url.searchParams.set("query", "AI");
-  url.searchParams.set("tags", "story");
-  url.searchParams.set(
-    "hitsPerPage",
-    String(parsePositiveInt(process.env.NEWS_HN_HITS_PER_PAGE) ?? (hasRange ? 100 : 25)),
-  );
+  const maxPages = parsePositiveInt(process.env.NEWS_HN_MAX_PAGES) ?? (hasRange ? 5 : 1);
+  const hitsPerPage = parsePositiveInt(process.env.NEWS_HN_HITS_PER_PAGE) ?? (hasRange ? 100 : 25);
 
-  if (hasRange) {
-    const start = Math.floor((RUN_DATE_RANGE.start?.getTime() ?? 0) / 1000);
-    const end = Math.floor((RUN_DATE_RANGE.endExclusive?.getTime() ?? 0) / 1000);
-    url.searchParams.set("numericFilters", `created_at_i>=${start},created_at_i<${end}`);
-  } else {
-    url.searchParams.set("numericFilters", `created_at_i>${oneDayAgo}`);
-  }
-  url.searchParams.set("restrictSearchableAttributes", "title");
-
-  const data = await fetchJson<{ hits: Array<{ title: string; url: string | null; created_at_i: number }> }>(
-    url.toString(),
-  );
-
+  const allHits: Array<{ title: string; url: string | null; created_at_i: number }> = [];
   const seen = new Set<string>();
+
+  for (let page = 0; page < maxPages; page += 1) {
+    const url = new URL(
+      hasRange ? "https://hn.algolia.com/api/v1/search_by_date" : "https://hn.algolia.com/api/v1/search",
+    );
+    url.searchParams.set("query", "AI");
+    url.searchParams.set("tags", "story");
+    url.searchParams.set("hitsPerPage", String(hitsPerPage));
+    url.searchParams.set("page", String(page));
+
+    if (hasRange) {
+      const start = Math.floor((RUN_DATE_RANGE.start?.getTime() ?? 0) / 1000);
+      const end = Math.floor((RUN_DATE_RANGE.endExclusive?.getTime() ?? 0) / 1000);
+      url.searchParams.set("numericFilters", `created_at_i>=${start},created_at_i<${end}`);
+    } else {
+      url.searchParams.set("numericFilters", `created_at_i>${oneDayAgo}`);
+    }
+    url.searchParams.set("restrictSearchableAttributes", "title");
+
+    const data = await fetchJson<{ hits: Array<{ title: string; url: string | null; created_at_i: number }> }>(
+      url.toString(),
+    );
+    if (!data.hits.length) break;
+
+    for (const hit of data.hits) {
+      if (!hit.url || !hit.title) continue;
+      const urlKey = normalizeUrlForDedup(hit.url);
+      if (seen.has(urlKey)) continue;
+      seen.add(urlKey);
+      allHits.push(hit);
+    }
+
+    if (!hasRange) break;
+  }
+
   const picked: StoryDraft[] = [];
 
-  for (const hit of data.hits) {
+  for (const hit of allHits) {
     if (!hit.url || !hit.title) continue;
-    if (seen.has(hit.url)) continue;
-    seen.add(hit.url);
 
     picked.push({
       title: hit.title,
@@ -218,6 +236,14 @@ async function getGoogleNewsCandidates(): Promise<StoryDraft[]> {
           (RUN_DATE_RANGE.endExclusive.getTime() - RUN_DATE_RANGE.start.getTime()) / (24 * 60 * 60 * 1000),
         )
       : 1;
+
+  if (RUN_DATE_RANGE.start && RUN_DATE_RANGE.endExclusive && rangeDays > maxRangeDays) {
+    throw new Error(
+      `Requested date range (${rangeDays} day(s)) exceeds NEWS_GOOGLE_MAX_RANGE_DAYS=${maxRangeDays}. ` +
+        "Either shrink the date range or increase NEWS_GOOGLE_MAX_RANGE_DAYS.",
+    );
+  }
+
   const whenDays = Math.max(1, Math.min(rangeDays, maxRangeDays));
 
   const rssUrl = `https://news.google.com/rss/search?q=artificial%20intelligence%20when:${whenDays}d&hl=en-US&gl=US&ceid=US:en`;
@@ -560,6 +586,8 @@ function dateRangeIncludesDateOnly(range: DateRange, dateOnly: string): boolean 
   return parsed >= range.start && parsed < range.endExclusive;
 }
 
+// Treats START/END as an inclusive UTC date range: [start, end].
+// Internally this is represented as [start, endExclusive) where endExclusive is end + 1 day.
 function parseDateRange({ start, end }: { start?: string; end?: string }): DateRange {
   const hasStart = Boolean(start);
   const hasEnd = Boolean(end);
