@@ -130,8 +130,10 @@ async function fetchBlueprintFeed(): Promise<NvidiaBlueprintListingEntry[]> {
   const html = await fetchText(SOURCE_URL);
 
   const entries = new Map<string, NvidiaBlueprintListingEntry>();
+  // NVIDIA's listing payload currently labels these items as `BLUEPRINT` artifacts.
+  // Some older payloads used `ENDPOINT`; we accept both to reduce the chance of silently missing items.
   const regex =
-    /\\"artifactType\\":\\"BLUEPRINT\\",\\"name\\":\\"([^\\"]+)\\",\\"displayName\\":\\"([^\\"]+)\\"[^]{0,20000}?\\"publisher\\":\\"([^\\"]+)\\",\\"shortDescription\\":\\"([^]{0,5000}?)\\",\\"logo\\":\\"([^\\"]+)\\"[^]{0,20000}?\\"updatedDate\\":\\"([^\\"]+)\\"/g;
+    /\\"artifactType\\":\\"(?:BLUEPRINT|ENDPOINT)\\",\\"name\\":\\"([^\\"]+)\\",\\"displayName\\":\\"([^\\"]+)\\"[^]{0,20000}?\\"publisher\\":\\"([^\\"]+)\\",\\"shortDescription\\":\\"([^]{0,5000}?)\\",\\"logo\\":\\"([^\\"]+)\\"[^]{0,20000}?\\"updatedDate\\":\\"([^\\"]+)\\"/g;
 
   for (const match of html.matchAll(regex)) {
     const blueprintId = match[1];

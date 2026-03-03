@@ -56,8 +56,13 @@ const RUN_DATE_RANGE = parseDateRange({
 });
 
 const API_MAX_PAGES =
-  parsePositiveInt(process.env.MODELS_API_MAX_PAGES) ??
-  (RUN_DATE_RANGE.start && RUN_DATE_RANGE.endExclusive ? 100 : 1);
+  parsePositiveInt(process.env.MODELS_API_MAX_PAGES) ?? 1;
+
+if (RUN_DATE_RANGE.start && RUN_DATE_RANGE.endExclusive && !process.env.MODELS_API_MAX_PAGES) {
+  console.warn(
+    "MODELS_START_DATE/MODELS_END_DATE set without MODELS_API_MAX_PAGES; only the first page of the feed will be scanned.",
+  );
+}
 
 async function main() {
   await fs.mkdir(CONTENT_DIR, { recursive: true });
@@ -157,6 +162,7 @@ async function fetchHfModelFeed({
 }): Promise<HfModelEntry[]> {
   const feed: HfModelEntry[] = [];
   let cursor: string | undefined;
+  let previousOldest: Date | undefined;
 
   for (let page = 0; page < maxPages; page += 1) {
     const { items, nextCursor } = await fetchHfModelPage({ pageSize, cursor });
@@ -165,6 +171,12 @@ async function fetchHfModelFeed({
 
     if (dateRange.start) {
       const oldest = getOldestLastModified(items);
+      if (oldest && previousOldest && oldest > previousOldest) {
+        console.warn(
+          `Non-monotonic Hugging Face feed ordering detected (oldest=${oldest.toISOString()} prev=${previousOldest.toISOString()}).`,
+        );
+      }
+      previousOldest = oldest;
       if (oldest && oldest < dateRange.start) break;
     }
 
@@ -828,7 +840,6 @@ function prioritizeCandidatesAcrossRange(candidates: HfModelEntry[], dateRange: 
   const buckets = new Map<string, HfModelEntry[]>();
   for (const candidate of candidates) {
     const date = candidate.lastModified.slice(0, 10);
-    if (!dateRangeIncludesDateOnly(dateRange, date)) continue;
     const existing = buckets.get(date);
     if (existing) {
       existing.push(candidate);
@@ -881,15 +892,17 @@ function parseDateRange({ start, end }: { start?: string; end?: string }): DateR
   if (!hasStart && !hasEnd) return {};
 
   if (!hasStart || !hasEnd) {
-    throw new Error(
-      "MODELS_START_DATE and MODELS_END_DATE must both be set as YYYY-MM-DD when using date range filtering.",
+    console.warn(
+      "MODELS_START_DATE and MODELS_END_DATE must both be set as YYYY-MM-DD when using date range filtering; ignoring date range.",
     );
+    return {};
   }
 
   const parsedStart = parseDateOnly(start);
   const parsedEnd = parseDateOnly(end);
   if (!parsedStart || !parsedEnd || parsedStart > parsedEnd) {
-    throw new Error("Invalid models date range: ensure dates are valid YYYY-MM-DD and start <= end.");
+    console.warn("Invalid models date range; ignoring date range.");
+    return {};
   }
 
   return {
