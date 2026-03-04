@@ -33,6 +33,7 @@ const DEFAULT_RUN_LIMIT = 5;
 // so this script relies on a best-effort scraper that is designed to fail loudly when the
 // upstream schema drifts.
 const DEFAULT_MAX_BLUEPRINT_OBJECT_CHARS = 6000;
+const MAX_BLUEPRINT_BLURB_LENGTH = 240;
 const MAX_BLUEPRINT_OBJECT_CHARS = (() => {
   const configured = parsePositiveInt(process.env.BLUEPRINTS_MAX_OBJECT_CHARS);
   const value = configured ?? DEFAULT_MAX_BLUEPRINT_OBJECT_CHARS;
@@ -40,10 +41,16 @@ const MAX_BLUEPRINT_OBJECT_CHARS = (() => {
   const max = 20000;
 
   if (value < min || value > max) {
-    throw new Error(
+    const message =
       `BLUEPRINTS_MAX_OBJECT_CHARS=${value} is out of allowed range [${min}, ${max}]. ` +
-        `Unset it to use the default (${DEFAULT_MAX_BLUEPRINT_OBJECT_CHARS}).`,
-    );
+      `Unset it to use the default (${DEFAULT_MAX_BLUEPRINT_OBJECT_CHARS}).`;
+
+    if (process.env.BLUEPRINTS_STRICT_SCHEMA === "1") {
+      throw new Error(message);
+    }
+
+    console.warn(message);
+    return DEFAULT_MAX_BLUEPRINT_OBJECT_CHARS;
   }
 
   return value;
@@ -435,10 +442,9 @@ function stripHtmlTags(value: string): string {
 // render as readable plain text.
 function buildBlueprintBlurb(raw: string): string {
   const blurb = normalizeBlurb(stripHtmlTags(decodeListingText(raw)));
-  const maxLen = 240;
 
-  if (blurb.length <= maxLen) return blurb;
-  return blurb.slice(0, maxLen - 1).trimEnd() + "…";
+  if (blurb.length <= MAX_BLUEPRINT_BLURB_LENGTH) return blurb;
+  return blurb.slice(0, MAX_BLUEPRINT_BLURB_LENGTH - 1).trimEnd() + "…";
 }
 
 function tryAddBlueprintEntry({
