@@ -1,0 +1,16 @@
+---
+title: "H-neurons and why LLMs hallucinate (paper review)"
+date: "2026-03-04"
+source: "The AI Search (YouTube)"
+url: "https://www.youtube.com/watch?v=1ONwQzauqkc"
+blurb: "A walkthrough of a paper that tries to isolate “hallucination-linked” internal features (H-neurons) and tests whether intervening on them can reduce confabulation without crushing fluency."
+thumbnail: "/news/thumbnails/2026-03-04--they-solved-ai-hallucinations.jpg"
+---
+
+- A simple framing of hallucinations: “confidently wrong” tokens that often look internally consistent, making them hard to detect without external grounding.
+- The core idea of the paper: treat hallucinations as something you might be able to localize to specific internal directions/features (“H-neurons”) rather than only fixing them via more data or different decoding.
+- How the method is validated: find internal activations correlated with hallucination behavior, then test causality by intervening (e.g., patching/suppressing/steering) and measuring whether hallucination rates move.
+- Why this matters for practitioners: it hints at post-training and inference-time levers that could complement retrieval, tool-use, or policy tuning (especially for smaller, local models where RAG isn’t always available).
+- What to watch for: interventions can trade off harmless creativity vs. factuality, and improvements may be prompt- or domain-dependent, so you’d want evals that reflect your real workload.
+
+[Read the original](https://www.youtube.com/watch?v=1ONwQzauqkc)
