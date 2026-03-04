@@ -28,6 +28,10 @@ const THUMBNAILS_DIR = path.join(process.cwd(), "public", "blueprints", "thumbna
 
 const SOURCE_URL = "https://build.nvidia.com/blueprints?filters=publisher%3Anvidia";
 const DEFAULT_RUN_LIMIT = 5;
+// The NVIDIA blueprints listing page currently embeds BLUEPRINT data as JSON objects inside
+// an escaped string (effectively JSON-within-JSON). We don't have an official API contract,
+// so this script relies on a best-effort scraper that is designed to fail loudly when the
+// upstream schema drifts.
 const MAX_BLUEPRINT_OBJECT_CHARS = 6000;
 
 type DateRange = {
@@ -142,6 +146,7 @@ async function fetchBlueprintFeed(): Promise<NvidiaBlueprintListingEntry[]> {
   let warnedBlueprintMissingLogo = false;
   let blueprintMatchCount = 0;
   let blueprintParseFailureCount = 0;
+  let modernEntriesAdded = 0;
 
   for (const match of html.matchAll(blueprintObjectRegex)) {
     if (!warnedBlueprintObjectNearCap && match[0].length >= MAX_BLUEPRINT_OBJECT_CHARS - 10) {
@@ -221,12 +226,20 @@ async function fetchBlueprintFeed(): Promise<NvidiaBlueprintListingEntry[]> {
       blurb: buildBlueprintBlurb(description),
       thumbnailUrl,
     });
+
+    modernEntriesAdded += 1;
+  }
+
+  if (blueprintMatchCount > 0 && modernEntriesAdded === 0) {
+    console.warn(
+      `Matched ${blueprintMatchCount} BLUEPRINT JSON blob(s), but none could be parsed into usable entries.`,
+    );
   }
 
   if (blueprintParseFailureCount > 0 && blueprintMatchCount > 0) {
     const failureRate = blueprintParseFailureCount / blueprintMatchCount;
 
-    if (debug || blueprintParseFailureCount >= 20 || failureRate >= 0.25) {
+    if (debug || blueprintMatchCount <= 10 || blueprintParseFailureCount >= 20 || failureRate >= 0.25) {
       console.warn(
         `Failed to parse ${blueprintParseFailureCount}/${blueprintMatchCount} BLUEPRINT JSON blob(s) from NVIDIA listing.`,
       );
@@ -305,8 +318,9 @@ function parseNextEscapedJsonObject(raw: string): unknown {
   }
 
   try {
-    // This is an intentionally conservative “decode once, then parse” fallback.
-    // The NVIDIA page currently embeds JSON blobs inside a JSON-escaped string.
+    // Fallback: interpret `raw` as an escaped JSON string, decode it once, then parse.
+    // This is intentionally conservative because NVIDIA is embedding JSON blobs inside
+    // a JSON-escaped string, and that escaping can drift over time.
     const unescaped = JSON.parse(
       `"${raw.replace(/\\/g, "\\\\").replace(/\"/g, "\\\"")}"`,
     ) as string;
@@ -398,6 +412,9 @@ function stripHtmlTags(value: string): string {
   return withSpacing.replace(/<[^>]*>/g, "").replace(/\s+/g, " ").trim();
 }
 
+// Best-effort conversion from listing descriptions to a short blurb. This is not a general
+// purpose HTML sanitizer; it exists to make NVIDIA's sometimes-HTML-ish listing strings
+// render as readable plain text.
 function buildBlueprintBlurb(raw: string): string {
   return normalizeBlurb(stripHtmlTags(decodeListingText(raw)));
 }
