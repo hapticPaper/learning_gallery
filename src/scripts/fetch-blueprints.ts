@@ -135,8 +135,15 @@ async function fetchBlueprintFeed(): Promise<NvidiaBlueprintListingEntry[]> {
 
   const debug = process.env.BLUEPRINTS_DEBUG === "1";
   let warnedBlueprintPublisherMissing = false;
+  const maxBlueprintObjectChars = 6000;
 
   for (const match of html.matchAll(blueprintObjectRegex)) {
+    if (debug && match[0].length >= maxBlueprintObjectChars - 10) {
+      console.warn(
+        `BLUEPRINT JSON blob match is near the ${maxBlueprintObjectChars}-char cap. NVIDIA schema may have expanded.`,
+      );
+    }
+
     const parsed = parseNextEscapedJsonObject(match[0]);
     if (!parsed || typeof parsed !== "object") continue;
 
@@ -199,51 +206,55 @@ async function fetchBlueprintFeed(): Promise<NvidiaBlueprintListingEntry[]> {
     });
   }
 
-  if (entries.size === 0) {
-    const legacyRegex =
-      /\\"artifactType\\":\\"ENDPOINT\\",\\"name\\":\\"([^\\"]+)\\",\\"displayName\\":\\"([^\\"]+)\\"[^]{0,20000}?\\"publisher\\":\\"([^\\"]+)\\",\\"shortDescription\\":\\"([^]{0,5000}?)\\",\\"logo\\":\\"([^\\"]+)\\"[^]{0,20000}?\\"updatedDate\\":\\"([^\\"]+)\\"/g;
+  const legacyStartSize = entries.size;
 
-    for (const match of html.matchAll(legacyRegex)) {
-      const blueprintId = match[1];
-      const title = match[2];
-      const publisher = match[3];
-      const shortDescriptionRaw = match[4];
-      const thumbnailUrl = match[5];
-      const date = match[6];
+  const legacyRegex =
+    /\\"artifactType\\":\\"ENDPOINT\\",\\"name\\":\\"([^\\"]+)\\",\\"displayName\\":\\"([^\\"]+)\\"[^]{0,20000}?\\"publisher\\":\\"([^\\"]+)\\",\\"shortDescription\\":\\"([^]{0,5000}?)\\",\\"logo\\":\\"([^\\"]+)\\"[^]{0,20000}?\\"updatedDate\\":\\"([^\\"]+)\\"/g;
 
-      if (!thumbnailUrl) continue;
+  for (const match of html.matchAll(legacyRegex)) {
+    const blueprintId = match[1];
+    const title = match[2];
+    const publisher = match[3];
+    const shortDescriptionRaw = match[4];
+    const thumbnailUrl = match[5];
+    const date = match[6];
 
-      const shortDescription = stripHtmlTags(decodeListingText(shortDescriptionRaw ?? ""));
+    if (!thumbnailUrl) continue;
 
-      if (publisher !== "nvidia") continue;
-      if (!blueprintId || entries.has(blueprintId)) continue;
+    const shortDescription = stripHtmlTags(decodeListingText(shortDescriptionRaw ?? ""));
 
-      if (!title || !date) {
-        console.warn(`Skipping blueprint with missing fields: ${blueprintId}`, {
-          title: Boolean(title),
-          date: Boolean(date),
-        });
-        continue;
-      }
+    if (publisher !== "nvidia") continue;
+    if (!blueprintId || entries.has(blueprintId)) continue;
 
-      const dateOnly = date.slice(0, 10);
-      const parsedDate = Date.parse(dateOnly);
-      if (!Number.isFinite(parsedDate)) {
-        console.warn(`Skipping blueprint with invalid date: ${blueprintId}`, {
-          rawDate: date,
-        });
-        continue;
-      }
-
-      entries.set(blueprintId, {
-        blueprintId,
-        title: decodeListingText(title),
-        url: `https://build.nvidia.com/blueprints/${blueprintId}`,
-        date: dateOnly,
-        blurb: normalizeBlurb(shortDescription),
-        thumbnailUrl,
+    if (!title || !date) {
+      console.warn(`Skipping blueprint with missing fields: ${blueprintId}`, {
+        title: Boolean(title),
+        date: Boolean(date),
       });
+      continue;
     }
+
+    const dateOnly = date.slice(0, 10);
+    const parsedDate = Date.parse(dateOnly);
+    if (!Number.isFinite(parsedDate)) {
+      console.warn(`Skipping blueprint with invalid date: ${blueprintId}`, {
+        rawDate: date,
+      });
+      continue;
+    }
+
+    entries.set(blueprintId, {
+      blueprintId,
+      title: decodeListingText(title),
+      url: `https://build.nvidia.com/blueprints/${blueprintId}`,
+      date: dateOnly,
+      blurb: normalizeBlurb(shortDescription),
+      thumbnailUrl,
+    });
+  }
+
+  if (debug && entries.size > legacyStartSize) {
+    console.warn(`Added ${entries.size - legacyStartSize} blueprint(s) via legacy parser.`);
   }
 
   if (entries.size === 0) {
@@ -258,6 +269,7 @@ async function fetchBlueprintFeed(): Promise<NvidiaBlueprintListingEntry[]> {
 }
 
 let warnedNextEscapedJsonParseFailed = false;
+let warnedBlueprintJsonParses = false;
 
 function parseNextEscapedJsonObject(raw: string): unknown {
   try {
@@ -274,6 +286,14 @@ function parseNextEscapedJsonObject(raw: string): unknown {
     ) as string;
     return JSON.parse(unescaped);
   } catch {
+    if (!warnedBlueprintJsonParses) {
+      warnedBlueprintJsonParses = true;
+      console.warn(
+        "One or more BLUEPRINT JSON blobs failed to parse. " +
+          "NVIDIA may have changed their escaping; set BLUEPRINTS_DEBUG=1 for more details.",
+      );
+    }
+
     if (process.env.BLUEPRINTS_DEBUG === "1" && !warnedNextEscapedJsonParseFailed) {
       warnedNextEscapedJsonParseFailed = true;
       console.warn(
@@ -342,7 +362,13 @@ function decodeListingText(value: string): string {
 }
 
 function stripHtmlTags(value: string): string {
-  return value.replace(/<[^>]*>/g, "").replace(/\s+/g, " ").trim();
+  const normalized = value.replace(/\s+/g, " ").trim();
+  if (!/<[a-zA-Z]/.test(normalized)) return normalized;
+
+  return normalized
+    .replace(/<\/?(?:p|br|strong|em|span|div|ul|ol|li|a|code|pre|h[1-6])[^>]*>/gi, "")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 async function resolveBlueprint(candidate: NvidiaBlueprintListingEntry): Promise<ResolvedBlueprint | undefined> {
