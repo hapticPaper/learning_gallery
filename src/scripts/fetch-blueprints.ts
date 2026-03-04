@@ -131,14 +131,29 @@ async function fetchBlueprintFeed(): Promise<NvidiaBlueprintListingEntry[]> {
 
   const entries = new Map<string, NvidiaBlueprintListingEntry>();
   const blueprintObjectRegex =
-    /\{\\"orgName\\":\\"[^\\"]+\\"[^]{0,20000}?\\"resourceType\\":\\"BLUEPRINT\\"[^]{0,20000}?\\"guestAccess\\":(?:true|false)\}/g;
+    /\{[^]{0,20000}?\\"orgName\\":\\"[^\\"]+\\"[^]{0,20000}?\\"resourceType\\":\\"BLUEPRINT\\"[^]{0,20000}?\\"guestAccess\\":(?:true|false)\}/g;
+
+  const debug = process.env.BLUEPRINTS_DEBUG === "1";
+  let warnedBlueprintPublisherMissing = false;
 
   for (const match of html.matchAll(blueprintObjectRegex)) {
     const parsed = parseNextEscapedJsonObject(match[0]);
     if (!parsed || typeof parsed !== "object") continue;
 
     const data = parsed as Record<string, unknown>;
-    const publisher = getLabelValues({ labels: data.labels, key: "publisher" })?.[0];
+    const publisher = getPublisherFromBlueprintData(data);
+    if (!publisher) {
+      if (debug && !warnedBlueprintPublisherMissing) {
+        warnedBlueprintPublisherMissing = true;
+        console.warn(
+          "Skipping BLUEPRINT entries without a detectable publisher label (labels.publisher). " +
+            "NVIDIA may have changed their listing schema.",
+        );
+      }
+
+      continue;
+    }
+
     if (publisher !== "nvidia") continue;
 
     const blueprintId = typeof data.name === "string" ? data.name : null;
@@ -232,6 +247,8 @@ async function fetchBlueprintFeed(): Promise<NvidiaBlueprintListingEntry[]> {
   return Array.from(entries.values());
 }
 
+let warnedNextEscapedJsonParseFailed = false;
+
 function parseNextEscapedJsonObject(raw: string): unknown {
   try {
     return JSON.parse(raw.replace(/\\"/g, '"'));
@@ -240,13 +257,32 @@ function parseNextEscapedJsonObject(raw: string): unknown {
   }
 
   try {
+    // This is an intentionally conservative “decode once, then parse” fallback.
+    // The NVIDIA page currently embeds JSON blobs inside a JSON-escaped string.
     const unescaped = JSON.parse(
       `"${raw.replace(/\\/g, "\\\\").replace(/\"/g, "\\\"")}"`,
     ) as string;
     return JSON.parse(unescaped);
   } catch {
+    if (process.env.BLUEPRINTS_DEBUG === "1" && !warnedNextEscapedJsonParseFailed) {
+      warnedNextEscapedJsonParseFailed = true;
+      console.warn(
+        "Failed to parse an escaped BLUEPRINT JSON blob from the NVIDIA listing page. " +
+          "NVIDIA may have changed their page structure.",
+      );
+    }
+
     return null;
   }
+}
+
+function getPublisherFromBlueprintData(data: Record<string, unknown>): string | null {
+  const labelPublisher = getLabelValues({ labels: data.labels, key: "publisher" })?.[0];
+  if (labelPublisher) return labelPublisher;
+
+  if (typeof data.publisher === "string") return data.publisher;
+
+  return null;
 }
 
 function getLabelValues({ labels, key }: { labels: unknown; key: string }): string[] | null {
@@ -255,6 +291,7 @@ function getLabelValues({ labels, key }: { labels: unknown; key: string }): stri
   for (const label of labels) {
     if (!label || typeof label !== "object") continue;
     const data = label as Record<string, unknown>;
+    if (typeof data.key !== "string") continue;
     if (data.key !== key) continue;
     if (!Array.isArray(data.values)) continue;
 
@@ -271,6 +308,7 @@ function getAttributeValue({ attributes, key }: { attributes: unknown; key: stri
   for (const attribute of attributes) {
     if (!attribute || typeof attribute !== "object") continue;
     const data = attribute as Record<string, unknown>;
+    if (typeof data.key !== "string") continue;
     if (data.key !== key) continue;
     if (typeof data.value === "string") return data.value;
   }
