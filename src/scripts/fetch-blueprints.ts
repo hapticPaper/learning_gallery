@@ -34,6 +34,7 @@ const DEFAULT_RUN_LIMIT = 5;
 // upstream schema drifts.
 const DEFAULT_MAX_BLUEPRINT_OBJECT_CHARS = 6000;
 const MAX_BLUEPRINT_BLURB_LENGTH = 240;
+const BLUEPRINT_OBJECT_REGEX_CHARS = 8000;
 const MAX_BLUEPRINT_OBJECT_CHARS = (() => {
   const configured = parsePositiveInt(process.env.BLUEPRINTS_MAX_OBJECT_CHARS);
   const value = configured ?? DEFAULT_MAX_BLUEPRINT_OBJECT_CHARS;
@@ -163,7 +164,7 @@ async function fetchBlueprintFeed(): Promise<NvidiaBlueprintListingEntry[]> {
 
   const entries = new Map<string, NvidiaBlueprintListingEntry>();
   const blueprintObjectRegex = new RegExp(
-    String.raw`\{[^]{0,${MAX_BLUEPRINT_OBJECT_CHARS}}?\\\"orgName\\\":\\\"[^\\\\\"]+\\\"[^]{0,${MAX_BLUEPRINT_OBJECT_CHARS}}?\\\"resourceType\\\":\\\"BLUEPRINT\\\"[^]{0,${MAX_BLUEPRINT_OBJECT_CHARS}}?\\\"guestAccess\\\":(?:true|false)\}`,
+    String.raw`\{[^]{0,${BLUEPRINT_OBJECT_REGEX_CHARS}}?\\\"orgName\\\":\\\"[^\\\\\"]+\\\"[^]{0,${BLUEPRINT_OBJECT_REGEX_CHARS}}?\\\"resourceType\\\":\\\"BLUEPRINT\\\"[^]{0,${BLUEPRINT_OBJECT_REGEX_CHARS}}?\\\"guestAccess\\\":(?:true|false)\}`,
     "g",
   );
 
@@ -179,11 +180,11 @@ async function fetchBlueprintFeed(): Promise<NvidiaBlueprintListingEntry[]> {
   let sawNearCap = false;
 
   for (const match of html.matchAll(blueprintObjectRegex)) {
-    if (!warnedBlueprintObjectNearCap && match[0].length >= MAX_BLUEPRINT_OBJECT_CHARS - 10) {
+    if (!warnedBlueprintObjectNearCap && match[0].length >= BLUEPRINT_OBJECT_REGEX_CHARS - 10) {
       warnedBlueprintObjectNearCap = true;
       sawNearCap = true;
       console.warn(
-        `A BLUEPRINT JSON blob match is near the ${MAX_BLUEPRINT_OBJECT_CHARS}-char cap. NVIDIA schema may have expanded (set BLUEPRINTS_MAX_OBJECT_CHARS to increase the cap).`,
+        `A BLUEPRINT JSON blob match is near the ${BLUEPRINT_OBJECT_REGEX_CHARS}-char regex cap. NVIDIA schema may have expanded.`,
       );
     }
 
@@ -274,7 +275,7 @@ async function fetchBlueprintFeed(): Promise<NvidiaBlueprintListingEntry[]> {
 
   if (strictSchema && sawNearCap) {
     throw new Error(
-      `NVIDIA listing schema appears to have expanded (near ${MAX_BLUEPRINT_OBJECT_CHARS}-char cap). Aborting due to BLUEPRINTS_STRICT_SCHEMA=1.`,
+      `NVIDIA listing schema appears to have expanded (near ${BLUEPRINT_OBJECT_REGEX_CHARS}-char regex cap). Aborting due to BLUEPRINTS_STRICT_SCHEMA=1.`,
     );
   }
 
@@ -453,17 +454,6 @@ function stripHtmlTags(value: string): string {
   const normalized = value.replace(/\s+/g, " ").trim();
   if (!/<[a-zA-Z]/.test(normalized)) return normalized;
 
-  const containsKnownTag = /<\/?(?:p|br|strong|em|span|div|ul|ol|li|a|code|pre|h[1-6])\b/i.test(normalized);
-  if (!containsKnownTag) {
-    if (process.env.BLUEPRINTS_DEBUG === "1") {
-      console.warn("Detected HTML-like content with unknown tags in BLUEPRINT listing.", {
-        sample: normalized.slice(0, 160),
-      });
-    }
-
-    return normalized;
-  }
-
   const withSpacing = normalized
     .replace(/<\s*br\s*\/?\s*>/gi, " ")
     .replace(/<\s*\/\s*(?:p|li)\s*>/gi, " ");
@@ -486,9 +476,24 @@ function buildBlueprintBlurb(raw: string): string {
 
   const sliced = blurb.slice(0, MAX_BLUEPRINT_BLURB_LENGTH - 1).trimEnd();
   const lastSpace = sliced.lastIndexOf(" ");
-  const truncated = lastSpace >= 40 ? sliced.slice(0, lastSpace).trimEnd() : sliced;
+  const truncated = lastSpace > 0 ? sliced.slice(0, lastSpace).trimEnd() : sliced;
 
   return truncated + "…";
+}
+
+function safeParseBlueprintDateOnly({ blueprintId, rawDate }: { blueprintId: string; rawDate: string }): string | null {
+  const dateOnly = rawDate.slice(0, 10);
+  const parsedDate = Date.parse(dateOnly);
+
+  if (!Number.isFinite(parsedDate)) {
+    if (process.env.BLUEPRINTS_DEBUG === "1") {
+      console.warn("Invalid BLUEPRINT date.", { blueprintId, rawDate });
+    }
+
+    return null;
+  }
+
+  return dateOnly;
 }
 
 function insertBlueprintEntryIfValid({
@@ -516,9 +521,8 @@ function insertBlueprintEntryIfValid({
     return false;
   }
 
-  const dateOnly = rawDate.slice(0, 10);
-  const parsedDate = Date.parse(dateOnly);
-  if (!Number.isFinite(parsedDate)) {
+  const dateOnly = safeParseBlueprintDateOnly({ blueprintId, rawDate });
+  if (!dateOnly) {
     console.warn(`Skipping blueprint with invalid date: ${blueprintId}`, {
       rawDate,
     });
