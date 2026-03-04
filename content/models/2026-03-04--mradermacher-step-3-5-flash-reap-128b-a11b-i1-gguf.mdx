@@ -1,0 +1,22 @@
+---
+title: "Step-3.5-Flash-REAP 128B-A11B (GGUF imatrix quants)"
+date: "2026-03-04"
+source: "Hugging Face"
+url: "https://huggingface.co/mradermacher/Step-3.5-Flash-REAP-128B-A11B-i1-GGUF"
+modelId: "mradermacher/Step-3.5-Flash-REAP-128B-A11B-i1-GGUF"
+pipelineTag: "text-generation"
+blurb: "Imatrix-weighted GGUF quant pack for Step-3.5-Flash-REAP (128B-A11B), with a broad spread of IQ/Q* variants and notes on recommended sizes for llama.cpp-style runners."
+thumbnail: "/models/thumbnails/2026-03-04--mradermacher-step-3-5-flash-reap-128b-a11b-i1-gguf.png"
+---
+
+This is an imatrix/weighted GGUF quant pack for `lkevincc0/Step-3.5-Flash-REAP-128B-A11B`, published by `mradermacher`. If you run large models via llama.cpp-compatible tooling, these “i1-*” variants are meant to offer better quality-per-GB than plain static quants, and the README includes a useful “Provided Quants” table with size notes.
+
+The practical value here is choice. The pack includes a range from very small (and explicitly low quality) quants up to higher-quality options, plus an imatrix file for building your own. If you’re experimenting on a single GPU workstation, start around the author’s recommended middle ground (for example, Q4_K variants) and only move lower if you’re constrained by VRAM/system RAM.
+
+What to try first: pick one “recommended” quant, run a small prompt suite you actually care about (tool use, code, long-form reasoning), then compare it against one smaller IQ quant to see where the quality drop becomes unacceptable for your workflow.
+
+Quick stats from the listing feed: 3709 downloads.
+
+[View on Hugging Face](https://huggingface.co/mradermacher/Step-3.5-Flash-REAP-128B-A11B-i1-GGUF)
+
+Source listing: https://huggingface.co/models?sort=modified

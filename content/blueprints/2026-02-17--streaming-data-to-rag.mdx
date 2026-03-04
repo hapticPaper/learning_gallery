@@ -1,0 +1,19 @@
+---
+title: "Streaming Data to RAG"
+date: "2026-02-17"
+source: "NVIDIA Build"
+url: "https://build.nvidia.com/blueprints/streaming-data-to-rag"
+blueprintId: "streaming-data-to-rag"
+blurb: "A pattern for keeping RAG systems fresh: ingest a live stream (sensor/radio/telemetry), summarize + index it continuously, and answer questions against the most recent window without manual re-indexing."
+thumbnail: "/blueprints/thumbnails/2026-02-17--streaming-data-to-rag.jpg"
+---
+
+This blueprint tackles a common RAG problem: static indexes are fine for “document libraries,” but a lot of operational data arrives as a stream. Streaming Data to RAG is a reference workflow for taking continuously arriving signals (sensor captures, radio logs, telemetry) and turning them into searchable, queryable context quickly enough that the answers stay relevant.
+
+The key idea is to treat ingestion as an always-on pipeline: chunking/windowing, lightweight summarization or normalization, embeddings, and incremental index updates. That’s the difference between a RAG system that’s only good for historical analysis and one that supports real-time questions like “what happened in the last 30 minutes?”
+
+What to try first: wire up a small synthetic stream (even a log file tail) and test two queries: one that should hit only the newest window, and one that should retrieve both recent and older context. If the system can’t reliably separate those, your chunking/windowing strategy needs work.
+
+[View on NVIDIA Build](https://build.nvidia.com/blueprints/streaming-data-to-rag)
+
+Source listing: https://build.nvidia.com/blueprints?filters=publisher%3Anvidia

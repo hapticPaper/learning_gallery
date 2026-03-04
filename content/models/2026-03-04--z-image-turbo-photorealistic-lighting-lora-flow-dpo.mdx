@@ -1,0 +1,22 @@
+---
+title: "Z-Image-Turbo lighting LoRA (Flow-DPO)"
+date: "2026-03-04"
+source: "Hugging Face"
+url: "https://huggingface.co/F16/z-image-turbo-flow-dpo"
+modelId: "F16/z-image-turbo-flow-dpo"
+pipelineTag: "text-to-image"
+blurb: "A LoRA adapter for Tongyi-MAI/Z-Image-Turbo trained with Flow-DPO preference pairs to push more photorealistic lighting/shadows while keeping the model’s fast 8-step generation workflow."
+thumbnail: "/models/thumbnails/2026-03-04--z-image-turbo-photorealistic-lighting-lora-flow-dpo.png"
+---
+
+This is a LoRA for `Tongyi-MAI/Z-Image-Turbo` that’s trained with a preference-optimization method (Flow-DPO) rather than a plain supervised objective. The pitch is straightforward: keep the “turbo” workflow (8 steps, guidance ~1.0) but steer the output toward more believable lighting, shadows, and overall contrast.
+
+If you already like Turbo’s speed but find some prompts come out a bit flat, this kind of adapter is a useful pattern: small, composable deltas you can stack or swap without retraining the base model. The model card also includes concrete Diffusers snippets and suggested LoRA scale values.
+
+What to try first: pick 3–5 prompts that reliably produce the “flat” look you want to fix, generate pairs with and without the LoRA (same seed/steps), then sweep the LoRA scale (e.g. 0.6 → 1.0) to find the point where lighting improves without over-baking skin tones or crushing detail.
+
+Quick stats from the listing feed: 76 likes.
+
+[View on Hugging Face](https://huggingface.co/F16/z-image-turbo-flow-dpo)
+
+Source listing: https://huggingface.co/models?sort=modified

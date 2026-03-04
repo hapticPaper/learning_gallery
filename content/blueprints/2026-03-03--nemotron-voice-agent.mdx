@@ -1,0 +1,19 @@
+---
+title: "Nemotron Voice Agent"
+date: "2026-03-03"
+source: "NVIDIA Build"
+url: "https://build.nvidia.com/blueprints/nemotron-voice-agent"
+blueprintId: "nemotron-voice-agent"
+blurb: "A reference voice-agent pipeline: streaming ASR + an LLM for intent/response + TTS, wired as an interactive assistant where latency and turn-taking behavior are first-class concerns."
+thumbnail: "/blueprints/thumbnails/2026-03-03--nemotron-voice-agent.jpg"
+---
+
+Nemotron Voice Agent is a practical “glue” blueprint for a common product shape: a real-time voice assistant that can listen, reason, and talk back. It’s less about a single model and more about stitching together the components you need for a usable experience: streaming speech-to-text, an LLM that can manage dialogue state and tool calls, and text-to-speech that feels responsive.
+
+Voice agents are where the boring details matter. Latency, barge-in behavior (interruptions), partial transcripts, and how you recover from misrecognitions will make or break the UX, even if the underlying model is strong. This blueprint is useful as a starting point because it’s designed around those constraints rather than treating voice as a bolt-on.
+
+What to try first: run the default flow, then add one “tool” action (for example, a tiny retrieval step over a local file) and test multi-turn behavior. If the agent can keep context while handling interruptions, you’re on the right track.
+
+[View on NVIDIA Build](https://build.nvidia.com/blueprints/nemotron-voice-agent)
+
+Source listing: https://build.nvidia.com/blueprints?filters=publisher%3Anvidia

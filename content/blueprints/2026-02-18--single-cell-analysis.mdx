@@ -1,0 +1,19 @@
+---
+title: "Single Cell Analysis"
+date: "2026-02-18"
+source: "NVIDIA Build"
+url: "https://build.nvidia.com/blueprints/single-cell-analysis"
+blueprintId: "single-cell-analysis"
+blurb: "A GPU-accelerated single-cell analysis workflow using RAPIDS-singlecell, aimed at speeding up common scRNA-seq steps (QC, embeddings, clustering, markers) so iteration cycles shrink from days to minutes."
+thumbnail: "/blueprints/thumbnails/2026-02-18--single-cell-analysis.jpg"
+---
+
+Single-cell analysis pipelines can be painfully slow to iterate on: preprocessing, quality control, dimensionality reduction, clustering, and marker discovery all add up, and you usually repeat the cycle every time you tweak filtering thresholds or compare conditions. This blueprint is NVIDIA’s reference path for doing that loop with RAPIDS-singlecell so the heavy numerical pieces can run on the GPU.
+
+What’s interesting here is less “an AI agent” and more a practical stack choice: if you’re already using Scanpy/AnnData-style workflows, accelerating the compute lets you explore more hypotheses (different normalization, batch correction, embedding/clustering settings) instead of picking one path and hoping. It’s also a good fit for interactive notebooks where responsiveness matters.
+
+What to try first: run the pipeline on a modest public dataset and intentionally vary one parameter (like the number of highly variable genes or clustering resolution). If the GPU path makes that iteration cheap, you’ll feel the value immediately.
+
+[View on NVIDIA Build](https://build.nvidia.com/blueprints/single-cell-analysis)
+
+Source listing: https://build.nvidia.com/blueprints?filters=publisher%3Anvidia

@@ -1,0 +1,22 @@
+---
+title: "Helios-Distilled (real-time long video)"
+date: "2026-03-04"
+source: "Hugging Face"
+url: "https://huggingface.co/BestWishYsh/Helios-Distilled"
+modelId: "BestWishYsh/Helios-Distilled"
+pipelineTag: "text-to-video"
+blurb: "A distilled 14B text-to-video model (Wan2.1-based) that aims for minute-scale, coherent video while pushing throughput via training/inference optimizations rather than the usual diffusion speed tricks."
+thumbnail: "/models/thumbnails/2026-03-04--bestwishysh-helios-distilled.png"
+---
+
+Helios is a 14B diffusion video model in the Wan2.1 family that’s positioned as “real-time long video generation.” The authors claim it can generate minute-scale clips with strong coherence while reaching high end-to-end throughput (they report 19.5 FPS on a single H100) without leaning on the usual acceleration bag of tricks (KV cache, sparse attention, TinyVAE, quantization, etc.).
+
+Even if you don’t fully buy the headline numbers, the framing is interesting: instead of optimizing only the sampler, Helios emphasizes training + inference changes that reduce memory pressure and keep generation stable over longer horizons. That’s a practical theme for anyone trying to ship video generation where latency and drift both matter.
+
+What to try first: run the provided Diffusers pipeline with `num_frames` set to a multiple of 33 (the model generates in 33-frame chunks), then compare a short prompt vs. a longer, “story-like” prompt to see how well identity and motion stay consistent across multiple chunks.
+
+Quick stats from the listing feed: pipeline: text-to-video · 3 likes · 270 downloads.
+
+[View on Hugging Face](https://huggingface.co/BestWishYsh/Helios-Distilled)
+
+Source listing: https://huggingface.co/models?sort=modified

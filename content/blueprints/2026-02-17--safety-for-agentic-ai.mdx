@@ -1,0 +1,19 @@
+---
+title: "Safety for Agentic AI"
+date: "2026-02-17"
+source: "NVIDIA Build"
+url: "https://build.nvidia.com/blueprints/safety-for-agentic-ai"
+blueprintId: "safety-for-agentic-ai"
+blurb: "A reference approach to agent safety: policies, checks, and monitoring across build/deploy/run so tool-using agents don’t leak data or follow malicious instructions unnoticed."
+thumbnail: "/blueprints/thumbnails/2026-02-17--safety-for-agentic-ai.jpg"
+---
+
+This blueprint is a reminder that “agentic” doesn’t just mean tool use — it also means a larger attack surface. Safety for agentic AI focuses on the controls you need when a model can take actions: preventing prompt injection from becoming tool misuse, reducing accidental data exfiltration, and making it obvious when an agent is operating outside intended policy.
+
+The most reusable part is the lifecycle framing. It’s not enough to add a safety filter at runtime; you want checks during development (red teaming + evals), deployment (configuration, auditability), and operations (monitoring, incident response, versioning/rollbacks). That’s especially relevant when your agent is calling APIs with real privileges.
+
+What to try first: take one existing agent workflow, run it through the blueprint with a handful of intentionally “bad” inputs (prompt injection attempts, requests for secrets/PII), and make sure you can both block the behavior and produce a useful audit trail explaining what was blocked and why.
+
+[View on NVIDIA Build](https://build.nvidia.com/blueprints/safety-for-agentic-ai)
+
+Source listing: https://build.nvidia.com/blueprints?filters=publisher%3Anvidia

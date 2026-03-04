@@ -1,0 +1,19 @@
+---
+title: "AI Agent for Telecom Network Configuration Planning"
+date: "2026-02-17"
+source: "NVIDIA Build"
+url: "https://build.nvidia.com/blueprints/telco-network-configuration"
+blueprintId: "telco-network-configuration"
+blurb: "An agentic workflow for proposing and validating RAN parameter changes, using an LLM to plan/justify configuration updates while keeping the loop grounded in network KPIs and operator constraints."
+thumbnail: "/blueprints/thumbnails/2026-02-17--ai-agent-for-telecom-network-configuration-planning.jpg"
+---
+
+This blueprint is about closing the loop between “what changed in the network?” and “what should we do next?” by wrapping telecom configuration planning in an agentic workflow. Instead of treating an LLM as a generic chatbot, it’s used as a planner/explainer that proposes candidate RAN parameter changes, along with rationale and constraints, based on the signals you give it.
+
+The useful pattern is the separation of concerns: let the LLM generate and iterate on a plan, but keep execution grounded in measurable KPIs (coverage, throughput, drop rate, latency) and explicit guardrails. That’s the difference between a demo that sounds smart and a system you can actually pilot in a production-like environment.
+
+What to try first: run the default flow on a small, synthetic “network snapshot” dataset, then add one constraint you care about (for example, a change budget per cell site) and see how that affects the proposed plan and the agent’s reasoning.
+
+[View on NVIDIA Build](https://build.nvidia.com/blueprints/telco-network-configuration)
+
+Source listing: https://build.nvidia.com/blueprints?filters=publisher%3Anvidia
