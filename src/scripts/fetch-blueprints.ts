@@ -130,36 +130,38 @@ async function fetchBlueprintFeed(): Promise<NvidiaBlueprintListingEntry[]> {
   const html = await fetchText(SOURCE_URL);
 
   const entries = new Map<string, NvidiaBlueprintListingEntry>();
-  const regex =
-    /\\"artifactType\\":\\"ENDPOINT\\",\\"name\\":\\"([^\\"]+)\\",\\"displayName\\":\\"([^\\"]+)\\"[^]{0,20000}?\\"publisher\\":\\"([^\\"]+)\\",\\"shortDescription\\":\\"([^]{0,5000}?)\\",\\"logo\\":\\"([^\\"]+)\\"[^]{0,20000}?\\"updatedDate\\":\\"([^\\"]+)\\"/g;
+  const blueprintObjectRegex =
+    /\{\\"orgName\\":\\"[^\\"]+\\"[^]{0,20000}?\\"resourceType\\":\\"BLUEPRINT\\"[^]{0,20000}?\\"guestAccess\\":(?:true|false)\}/g;
 
-  for (const match of html.matchAll(regex)) {
-    const blueprintId = match[1];
-    const title = match[2];
-    const publisher = match[3];
-    const shortDescriptionRaw = match[4];
-    const thumbnailUrl = match[5];
-    const date = match[6];
+  for (const match of html.matchAll(blueprintObjectRegex)) {
+    const parsed = parseNextEscapedJsonObject(match[0]);
+    if (!parsed || typeof parsed !== "object") continue;
 
-    const shortDescription = decodeListingText(shortDescriptionRaw ?? "");
-
+    const data = parsed as Record<string, unknown>;
+    const publisher = getLabelValues({ labels: data.labels, key: "publisher" })?.[0];
     if (publisher !== "nvidia") continue;
+
+    const blueprintId = typeof data.name === "string" ? data.name : null;
+    const title = typeof data.displayName === "string" ? data.displayName : null;
+    const dateModified = typeof data.dateModified === "string" ? data.dateModified : null;
+    const description = typeof data.description === "string" ? data.description : "";
+    const thumbnailUrl = getAttributeValue({ attributes: data.attributes, key: "logo" });
 
     if (!blueprintId || entries.has(blueprintId)) continue;
 
-    if (!title || !date) {
+    if (!title || !dateModified) {
       console.warn(`Skipping blueprint with missing fields: ${blueprintId}`, {
         title: Boolean(title),
-        date: Boolean(date),
+        date: Boolean(dateModified),
       });
       continue;
     }
 
-    const dateOnly = date.slice(0, 10);
+    const dateOnly = dateModified.slice(0, 10);
     const parsedDate = Date.parse(dateOnly);
     if (!Number.isFinite(parsedDate)) {
       console.warn(`Skipping blueprint with invalid date: ${blueprintId}`, {
-        rawDate: date,
+        rawDate: dateModified,
       });
       continue;
     }
@@ -169,9 +171,54 @@ async function fetchBlueprintFeed(): Promise<NvidiaBlueprintListingEntry[]> {
       title: decodeListingText(title),
       url: `https://build.nvidia.com/blueprints/${blueprintId}`,
       date: dateOnly,
-      blurb: normalizeBlurb(shortDescription),
+      blurb: normalizeBlurb(decodeListingText(description)),
       thumbnailUrl,
     });
+  }
+
+  if (entries.size === 0) {
+    const legacyRegex =
+      /\\"artifactType\\":\\"ENDPOINT\\",\\"name\\":\\"([^\\"]+)\\",\\"displayName\\":\\"([^\\"]+)\\"[^]{0,20000}?\\"publisher\\":\\"([^\\"]+)\\",\\"shortDescription\\":\\"([^]{0,5000}?)\\",\\"logo\\":\\"([^\\"]+)\\"[^]{0,20000}?\\"updatedDate\\":\\"([^\\"]+)\\"/g;
+
+    for (const match of html.matchAll(legacyRegex)) {
+      const blueprintId = match[1];
+      const title = match[2];
+      const publisher = match[3];
+      const shortDescriptionRaw = match[4];
+      const thumbnailUrl = match[5];
+      const date = match[6];
+
+      const shortDescription = decodeListingText(shortDescriptionRaw ?? "");
+
+      if (publisher !== "nvidia") continue;
+      if (!blueprintId || entries.has(blueprintId)) continue;
+
+      if (!title || !date) {
+        console.warn(`Skipping blueprint with missing fields: ${blueprintId}`, {
+          title: Boolean(title),
+          date: Boolean(date),
+        });
+        continue;
+      }
+
+      const dateOnly = date.slice(0, 10);
+      const parsedDate = Date.parse(dateOnly);
+      if (!Number.isFinite(parsedDate)) {
+        console.warn(`Skipping blueprint with invalid date: ${blueprintId}`, {
+          rawDate: date,
+        });
+        continue;
+      }
+
+      entries.set(blueprintId, {
+        blueprintId,
+        title: decodeListingText(title),
+        url: `https://build.nvidia.com/blueprints/${blueprintId}`,
+        date: dateOnly,
+        blurb: normalizeBlurb(shortDescription),
+        thumbnailUrl,
+      });
+    }
   }
 
   if (entries.size === 0) {
@@ -183,6 +230,52 @@ async function fetchBlueprintFeed(): Promise<NvidiaBlueprintListingEntry[]> {
   }
 
   return Array.from(entries.values());
+}
+
+function parseNextEscapedJsonObject(raw: string): unknown {
+  try {
+    return JSON.parse(raw.replace(/\\"/g, '"'));
+  } catch {
+    // ignore
+  }
+
+  try {
+    const unescaped = JSON.parse(
+      `"${raw.replace(/\\/g, "\\\\").replace(/\"/g, "\\\"")}"`,
+    ) as string;
+    return JSON.parse(unescaped);
+  } catch {
+    return null;
+  }
+}
+
+function getLabelValues({ labels, key }: { labels: unknown; key: string }): string[] | null {
+  if (!Array.isArray(labels)) return null;
+
+  for (const label of labels) {
+    if (!label || typeof label !== "object") continue;
+    const data = label as Record<string, unknown>;
+    if (data.key !== key) continue;
+    if (!Array.isArray(data.values)) continue;
+
+    const values = data.values.filter((value) => typeof value === "string") as string[];
+    if (values.length) return values;
+  }
+
+  return null;
+}
+
+function getAttributeValue({ attributes, key }: { attributes: unknown; key: string }): string | undefined {
+  if (!Array.isArray(attributes)) return undefined;
+
+  for (const attribute of attributes) {
+    if (!attribute || typeof attribute !== "object") continue;
+    const data = attribute as Record<string, unknown>;
+    if (data.key !== key) continue;
+    if (typeof data.value === "string") return data.value;
+  }
+
+  return undefined;
 }
 
 function decodeListingText(value: string): string {
