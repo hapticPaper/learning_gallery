@@ -236,7 +236,7 @@ async function fetchBlueprintFeed(): Promise<NvidiaBlueprintListingEntry[]> {
     }
 
     if (
-      tryAddBlueprintEntry({
+      insertBlueprintEntryIfValid({
         entries,
         blueprintId,
         title,
@@ -301,7 +301,7 @@ async function fetchBlueprintFeed(): Promise<NvidiaBlueprintListingEntry[]> {
 
     if (publisher !== "nvidia") continue;
 
-    tryAddBlueprintEntry({
+    insertBlueprintEntryIfValid({
       entries,
       blueprintId,
       title,
@@ -358,8 +358,9 @@ function parseNextEscapedJsonObject(raw: string): unknown {
 
   try {
     // Fallback: interpret `raw` as an escaped JSON string, decode it once, then parse.
-    // This is intentionally conservative because NVIDIA is embedding JSON blobs inside
-    // a JSON-escaped string, and that escaping can drift over time.
+    // Example (simplified):
+    //   raw: {\\"resourceType\\":\\"BLUEPRINT\\",\\"name\\":\\"example\\"}
+    // After one unescape pass, it becomes normal JSON and can be parsed.
     const unescaped = JSON.parse(
       `"${raw.replace(/\\/g, "\\\\").replace(/\"/g, "\\\"")}"`,
     ) as string;
@@ -453,7 +454,15 @@ function stripHtmlTags(value: string): string {
   if (!/<[a-zA-Z]/.test(normalized)) return normalized;
 
   const containsKnownTag = /<\/?(?:p|br|strong|em|span|div|ul|ol|li|a|code|pre|h[1-6])\b/i.test(normalized);
-  if (!containsKnownTag) return normalized;
+  if (!containsKnownTag) {
+    if (process.env.BLUEPRINTS_DEBUG === "1") {
+      console.warn("Detected HTML-like content with unknown tags in BLUEPRINT listing.", {
+        sample: normalized.slice(0, 160),
+      });
+    }
+
+    return normalized;
+  }
 
   const withSpacing = normalized
     .replace(/<\s*br\s*\/?\s*>/gi, " ")
@@ -475,10 +484,14 @@ function buildBlueprintBlurb(raw: string): string {
     console.warn("Truncating BLUEPRINT blurb to fit UI limit.", { length: blurb.length });
   }
 
-  return blurb.slice(0, MAX_BLUEPRINT_BLURB_LENGTH - 1).trimEnd() + "…";
+  const sliced = blurb.slice(0, MAX_BLUEPRINT_BLURB_LENGTH - 1).trimEnd();
+  const lastSpace = sliced.lastIndexOf(" ");
+  const truncated = lastSpace >= 40 ? sliced.slice(0, lastSpace).trimEnd() : sliced;
+
+  return truncated + "…";
 }
 
-function tryAddBlueprintEntry({
+function insertBlueprintEntryIfValid({
   entries,
   blueprintId,
   title,
