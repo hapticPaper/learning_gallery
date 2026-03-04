@@ -33,8 +33,21 @@ const DEFAULT_RUN_LIMIT = 5;
 // so this script relies on a best-effort scraper that is designed to fail loudly when the
 // upstream schema drifts.
 const DEFAULT_MAX_BLUEPRINT_OBJECT_CHARS = 6000;
-const MAX_BLUEPRINT_OBJECT_CHARS =
-  parsePositiveInt(process.env.BLUEPRINTS_MAX_OBJECT_CHARS) ?? DEFAULT_MAX_BLUEPRINT_OBJECT_CHARS;
+const MAX_BLUEPRINT_OBJECT_CHARS = (() => {
+  const configured = parsePositiveInt(process.env.BLUEPRINTS_MAX_OBJECT_CHARS);
+  const value = configured ?? DEFAULT_MAX_BLUEPRINT_OBJECT_CHARS;
+  const min = 1000;
+  const max = 20000;
+
+  if (value < min || value > max) {
+    throw new Error(
+      `BLUEPRINTS_MAX_OBJECT_CHARS=${value} is out of allowed range [${min}, ${max}]. ` +
+        `Unset it to use the default (${DEFAULT_MAX_BLUEPRINT_OBJECT_CHARS}).`,
+    );
+  }
+
+  return value;
+})();
 
 type DateRange = {
   start?: Date;
@@ -210,35 +223,18 @@ async function fetchBlueprintFeed(): Promise<NvidiaBlueprintListingEntry[]> {
       continue;
     }
 
-    if (!blueprintId || entries.has(blueprintId)) continue;
-
-    if (!title || !dateModified) {
-      console.warn(`Skipping blueprint with missing fields: ${blueprintId}`, {
-        title: Boolean(title),
-        date: Boolean(dateModified),
-      });
-      continue;
-    }
-
-    const dateOnly = dateModified.slice(0, 10);
-    const parsedDate = Date.parse(dateOnly);
-    if (!Number.isFinite(parsedDate)) {
-      console.warn(`Skipping blueprint with invalid date: ${blueprintId}`, {
+    if (
+      tryAddBlueprintEntry({
+        entries,
+        blueprintId,
+        title,
         rawDate: dateModified,
-      });
-      continue;
+        rawBlurb: description,
+        thumbnailUrl,
+      })
+    ) {
+      modernEntriesAdded += 1;
     }
-
-    entries.set(blueprintId, {
-      blueprintId,
-      title: decodeListingText(title),
-      url: `https://build.nvidia.com/blueprints/${blueprintId}`,
-      date: dateOnly,
-      blurb: buildBlueprintBlurb(description),
-      thumbnailUrl,
-    });
-
-    modernEntriesAdded += 1;
   }
 
   if (blueprintMatchCount > 0 && modernEntriesAdded === 0) {
@@ -279,34 +275,14 @@ async function fetchBlueprintFeed(): Promise<NvidiaBlueprintListingEntry[]> {
 
     if (!thumbnailUrl) continue;
 
-    const shortDescription = buildBlueprintBlurb(shortDescriptionRaw ?? "");
-
     if (publisher !== "nvidia") continue;
-    if (!blueprintId || entries.has(blueprintId)) continue;
 
-    if (!title || !date) {
-      console.warn(`Skipping blueprint with missing fields: ${blueprintId}`, {
-        title: Boolean(title),
-        date: Boolean(date),
-      });
-      continue;
-    }
-
-    const dateOnly = date.slice(0, 10);
-    const parsedDate = Date.parse(dateOnly);
-    if (!Number.isFinite(parsedDate)) {
-      console.warn(`Skipping blueprint with invalid date: ${blueprintId}`, {
-        rawDate: date,
-      });
-      continue;
-    }
-
-    entries.set(blueprintId, {
+    tryAddBlueprintEntry({
+      entries,
       blueprintId,
-      title: decodeListingText(title),
-      url: `https://build.nvidia.com/blueprints/${blueprintId}`,
-      date: dateOnly,
-      blurb: shortDescription,
+      title,
+      rawDate: date,
+      rawBlurb: shortDescriptionRaw ?? "",
       thumbnailUrl,
     });
   }
@@ -327,8 +303,21 @@ async function fetchBlueprintFeed(): Promise<NvidiaBlueprintListingEntry[]> {
 }
 
 let warnedNextEscapedJsonParseFailed = false;
+let warnedOversizeBlueprintJsonBlob = false;
 
 function parseNextEscapedJsonObject(raw: string): unknown {
+  if (raw.length > MAX_BLUEPRINT_OBJECT_CHARS) {
+    if (process.env.BLUEPRINTS_DEBUG === "1" && !warnedOversizeBlueprintJsonBlob) {
+      warnedOversizeBlueprintJsonBlob = true;
+      console.warn(
+        `Skipping BLUEPRINT JSON blob larger than MAX_BLUEPRINT_OBJECT_CHARS=${MAX_BLUEPRINT_OBJECT_CHARS}.`,
+        { length: raw.length },
+      );
+    }
+
+    return null;
+  }
+
   try {
     return JSON.parse(raw.replace(/\\"/g, '"'));
   } catch {
@@ -431,6 +420,9 @@ function stripHtmlTags(value: string): string {
   const normalized = value.replace(/\s+/g, " ").trim();
   if (!/<[a-zA-Z]/.test(normalized)) return normalized;
 
+  const containsKnownTag = /<\/?(?:p|br|strong|em|span|div|ul|ol|li|a|code|pre|h[1-6])\b/i.test(normalized);
+  if (!containsKnownTag) return normalized;
+
   const withSpacing = normalized
     .replace(/<\s*br\s*\/?\s*>/gi, " ")
     .replace(/<\s*\/\s*(?:p|li)\s*>/gi, " ");
@@ -442,7 +434,57 @@ function stripHtmlTags(value: string): string {
 // purpose HTML sanitizer; it exists to make NVIDIA's sometimes-HTML-ish listing strings
 // render as readable plain text.
 function buildBlueprintBlurb(raw: string): string {
-  return normalizeBlurb(stripHtmlTags(decodeListingText(raw)));
+  const blurb = normalizeBlurb(stripHtmlTags(decodeListingText(raw)));
+  const maxLen = 240;
+
+  if (blurb.length <= maxLen) return blurb;
+  return blurb.slice(0, maxLen - 1).trimEnd() + "…";
+}
+
+function tryAddBlueprintEntry({
+  entries,
+  blueprintId,
+  title,
+  rawDate,
+  rawBlurb,
+  thumbnailUrl,
+}: {
+  entries: Map<string, NvidiaBlueprintListingEntry>;
+  blueprintId: string | null;
+  title: string | null;
+  rawDate: string | null;
+  rawBlurb: string;
+  thumbnailUrl: string;
+}): boolean {
+  if (!blueprintId || entries.has(blueprintId)) return false;
+
+  if (!title || !rawDate) {
+    console.warn(`Skipping blueprint with missing fields: ${blueprintId}`, {
+      title: Boolean(title),
+      date: Boolean(rawDate),
+    });
+    return false;
+  }
+
+  const dateOnly = rawDate.slice(0, 10);
+  const parsedDate = Date.parse(dateOnly);
+  if (!Number.isFinite(parsedDate)) {
+    console.warn(`Skipping blueprint with invalid date: ${blueprintId}`, {
+      rawDate,
+    });
+    return false;
+  }
+
+  entries.set(blueprintId, {
+    blueprintId,
+    title: decodeListingText(title),
+    url: `https://build.nvidia.com/blueprints/${blueprintId}`,
+    date: dateOnly,
+    blurb: buildBlueprintBlurb(rawBlurb),
+    thumbnailUrl,
+  });
+
+  return true;
 }
 
 async function resolveBlueprint(candidate: NvidiaBlueprintListingEntry): Promise<ResolvedBlueprint | undefined> {
