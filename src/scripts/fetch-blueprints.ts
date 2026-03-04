@@ -136,11 +136,13 @@ async function fetchBlueprintFeed(): Promise<NvidiaBlueprintListingEntry[]> {
   const debug = process.env.BLUEPRINTS_DEBUG === "1";
   let warnedBlueprintPublisherMissing = false;
   const maxBlueprintObjectChars = 6000;
+  let warnedBlueprintObjectNearCap = false;
 
   for (const match of html.matchAll(blueprintObjectRegex)) {
-    if (debug && match[0].length >= maxBlueprintObjectChars - 10) {
+    if (!warnedBlueprintObjectNearCap && match[0].length >= maxBlueprintObjectChars - 10) {
+      warnedBlueprintObjectNearCap = true;
       console.warn(
-        `BLUEPRINT JSON blob match is near the ${maxBlueprintObjectChars}-char cap. NVIDIA schema may have expanded.`,
+        `A BLUEPRINT JSON blob match is near the ${maxBlueprintObjectChars}-char cap. NVIDIA schema may have expanded.`,
       );
     }
 
@@ -365,10 +367,7 @@ function stripHtmlTags(value: string): string {
   const normalized = value.replace(/\s+/g, " ").trim();
   if (!/<[a-zA-Z]/.test(normalized)) return normalized;
 
-  return normalized
-    .replace(/<\/?(?:p|br|strong|em|span|div|ul|ol|li|a|code|pre|h[1-6])[^>]*>/gi, "")
-    .replace(/\s+/g, " ")
-    .trim();
+  return normalized.replace(/<[^>]*>/g, "").replace(/\s+/g, " ").trim();
 }
 
 async function resolveBlueprint(candidate: NvidiaBlueprintListingEntry): Promise<ResolvedBlueprint | undefined> {
