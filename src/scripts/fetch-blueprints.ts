@@ -32,7 +32,9 @@ const DEFAULT_RUN_LIMIT = 5;
 // an escaped string (effectively JSON-within-JSON). We don't have an official API contract,
 // so this script relies on a best-effort scraper that is designed to fail loudly when the
 // upstream schema drifts.
-const MAX_BLUEPRINT_OBJECT_CHARS = 6000;
+const DEFAULT_MAX_BLUEPRINT_OBJECT_CHARS = 6000;
+const MAX_BLUEPRINT_OBJECT_CHARS =
+  parsePositiveInt(process.env.BLUEPRINTS_MAX_OBJECT_CHARS) ?? DEFAULT_MAX_BLUEPRINT_OBJECT_CHARS;
 
 type DateRange = {
   start?: Date;
@@ -141,18 +143,22 @@ async function fetchBlueprintFeed(): Promise<NvidiaBlueprintListingEntry[]> {
   );
 
   const debug = process.env.BLUEPRINTS_DEBUG === "1";
+  const strictSchema = process.env.BLUEPRINTS_STRICT_SCHEMA === "1";
   let warnedBlueprintPublisherMissing = false;
   let warnedBlueprintObjectNearCap = false;
   let warnedBlueprintMissingLogo = false;
   let blueprintMatchCount = 0;
   let blueprintParseFailureCount = 0;
   let modernEntriesAdded = 0;
+  let firstParseFailureSample: string | null = null;
+  let sawNearCap = false;
 
   for (const match of html.matchAll(blueprintObjectRegex)) {
     if (!warnedBlueprintObjectNearCap && match[0].length >= MAX_BLUEPRINT_OBJECT_CHARS - 10) {
       warnedBlueprintObjectNearCap = true;
+      sawNearCap = true;
       console.warn(
-        `A BLUEPRINT JSON blob match is near the ${MAX_BLUEPRINT_OBJECT_CHARS}-char cap. NVIDIA schema may have expanded.`,
+        `A BLUEPRINT JSON blob match is near the ${MAX_BLUEPRINT_OBJECT_CHARS}-char cap. NVIDIA schema may have expanded (set BLUEPRINTS_MAX_OBJECT_CHARS to increase the cap).`,
       );
     }
 
@@ -161,6 +167,11 @@ async function fetchBlueprintFeed(): Promise<NvidiaBlueprintListingEntry[]> {
     const parsed = parseNextEscapedJsonObject(match[0]);
     if (!parsed || typeof parsed !== "object") {
       blueprintParseFailureCount += 1;
+
+      if (!firstParseFailureSample) {
+        firstParseFailureSample = match[0].slice(0, 250);
+      }
+
       continue;
     }
 
@@ -242,8 +253,15 @@ async function fetchBlueprintFeed(): Promise<NvidiaBlueprintListingEntry[]> {
     if (debug || blueprintMatchCount <= 10 || blueprintParseFailureCount >= 20 || failureRate >= 0.25) {
       console.warn(
         `Failed to parse ${blueprintParseFailureCount}/${blueprintMatchCount} BLUEPRINT JSON blob(s) from NVIDIA listing.`,
+        firstParseFailureSample ? { sample: firstParseFailureSample } : undefined,
       );
     }
+  }
+
+  if (strictSchema && sawNearCap) {
+    throw new Error(
+      `NVIDIA listing schema appears to have expanded (near ${MAX_BLUEPRINT_OBJECT_CHARS}-char cap). Aborting due to BLUEPRINTS_STRICT_SCHEMA=1.`,
+    );
   }
 
   const legacyStartSize = entries.size;
@@ -380,7 +398,15 @@ function getAttributeValue({ attributes, key }: { attributes: unknown; key: stri
     const data = attribute as Record<string, unknown>;
     if (typeof data.key !== "string") continue;
     if (data.key !== key) continue;
+
     if (typeof data.value === "string") return data.value;
+
+    if (process.env.BLUEPRINTS_DEBUG === "1") {
+      console.warn("Unexpected BLUEPRINT attribute value type.", {
+        key,
+        valueType: typeof data.value,
+      });
+    }
   }
 
   return undefined;
