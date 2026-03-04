@@ -56,6 +56,9 @@ const MAX_BLUEPRINT_OBJECT_CHARS = (() => {
   return value;
 })();
 
+let oversizeBlueprintJsonBlobCount = 0;
+let warnedBlueprintBlurbTruncation = false;
+
 type DateRange = {
   start?: Date;
   endExclusive?: Date;
@@ -155,6 +158,8 @@ async function getRunCandidates({
 
 async function fetchBlueprintFeed(): Promise<NvidiaBlueprintListingEntry[]> {
   const html = await fetchText(SOURCE_URL);
+
+  oversizeBlueprintJsonBlobCount = 0;
 
   const entries = new Map<string, NvidiaBlueprintListingEntry>();
   const blueprintObjectRegex = new RegExp(
@@ -261,9 +266,21 @@ async function fetchBlueprintFeed(): Promise<NvidiaBlueprintListingEntry[]> {
     }
   }
 
+  if (oversizeBlueprintJsonBlobCount > 0) {
+    console.warn(
+      `Skipped ${oversizeBlueprintJsonBlobCount} oversize BLUEPRINT JSON blob(s) (cap=${MAX_BLUEPRINT_OBJECT_CHARS}).`,
+    );
+  }
+
   if (strictSchema && sawNearCap) {
     throw new Error(
       `NVIDIA listing schema appears to have expanded (near ${MAX_BLUEPRINT_OBJECT_CHARS}-char cap). Aborting due to BLUEPRINTS_STRICT_SCHEMA=1.`,
+    );
+  }
+
+  if (strictSchema && oversizeBlueprintJsonBlobCount > 0) {
+    throw new Error(
+      `NVIDIA listing contained ${oversizeBlueprintJsonBlobCount} BLUEPRINT JSON blob(s) over the ${MAX_BLUEPRINT_OBJECT_CHARS}-char cap. Aborting due to BLUEPRINTS_STRICT_SCHEMA=1.`,
     );
   }
 
@@ -314,6 +331,14 @@ let warnedOversizeBlueprintJsonBlob = false;
 
 function parseNextEscapedJsonObject(raw: string): unknown {
   if (raw.length > MAX_BLUEPRINT_OBJECT_CHARS) {
+    oversizeBlueprintJsonBlobCount += 1;
+
+    if (process.env.BLUEPRINTS_STRICT_SCHEMA === "1") {
+      throw new Error(
+        `BLUEPRINT JSON blob exceeded MAX_BLUEPRINT_OBJECT_CHARS=${MAX_BLUEPRINT_OBJECT_CHARS}.`,
+      );
+    }
+
     if (process.env.BLUEPRINTS_DEBUG === "1" && !warnedOversizeBlueprintJsonBlob) {
       warnedOversizeBlueprintJsonBlob = true;
       console.warn(
@@ -444,6 +469,12 @@ function buildBlueprintBlurb(raw: string): string {
   const blurb = normalizeBlurb(stripHtmlTags(decodeListingText(raw)));
 
   if (blurb.length <= MAX_BLUEPRINT_BLURB_LENGTH) return blurb;
+
+  if (process.env.BLUEPRINTS_DEBUG === "1" && !warnedBlueprintBlurbTruncation) {
+    warnedBlueprintBlurbTruncation = true;
+    console.warn("Truncating BLUEPRINT blurb to fit UI limit.", { length: blurb.length });
+  }
+
   return blurb.slice(0, MAX_BLUEPRINT_BLURB_LENGTH - 1).trimEnd() + "…";
 }
 
