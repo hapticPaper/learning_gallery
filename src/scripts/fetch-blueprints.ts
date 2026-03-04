@@ -28,6 +28,7 @@ const THUMBNAILS_DIR = path.join(process.cwd(), "public", "blueprints", "thumbna
 
 const SOURCE_URL = "https://build.nvidia.com/blueprints?filters=publisher%3Anvidia";
 const DEFAULT_RUN_LIMIT = 5;
+const MAX_BLUEPRINT_OBJECT_CHARS = 6000;
 
 type DateRange = {
   start?: Date;
@@ -130,24 +131,33 @@ async function fetchBlueprintFeed(): Promise<NvidiaBlueprintListingEntry[]> {
   const html = await fetchText(SOURCE_URL);
 
   const entries = new Map<string, NvidiaBlueprintListingEntry>();
-  const blueprintObjectRegex =
-    /\{[^]{0,6000}?\\"orgName\\":\\"[^\\"]+\\"[^]{0,6000}?\\"resourceType\\":\\"BLUEPRINT\\"[^]{0,6000}?\\"guestAccess\\":(?:true|false)\}/g;
+  const blueprintObjectRegex = new RegExp(
+    String.raw`\{[^]{0,${MAX_BLUEPRINT_OBJECT_CHARS}}?\\\"orgName\\\":\\\"[^\\\\\"]+\\\"[^]{0,${MAX_BLUEPRINT_OBJECT_CHARS}}?\\\"resourceType\\\":\\\"BLUEPRINT\\\"[^]{0,${MAX_BLUEPRINT_OBJECT_CHARS}}?\\\"guestAccess\\\":(?:true|false)\}`,
+    "g",
+  );
 
   const debug = process.env.BLUEPRINTS_DEBUG === "1";
   let warnedBlueprintPublisherMissing = false;
-  const maxBlueprintObjectChars = 6000;
   let warnedBlueprintObjectNearCap = false;
+  let warnedBlueprintMissingLogo = false;
+  let blueprintMatchCount = 0;
+  let blueprintParseFailureCount = 0;
 
   for (const match of html.matchAll(blueprintObjectRegex)) {
-    if (!warnedBlueprintObjectNearCap && match[0].length >= maxBlueprintObjectChars - 10) {
+    if (!warnedBlueprintObjectNearCap && match[0].length >= MAX_BLUEPRINT_OBJECT_CHARS - 10) {
       warnedBlueprintObjectNearCap = true;
       console.warn(
-        `A BLUEPRINT JSON blob match is near the ${maxBlueprintObjectChars}-char cap. NVIDIA schema may have expanded.`,
+        `A BLUEPRINT JSON blob match is near the ${MAX_BLUEPRINT_OBJECT_CHARS}-char cap. NVIDIA schema may have expanded.`,
       );
     }
 
+    blueprintMatchCount += 1;
+
     const parsed = parseNextEscapedJsonObject(match[0]);
-    if (!parsed || typeof parsed !== "object") continue;
+    if (!parsed || typeof parsed !== "object") {
+      blueprintParseFailureCount += 1;
+      continue;
+    }
 
     const data = parsed as Record<string, unknown>;
     const publisher = getPublisherFromBlueprintData(data);
@@ -172,6 +182,11 @@ async function fetchBlueprintFeed(): Promise<NvidiaBlueprintListingEntry[]> {
     const thumbnailUrl = getAttributeValue({ attributes: data.attributes, key: "logo" });
 
     if (!thumbnailUrl) {
+      if (!warnedBlueprintMissingLogo) {
+        warnedBlueprintMissingLogo = true;
+        console.warn("Skipping BLUEPRINT entries without a listing logo (attributes.logo).");
+      }
+
       if (debug) {
         console.warn(`Skipping blueprint without listing logo: ${blueprintId}`);
       }
@@ -203,9 +218,19 @@ async function fetchBlueprintFeed(): Promise<NvidiaBlueprintListingEntry[]> {
       title: decodeListingText(title),
       url: `https://build.nvidia.com/blueprints/${blueprintId}`,
       date: dateOnly,
-      blurb: normalizeBlurb(stripHtmlTags(decodeListingText(description))),
+      blurb: buildBlueprintBlurb(description),
       thumbnailUrl,
     });
+  }
+
+  if (blueprintParseFailureCount > 0 && blueprintMatchCount > 0) {
+    const failureRate = blueprintParseFailureCount / blueprintMatchCount;
+
+    if (debug || blueprintParseFailureCount >= 20 || failureRate >= 0.25) {
+      console.warn(
+        `Failed to parse ${blueprintParseFailureCount}/${blueprintMatchCount} BLUEPRINT JSON blob(s) from NVIDIA listing.`,
+      );
+    }
   }
 
   const legacyStartSize = entries.size;
@@ -223,7 +248,7 @@ async function fetchBlueprintFeed(): Promise<NvidiaBlueprintListingEntry[]> {
 
     if (!thumbnailUrl) continue;
 
-    const shortDescription = stripHtmlTags(decodeListingText(shortDescriptionRaw ?? ""));
+    const shortDescription = buildBlueprintBlurb(shortDescriptionRaw ?? "");
 
     if (publisher !== "nvidia") continue;
     if (!blueprintId || entries.has(blueprintId)) continue;
@@ -250,7 +275,7 @@ async function fetchBlueprintFeed(): Promise<NvidiaBlueprintListingEntry[]> {
       title: decodeListingText(title),
       url: `https://build.nvidia.com/blueprints/${blueprintId}`,
       date: dateOnly,
-      blurb: normalizeBlurb(shortDescription),
+      blurb: shortDescription,
       thumbnailUrl,
     });
   }
@@ -271,7 +296,6 @@ async function fetchBlueprintFeed(): Promise<NvidiaBlueprintListingEntry[]> {
 }
 
 let warnedNextEscapedJsonParseFailed = false;
-let warnedBlueprintJsonParses = false;
 
 function parseNextEscapedJsonObject(raw: string): unknown {
   try {
@@ -288,14 +312,6 @@ function parseNextEscapedJsonObject(raw: string): unknown {
     ) as string;
     return JSON.parse(unescaped);
   } catch {
-    if (!warnedBlueprintJsonParses) {
-      warnedBlueprintJsonParses = true;
-      console.warn(
-        "One or more BLUEPRINT JSON blobs failed to parse. " +
-          "NVIDIA may have changed their escaping; set BLUEPRINTS_DEBUG=1 for more details.",
-      );
-    }
-
     if (process.env.BLUEPRINTS_DEBUG === "1" && !warnedNextEscapedJsonParseFailed) {
       warnedNextEscapedJsonParseFailed = true;
       console.warn(
@@ -312,7 +328,15 @@ function getPublisherFromBlueprintData(data: Record<string, unknown>): string | 
   const labelPublisher = getLabelValues({ labels: data.labels, key: "publisher" })?.[0];
   if (labelPublisher) return labelPublisher;
 
-  if (typeof data.publisher === "string") return data.publisher;
+  if (typeof data.publisher === "string") {
+    if (process.env.BLUEPRINTS_DEBUG === "1") {
+      console.warn("Using legacy BLUEPRINT publisher field (data.publisher).", {
+        publisher: data.publisher,
+      });
+    }
+
+    return data.publisher;
+  }
 
   return null;
 }
@@ -367,7 +391,15 @@ function stripHtmlTags(value: string): string {
   const normalized = value.replace(/\s+/g, " ").trim();
   if (!/<[a-zA-Z]/.test(normalized)) return normalized;
 
-  return normalized.replace(/<[^>]*>/g, "").replace(/\s+/g, " ").trim();
+  const withSpacing = normalized
+    .replace(/<\s*br\s*\/?\s*>/gi, " ")
+    .replace(/<\s*\/\s*(?:p|li)\s*>/gi, " ");
+
+  return withSpacing.replace(/<[^>]*>/g, "").replace(/\s+/g, " ").trim();
+}
+
+function buildBlueprintBlurb(raw: string): string {
+  return normalizeBlurb(stripHtmlTags(decodeListingText(raw)));
 }
 
 async function resolveBlueprint(candidate: NvidiaBlueprintListingEntry): Promise<ResolvedBlueprint | undefined> {
