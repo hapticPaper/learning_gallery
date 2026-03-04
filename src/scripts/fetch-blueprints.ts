@@ -131,7 +131,7 @@ async function fetchBlueprintFeed(): Promise<NvidiaBlueprintListingEntry[]> {
 
   const entries = new Map<string, NvidiaBlueprintListingEntry>();
   const blueprintObjectRegex =
-    /\{[^]{0,20000}?\\"orgName\\":\\"[^\\"]+\\"[^]{0,20000}?\\"resourceType\\":\\"BLUEPRINT\\"[^]{0,20000}?\\"guestAccess\\":(?:true|false)\}/g;
+    /\{[^]{0,6000}?\\"orgName\\":\\"[^\\"]+\\"[^]{0,6000}?\\"resourceType\\":\\"BLUEPRINT\\"[^]{0,6000}?\\"guestAccess\\":(?:true|false)\}/g;
 
   const debug = process.env.BLUEPRINTS_DEBUG === "1";
   let warnedBlueprintPublisherMissing = false;
@@ -162,6 +162,14 @@ async function fetchBlueprintFeed(): Promise<NvidiaBlueprintListingEntry[]> {
     const description = typeof data.description === "string" ? data.description : "";
     const thumbnailUrl = getAttributeValue({ attributes: data.attributes, key: "logo" });
 
+    if (!thumbnailUrl) {
+      if (debug) {
+        console.warn(`Skipping blueprint without listing logo: ${blueprintId}`);
+      }
+
+      continue;
+    }
+
     if (!blueprintId || entries.has(blueprintId)) continue;
 
     if (!title || !dateModified) {
@@ -186,7 +194,7 @@ async function fetchBlueprintFeed(): Promise<NvidiaBlueprintListingEntry[]> {
       title: decodeListingText(title),
       url: `https://build.nvidia.com/blueprints/${blueprintId}`,
       date: dateOnly,
-      blurb: normalizeBlurb(decodeListingText(description)),
+      blurb: normalizeBlurb(stripHtmlTags(decodeListingText(description))),
       thumbnailUrl,
     });
   }
@@ -203,7 +211,9 @@ async function fetchBlueprintFeed(): Promise<NvidiaBlueprintListingEntry[]> {
       const thumbnailUrl = match[5];
       const date = match[6];
 
-      const shortDescription = decodeListingText(shortDescriptionRaw ?? "");
+      if (!thumbnailUrl) continue;
+
+      const shortDescription = stripHtmlTags(decodeListingText(shortDescriptionRaw ?? ""));
 
       if (publisher !== "nvidia") continue;
       if (!blueprintId || entries.has(blueprintId)) continue;
@@ -329,6 +339,10 @@ function decodeListingText(value: string): string {
       .replace(/\\u0026/g, "&")
       .trim();
   }
+}
+
+function stripHtmlTags(value: string): string {
+  return value.replace(/<[^>]*>/g, "").replace(/\s+/g, " ").trim();
 }
 
 async function resolveBlueprint(candidate: NvidiaBlueprintListingEntry): Promise<ResolvedBlueprint | undefined> {
